@@ -1,15 +1,16 @@
 import * as THREE from "three";
-import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-		import { RenderPixelatedPass } from 'three/addons/postprocessing/RenderPixelatedPass.js';
-		import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-    
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPixelatedPass } from "three/addons/postprocessing/RenderPixelatedPass.js";
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { MapControls } from "three/addons/controls/MapControls.js";
 import { SVGLoader } from "three/addons/loaders/SVGLoader.js";
 import p5 from "p5";
 import { gsap } from "gsap";
 import GUI from "lil-gui";
- const p5Instance = new p5();
+const p5Instance = new p5();
 
 //! ////////////////////////////////////////////////////
 //! //////////////SVG Path //////////////////////////
@@ -20,6 +21,35 @@ const svgLoader = new SVGLoader();
 const svgData = svgLoader.parse(svgMarkup);
 const svgGroup = new THREE.Group();
 // const material = new THREE.MeshNormalMaterial();
+const pixelationVertexShader = `
+varying vec2 vUv;
+void main() {
+  vUv = uv;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}
+`;
+
+const pixelationFragmentShader = `
+uniform float pixelSize;
+uniform sampler2D tDiffuse;
+varying vec2 vUv;
+void main(){
+  vec2 dxy = pixelSize / vec2(textureSize(tDiffuse, 0));
+  vec2 coord = dxy * floor(vUv / dxy);
+  gl_FragColor = texture(tDiffuse, coord);
+}
+`;
+const pixelationShader = {
+  uniforms: {
+    tDiffuse: { value: null },
+    pixelSize: { value: 1.0 },
+  },
+  vertexShader: pixelationVertexShader,
+  fragmentShader: pixelationFragmentShader,
+};
+const pixelationPass = new ShaderPass(pixelationShader);
+pixelationPass.uniforms.pixelSize.value = 8;
+
 const material = new THREE.ShaderMaterial({
   vertexShader: `
     varying float vHeight;
@@ -108,7 +138,7 @@ const camera = new THREE.OrthographicCamera(
   cameraSpecs.near,
   cameraSpecs.far
 );
-camera.zoom = 1.9
+camera.zoom = 1.9;
 camera.position.z = 250;
 camera.position.y = -150;
 const helper = new THREE.CameraHelper(camera);
@@ -136,6 +166,14 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 const axesHelper = new THREE.AxesHelper(350);
 scene.add(axesHelper);
 
+/* Post Processing */
+// Assuming renderer, scene, and camera are already defined
+const composer = new EffectComposer(renderer);
+const renderPass = new RenderPass(scene, camera);
+composer.addPass(renderPass);
+
+// Add the pixelation pass
+composer.addPass(pixelationPass);
 /**
  * Debug
  */
@@ -151,10 +189,13 @@ gui
 gui
   .add(camera, "far", 200, 1000)
   .onChange(() => camera.updateProjectionMatrix());
-
+gui
+  .add(pixelationPass.uniforms.pixelSize, "value", 1, 20, 1)
+  .name("Pixel Size");
 const renderLoop = () => {
   window.requestAnimationFrame(renderLoop);
   controls.update();
-  renderer.render(scene, camera);
+  // renderer.render(scene, camera);
+  composer.render();
 };
 renderLoop();
