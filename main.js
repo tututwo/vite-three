@@ -1,16 +1,28 @@
+import data from "./src/JustWinningParty.csv";
 import * as THREE from "three";
-import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-		import { RenderPixelatedPass } from 'three/addons/postprocessing/RenderPixelatedPass.js';
-		import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-    
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
 import { MapControls } from "three/addons/controls/MapControls.js";
 import { SVGLoader } from "three/addons/loaders/SVGLoader.js";
-import p5 from "p5";
-import { gsap } from "gsap";
-import GUI from "lil-gui";
- const p5Instance = new p5();
 
+import { gsap } from "gsap";
+import * as d3 from "d3";
+import GUI from "lil-gui";
+
+data.forEach((d) => {
+  d["county_fips"] = +d["county_fips"];
+  d["candidatevotes"] = +d["candidatevotes"];
+});
+
+const depthScale = d3
+  .scaleLog()
+  .domain([1, d3.max(data, (d) => d["candidatevotes"])])
+  .range([0, 45])
+  .base(10);
+
+let groupedData = d3.groups(data, (d) => d.year);
+// year 2000
+let dataset = groupedData[0][1];
+let dataset_2004 = groupedData[1][1];
 //! ////////////////////////////////////////////////////
 //! //////////////SVG Path //////////////////////////
 //! ////////////////////////////////////////////////////
@@ -36,7 +48,7 @@ const material = new THREE.ShaderMaterial({
     void main() {
       vec3 color1 = vec3(0.0, 0.0, 1.0);
       vec3 color2 = vec3(0.0, 1.0, 0.8);
-      float mixFactor = (vHeight + 20.0) / 50.0;
+      float mixFactor = (vHeight + 10.0) / 50.0;
       gl_FragColor = vec4(mix(color1, color2, mixFactor), 1.0);
     }
   `,
@@ -44,6 +56,7 @@ const material = new THREE.ShaderMaterial({
     depth: { value: 1.0 }, // Initial depth scale
   },
 });
+
 // gsap.to(material.uniforms.depth, {
 //   value: p5Instance.noise(10)*4, // Target depth scale
 //   duration: 3,
@@ -52,19 +65,29 @@ const material = new THREE.ShaderMaterial({
 //   ease: "power1.inOut"
 // });
 
+//todo: find path with the same county_fip code, and depthScale it
 svgData.paths.forEach((path, i) => {
+  let scaledDepth = 0;
+  const pathData = dataset.find(
+    (d) => +d["county_fips"] === +path.userData.node.id
+  );
+
+  if (pathData === undefined) {
+    scaledDepth = 0;
+  } else {
+    scaledDepth = Math.max(depthScale(+pathData["candidatevotes"]), 0.1);
+  }
   const shapes = path.toShapes(true);
+
   shapes.forEach((shape, j) => {
-    let depth = Math.random() * 40 - 10;
-    depth = Math.max(depth, 1);
     const geometry = new THREE.ExtrudeGeometry(shape, {
-      depth: depth,
+      depth: scaledDepth,
       bevelEnabled: false,
     });
-    geometry.computeVertexNormals();
+
     // geometry.center();
     const mesh = new THREE.Mesh(geometry, material);
-
+    mesh.userData.id = +path.userData.node.id;
     // const pathBB = new THREE.Box3(new THREE.Vector3(),new THREE.Vector3()).setFromObject(mesh); // min and max
     // console.log(pathBB);
     // const bb = geometry.computeBoundingSphere();
@@ -76,7 +99,7 @@ svgGroup.scale.y *= -1;
 
 const svgGroupBB = new THREE.Box3().setFromObject(svgGroup); // min and max
 const center = svgGroupBB.getCenter(new THREE.Vector3());
-console.log(center);
+
 svgGroup.position.x = -center.x;
 svgGroup.position.y = -center.y;
 svgGroup.position.z = -center.z;
@@ -108,7 +131,7 @@ const camera = new THREE.OrthographicCamera(
   cameraSpecs.near,
   cameraSpecs.far
 );
-camera.zoom = 1.9
+camera.zoom = 1.9;
 camera.position.z = 250;
 camera.position.y = -150;
 const helper = new THREE.CameraHelper(camera);
@@ -136,6 +159,44 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 const axesHelper = new THREE.AxesHelper(350);
 scene.add(axesHelper);
 
+function animateToNewData(year) {
+
+  const newData = groupedData.find((d) => +d[0] === year)?.[1];
+
+  if (!newData) return;
+
+  svgData.paths.forEach((path) => {
+
+    const currentMesh = svgGroup.children.find(
+      (mesh) => +mesh.userData.id === +path.userData.node.id
+    );
+
+    if (currentMesh) {
+      const newDataForPath = newData.find(
+        (d) => +d.county_fips === +path.userData.node.id
+      );
+      const newDepth = newDataForPath
+        ? depthScale(newDataForPath.candidatevotes)
+        : 0;
+      
+      gsap.to(currentMesh.geometry.parameters.options, {
+        depth: Math.max(newDepth, .1),
+        duration: 3,
+        ease: "power1.inOut",
+        onUpdate: () => updateGeometry(currentMesh),
+      });
+    }
+  });
+}
+function updateGeometry(mesh) {
+  const shape = mesh.geometry.parameters.shapes;
+  const options = mesh.geometry.parameters.options;
+  mesh.geometry.dispose(); // Dispose of the current geometry
+  mesh.geometry = new THREE.ExtrudeGeometry(shape, options);
+  mesh.geometry.verticesNeedUpdate = true;
+  mesh.geometry.computeVertexNormals();
+}
+
 /**
  * Debug
  */
@@ -151,6 +212,9 @@ gui
 gui
   .add(camera, "far", 200, 1000)
   .onChange(() => camera.updateProjectionMatrix());
+gui
+  .add({ year: 2000 }, "year", 2000, 2020, 4)
+  .onChange((value) => animateToNewData(value));
 
 const renderLoop = () => {
   window.requestAnimationFrame(renderLoop);

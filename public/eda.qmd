@@ -1,0 +1,36 @@
+```{r}
+library(tidyverse)
+```
+
+```{r}
+data <- countypres_2000_2020 |> 
+  filter(mode == 'TOTAL') |>
+  group_by(state,county_name,year) |>
+  mutate(max_candidatevotes = max(candidatevotes),
+         winning_party = party[which.max(candidatevotes)])|>
+  ungroup()  |> 
+  mutate(
+    votes_percentage = candidatevotes/totalvotes,
+    county_name = str_to_title(county_name)  
+  ) |> 
+  select(-version,-mode,-office)
+```
+
+## Just Winning Party
+
+```{r}
+dataset <- countypres_2000_2020 |> 
+  filter(mode == 'TOTAL') |>
+  group_by(state,county_name,year) |>
+  top_n(1,candidatevotes)|> 
+   ungroup()  |> 
+  mutate(
+    county_name = str_to_title(county_name)  
+  ) |> 
+  select(-version,-mode,-office,-totalvotes)
+```
+
+```{r}
+write_csv(data,'./data.csv')
+write_csv(dataset,'./JustWinningParty.csv')
+```
