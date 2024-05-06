@@ -15,9 +15,9 @@ data.forEach((d) => {
 
 const depthScale = d3
   .scaleLog()
-  .domain([1, d3.max(data, (d) => d["candidatevotes"])])
+  .domain([0.1, d3.max(data, (d) => +d["candidatevotes"])])
   .range([0, 45])
-  .base(10);
+  .base(2);
 
 let groupedData = d3.groups(data, (d) => d.year);
 // year 2000
@@ -38,7 +38,7 @@ const material = new THREE.ShaderMaterial({
     uniform float depth;
     void main() {
       vec3 pos = position;
-      pos.z *= depth; // Apply depth scaling to z-coordinate
+      pos.z *= depth; // Scale z-coordinate
       vHeight = pos.z; // Use scaled z-coordinate
       gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
     }
@@ -48,13 +48,16 @@ const material = new THREE.ShaderMaterial({
     void main() {
       vec3 color1 = vec3(0.0, 0.0, 1.0);
       vec3 color2 = vec3(0.0, 1.0, 0.8);
-      float mixFactor = (vHeight + 10.0) / 50.0;
+      float mixFactor = (vHeight + .0) / 50.0;
       gl_FragColor = vec4(mix(color1, color2, mixFactor), 1.0);
     }
   `,
   uniforms: {
-    depth: { value: 1.0 }, // Initial depth scale
+    depth: { value: 1.2 }, // Initial depth scale
   },
+  wireframe: true,
+
+  // blending: THREE.AdditiveBlending,
 });
 
 // gsap.to(material.uniforms.depth, {
@@ -82,7 +85,12 @@ svgData.paths.forEach((path, i) => {
   shapes.forEach((shape, j) => {
     const geometry = new THREE.ExtrudeGeometry(shape, {
       depth: scaledDepth,
-      bevelEnabled: false,
+      // bevelEnabled: true,
+      // bevelThickness: 1,
+      // bevelSize: 1,
+      // bevelOffset: 1,
+      // bevelSegments: 5,
+      steps: Math.floor(scaledDepth / 10),
     });
 
     // geometry.center();
@@ -160,13 +168,11 @@ const axesHelper = new THREE.AxesHelper(350);
 scene.add(axesHelper);
 
 function animateToNewData(year) {
-
   const newData = groupedData.find((d) => +d[0] === year)?.[1];
 
   if (!newData) return;
 
   svgData.paths.forEach((path) => {
-
     const currentMesh = svgGroup.children.find(
       (mesh) => +mesh.userData.id === +path.userData.node.id
     );
@@ -178,9 +184,9 @@ function animateToNewData(year) {
       const newDepth = newDataForPath
         ? depthScale(newDataForPath.candidatevotes)
         : 0;
-      
+
       gsap.to(currentMesh.geometry.parameters.options, {
-        depth: Math.max(newDepth, .1),
+        depth: Math.max(newDepth, 0.1),
         duration: 3,
         ease: "power1.inOut",
         onUpdate: () => updateGeometry(currentMesh),
@@ -215,7 +221,7 @@ gui
 gui
   .add({ year: 2000 }, "year", 2000, 2020, 4)
   .onChange((value) => animateToNewData(value));
-
+gui.add(material, "wireframe");
 const renderLoop = () => {
   window.requestAnimationFrame(renderLoop);
   controls.update();
