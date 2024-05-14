@@ -18,6 +18,7 @@
     "dat.gui": "^0.7.9",
     "gsap": "^3.12.5",
     "p5": "^1.9.3",
-    "three": "^0.164.1"
+    "three": "^0.164.1",
+    "three-custom-shader-material": "^5.4.0"
   }
 }
