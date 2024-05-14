@@ -135,7 +135,7 @@ const camera = new THREE.OrthographicCamera(
   cameraSpecs.near,
   cameraSpecs.far
 );
-camera.zoom = 3;
+camera.zoom = 2.5;
 camera.position.z = 250;
 camera.position.y = -150;
 
@@ -172,10 +172,10 @@ directionalLight2.position.set(-200, -400, -300);
 scene.add(directionalLight2);
 
 const directionalLightHelper1 = new THREE.DirectionalLightHelper(directionalLight1, 10);
-scene.add(directionalLightHelper1);
+// scene.add(directionalLightHelper1);
 
 const directionalLightHelper2 = new THREE.DirectionalLightHelper(directionalLight2, 10);
-scene.add(directionalLightHelper2);
+// scene.add(directionalLightHelper2);
 
 // Postprocessing
 const composer = new EffectComposer(renderer);
