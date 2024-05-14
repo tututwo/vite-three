@@ -14,10 +14,10 @@ data.forEach((d) => {
 });
 
 const depthScale = d3
-  .scaleLog()
-  .domain([0.1, d3.max(data, (d) => +d["candidatevotes"])])
-  .range([0, 45])
-  .base(2);
+.scaleSymlog()
+.domain([0, 10 ** 6])
+.constant(10 ** 4)
+.range([0 ,70]);
 
 let groupedData = d3.groups(data, (d) => d.year);
 // year 2000
@@ -46,8 +46,8 @@ const material = new THREE.ShaderMaterial({
   fragmentShader: `
     varying float vHeight;
     void main() {
-      vec3 color1 = vec3(0.0, 0.0, 1.0);
-      vec3 color2 = vec3(0.0, 1.0, 0.8);
+      vec3 color1 = vec3(74.0/255.0, 105.0/255.0, 241.0/255.0);
+      vec3 color2 = vec3(128.0/255.0, 255.0/255.0, 244.0/255.0);
       float mixFactor = (vHeight + .0) / 50.0;
       gl_FragColor = vec4(mix(color1, color2, mixFactor), 1.0);
     }
@@ -55,7 +55,7 @@ const material = new THREE.ShaderMaterial({
   uniforms: {
     depth: { value: 1.2 }, // Initial depth scale
   },
-  wireframe: true,
+  wireframe: false,
 
   // blending: THREE.AdditiveBlending,
 });
@@ -143,7 +143,7 @@ camera.zoom = 1.9;
 camera.position.z = 250;
 camera.position.y = -150;
 const helper = new THREE.CameraHelper(camera);
-scene.add(helper);
+// scene.add(helper);
 // camera.lookAt(svgGroup.position);
 
 const canvas = document.querySelector("#threejs");
@@ -165,7 +165,7 @@ controls.maxPolarAngle = Math.PI;
 //
 renderer.setSize(window.innerWidth, window.innerHeight);
 const axesHelper = new THREE.AxesHelper(350);
-scene.add(axesHelper);
+// scene.add(axesHelper);
 
 function animateToNewData(year) {
   const newData = groupedData.find((d) => +d[0] === year)?.[1];
@@ -187,7 +187,7 @@ function animateToNewData(year) {
 
       gsap.to(currentMesh.geometry.parameters.options, {
         depth: Math.max(newDepth, 0.1),
-        duration: 3,
+        duration:1,
         ease: "power1.inOut",
         onUpdate: () => updateGeometry(currentMesh),
       });
@@ -202,8 +202,21 @@ function updateGeometry(mesh) {
   mesh.geometry.verticesNeedUpdate = true;
   mesh.geometry.computeVertexNormals();
 }
+/*
+ * Light
+ */
+const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+scene.add(ambientLight);
+const directionalLight = new THREE.DirectionalLight("yellow", 0.9);
+directionalLight.position.set(1, -150, 250);
 
-/**
+scene.add(directionalLight);
+const directionalLightHelper = new THREE.DirectionalLightHelper(
+  directionalLight,
+  5
+);
+scene.add(directionalLightHelper);
+/*
  * Debug
  */
 const gui = new GUI();
