@@ -1,4 +1,6 @@
+import data from "./src/JustWinningParty.csv";
 import * as THREE from 'three';
+import CustomShaderMaterial from 'three-custom-shader-material/vanilla';
 import { MapControls } from 'three/addons/controls/MapControls.js';
 import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
@@ -10,19 +12,15 @@ import GUI from 'lil-gui';
 import * as d3 from 'd3';
 import { gsap } from 'gsap';
 
-import data from './src/JustWinningParty.csv';
-import CustomShaderMaterial from 'three-custom-shader-material/vanilla';
-
 data.forEach((d) => {
-  d['county_fips'] = +d['county_fips'];
-  d['candidatevotes'] = +d['candidatevotes'];
+  d["county_fips"] = +d["county_fips"];
+  d["candidatevotes"] = +d["candidatevotes"];
 });
 
 const depthScale = d3.scaleSymlog().domain([0, 10 ** 6]).constant(10 ** 4).range([0, 70]);
 
 let groupedData = d3.groups(data, (d) => d.year);
-let dataset = groupedData[0][1];
-let dataset_2004 = groupedData[1][1];
+let dataset = groupedData[0][1]; // Initial dataset (2000)
 
 const svgMarkup = document.querySelector('svg#extrude-svg-path').outerHTML;
 const svgLoader = new SVGLoader();
@@ -74,37 +72,41 @@ const material = new CustomShaderMaterial({
   wireframe: false,
 });
 
-svgData.paths.forEach((path, i) => {
-  let scaledDepth = 0;
-  const pathData = dataset.find((d) => +d['county_fips'] === +path.userData.node.id);
+function createExtrudeGeometry() {
+  svgData.paths.forEach((path, i) => {
+    let scaledDepth = 0;
+    const pathData = dataset.find((d) => +d["county_fips"] === +path.userData.node.id);
 
-  if (pathData === undefined) {
-    scaledDepth = 0;
-  } else {
-    scaledDepth = Math.max(depthScale(+pathData['candidatevotes']), 0.1);
-  }
+    if (pathData === undefined) {
+      scaledDepth = 0;
+    } else {
+      scaledDepth = Math.max(depthScale(+pathData["candidatevotes"]), 0.1);
+    }
 
-  const shapes = path.toShapes(true);
+    const shapes = path.toShapes(true);
 
-  shapes.forEach((shape, j) => {
-    const geometry = new THREE.ExtrudeGeometry(shape, {
-      depth: scaledDepth,
-      steps: Math.floor(scaledDepth / 10),
+    shapes.forEach((shape, j) => {
+      const geometry = new THREE.ExtrudeGeometry(shape, {
+        depth: scaledDepth,
+        steps: Math.floor(scaledDepth / 10),
+      });
+
+      const partyAffiliation = pathData?.party === "REPUBLICAN" ? 1 : 0;
+
+      const partyAffiliationArray = new Float32Array(geometry.attributes.position.count);
+      partyAffiliationArray.fill(partyAffiliation);
+
+      geometry.setAttribute('partyAffiliation', new THREE.BufferAttribute(partyAffiliationArray, 1));
+
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.userData.id = +path.userData.node.id;
+      mesh.userData.party = pathData?.party || 'NO_PARTY';
+      svgGroup.add(mesh);
     });
-
-    const partyAffiliation = pathData?.party === 'REPUBLICAN' ? 1 : 0;
-
-    const partyAffiliationArray = new Float32Array(geometry.attributes.position.count);
-    partyAffiliationArray.fill(partyAffiliation);
-
-    geometry.setAttribute('partyAffiliation', new THREE.BufferAttribute(partyAffiliationArray, 1));
-
-    const mesh = new THREE.Mesh(geometry, material);
-    mesh.userData.id = +path.userData.node.id;
-    mesh.userData.party = pathData?.party || 'NO_PARTY';
-    svgGroup.add(mesh);
   });
-});
+}
+
+createExtrudeGeometry();
 
 svgGroup.scale.y *= -1;
 
@@ -135,7 +137,7 @@ const camera = new THREE.OrthographicCamera(
   cameraSpecs.near,
   cameraSpecs.far
 );
-camera.zoom = 2.5;
+camera.zoom = 1.9;
 camera.position.z = 250;
 camera.position.y = -150;
 
@@ -159,23 +161,23 @@ const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 let selectedObjects = [];
 
-const ambientLight = new THREE.AmbientLight(0xffffff, 2.8);
+const ambientLight = new THREE.AmbientLight(0xffffff, 2.7);
 scene.add(ambientLight);
 
-const directionalLight1 = new THREE.DirectionalLight(0xffffff, 2.5);
+const directionalLight1 = new THREE.DirectionalLight(0xffffff, 3.2);
 directionalLight1.position.set(200, 400, 300);
 directionalLight1.castShadow = true;
 scene.add(directionalLight1);
 
-const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.8);
+const directionalLight2 = new THREE.DirectionalLight(0xffffff, 1.8);
 directionalLight2.position.set(-200, -400, -300);
 scene.add(directionalLight2);
 
 const directionalLightHelper1 = new THREE.DirectionalLightHelper(directionalLight1, 10);
-// scene.add(directionalLightHelper1);
+scene.add(directionalLightHelper1);
 
 const directionalLightHelper2 = new THREE.DirectionalLightHelper(directionalLight2, 10);
-// scene.add(directionalLightHelper2);
+scene.add(directionalLightHelper2);
 
 // Postprocessing
 const composer = new EffectComposer(renderer);
@@ -200,6 +202,7 @@ const params = {
   pulsePeriod: 0,
   rotate: false,
   usePatternTexture: false,
+  year: 2000,
 };
 
 gui.add(params, 'edgeStrength', 0.01, 10).onChange((value) => {
@@ -232,6 +235,12 @@ gui.addColor(conf, 'hiddenEdgeColor').onChange((value) => {
   outlinePass.hiddenEdgeColor.set(value);
 });
 
+const yearOptions = [2000, 2004, 2008, 2012, 2016, 2020];
+gui.add(params, 'year', yearOptions).onChange((value) => {
+  dataset = groupedData.find((d) => +d[0] === value)[1];
+  updateGeometry();
+});
+
 function onPointerMove(event) {
   if (event.isPrimary === false) return;
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -262,6 +271,26 @@ function onWindowResize() {
   renderer.setSize(width, height);
   composer.setSize(width, height);
   effectFXAA.uniforms['resolution'].value.set(1 / window.innerWidth, 1 / window.innerHeight);
+}
+
+function updateGeometry() {
+  svgGroup.children.forEach((mesh) => {
+    const pathData = dataset.find((d) => +d['county_fips'] === +mesh.userData.id);
+    const newDepth = pathData ? depthScale(+pathData['candidatevotes']) : 0;
+    gsap.to(mesh.geometry.parameters.options, {
+      depth: Math.max(newDepth, 0.1),
+      duration: 1,
+      ease: 'power1.inOut',
+      onUpdate: () => {
+        const shape = mesh.geometry.parameters.shapes;
+        const options = mesh.geometry.parameters.options;
+        mesh.geometry.dispose();
+        mesh.geometry = new THREE.ExtrudeGeometry(shape, options);
+        mesh.geometry.verticesNeedUpdate = true;
+        mesh.geometry.computeVertexNormals();
+      },
+    });
+  });
 }
 
 function animate() {
