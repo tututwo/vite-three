@@ -1,28 +1,32 @@
 import data from "./src/JustWinningParty.csv";
-import * as THREE from 'three';
-import CustomShaderMaterial from 'three-custom-shader-material/vanilla';
-import { MapControls } from 'three/addons/controls/MapControls.js';
-import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
-import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
-import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
-import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
-import GUI from 'lil-gui';
-import * as d3 from 'd3';
-import { gsap } from 'gsap';
+import * as THREE from "three";
+import CustomShaderMaterial from "three-custom-shader-material/vanilla";
+import { MapControls } from "three/addons/controls/MapControls.js";
+import { SVGLoader } from "three/addons/loaders/SVGLoader.js";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { OutlinePass } from "three/addons/postprocessing/OutlinePass.js";
+import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
+import { FXAAShader } from "three/addons/shaders/FXAAShader.js";
+import GUI from "lil-gui";
+import * as d3 from "d3";
+import { gsap } from "gsap";
 
 data.forEach((d) => {
   d["county_fips"] = +d["county_fips"];
   d["candidatevotes"] = +d["candidatevotes"];
 });
 
-const depthScale = d3.scaleSymlog().domain([0, 10 ** 6]).constant(10 ** 4).range([0, 70]);
+const depthScale = d3
+  .scaleSymlog()
+  .domain([0, 10 ** 6])
+  .constant(10 ** 4)
+  .range([0, 100]);
 
 let groupedData = d3.groups(data, (d) => d.year);
 let dataset = groupedData[0][1]; // Initial dataset (2000)
 
-const svgMarkup = document.querySelector('svg#extrude-svg-path').outerHTML;
+const svgMarkup = document.querySelector("svg#extrude-svg-path").outerHTML;
 const svgLoader = new SVGLoader();
 const svgData = svgLoader.parse(svgMarkup);
 const svgGroup = new THREE.Group();
@@ -75,7 +79,9 @@ const material = new CustomShaderMaterial({
 function createExtrudeGeometry() {
   svgData.paths.forEach((path, i) => {
     let scaledDepth = 0;
-    const pathData = dataset.find((d) => +d["county_fips"] === +path.userData.node.id);
+    const pathData = dataset.find(
+      (d) => +d["county_fips"] === +path.userData.node.id
+    );
 
     if (pathData === undefined) {
       scaledDepth = 0;
@@ -93,14 +99,19 @@ function createExtrudeGeometry() {
 
       const partyAffiliation = pathData?.party === "REPUBLICAN" ? 1 : 0;
 
-      const partyAffiliationArray = new Float32Array(geometry.attributes.position.count);
+      const partyAffiliationArray = new Float32Array(
+        geometry.attributes.position.count
+      );
       partyAffiliationArray.fill(partyAffiliation);
 
-      geometry.setAttribute('partyAffiliation', new THREE.BufferAttribute(partyAffiliationArray, 1));
+      geometry.setAttribute(
+        "partyAffiliation",
+        new THREE.BufferAttribute(partyAffiliationArray, 1)
+      );
 
       const mesh = new THREE.Mesh(geometry, material);
       mesh.userData.id = +path.userData.node.id;
-      mesh.userData.party = pathData?.party || 'NO_PARTY';
+      mesh.userData.party = pathData?.party || "NO_PARTY";
       svgGroup.add(mesh);
     });
   });
@@ -141,7 +152,7 @@ camera.zoom = 1.9;
 camera.position.z = 250;
 camera.position.y = -150;
 
-const canvas = document.querySelector('#threejs');
+const canvas = document.querySelector("#threejs");
 const renderer = new THREE.WebGLRenderer({ canvas });
 
 const controls = new MapControls(camera, canvas);
@@ -161,22 +172,28 @@ const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 let selectedObjects = [];
 
-const ambientLight = new THREE.AmbientLight(0xffffff, 2.7);
+const ambientLight = new THREE.AmbientLight(0xffffff, 3);
 scene.add(ambientLight);
 
-const directionalLight1 = new THREE.DirectionalLight(0xffffff, 3.2);
+const directionalLight1 = new THREE.DirectionalLight(0xffffff, 1.5);
 directionalLight1.position.set(200, 400, 300);
 directionalLight1.castShadow = true;
 scene.add(directionalLight1);
 
-const directionalLight2 = new THREE.DirectionalLight(0xffffff, 1.8);
+const directionalLight2 = new THREE.DirectionalLight('navy', 2);
 directionalLight2.position.set(-200, -400, -300);
 scene.add(directionalLight2);
 
-const directionalLightHelper1 = new THREE.DirectionalLightHelper(directionalLight1, 10);
+const directionalLightHelper1 = new THREE.DirectionalLightHelper(
+  directionalLight1,
+  10
+);
 scene.add(directionalLightHelper1);
 
-const directionalLightHelper2 = new THREE.DirectionalLightHelper(directionalLight2, 10);
+const directionalLightHelper2 = new THREE.DirectionalLightHelper(
+  directionalLight2,
+  10
+);
 scene.add(directionalLightHelper2);
 
 // Postprocessing
@@ -184,15 +201,22 @@ const composer = new EffectComposer(renderer);
 const renderPass = new RenderPass(scene, camera);
 composer.addPass(renderPass);
 
-const outlinePass = new OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera);
+const outlinePass = new OutlinePass(
+  new THREE.Vector2(window.innerWidth, window.innerHeight),
+  scene,
+  camera
+);
 composer.addPass(outlinePass);
 
 const effectFXAA = new ShaderPass(FXAAShader);
-effectFXAA.uniforms['resolution'].value.set(1 / window.innerWidth, 1 / window.innerHeight);
+effectFXAA.uniforms["resolution"].value.set(
+  1 / window.innerWidth,
+  1 / window.innerHeight
+);
 composer.addPass(effectFXAA);
 
-window.addEventListener('resize', onWindowResize);
-canvas.addEventListener('pointermove', onPointerMove);
+window.addEventListener("resize", onWindowResize);
+canvas.addEventListener("pointermove", onPointerMove);
 
 const gui = new GUI();
 const params = {
@@ -205,38 +229,38 @@ const params = {
   year: 2000,
 };
 
-gui.add(params, 'edgeStrength', 0.01, 10).onChange((value) => {
+gui.add(params, "edgeStrength", 0.01, 10).onChange((value) => {
   outlinePass.edgeStrength = Number(value);
 });
-gui.add(params, 'edgeGlow', 0.0, 1).onChange((value) => {
+gui.add(params, "edgeGlow", 0.0, 1).onChange((value) => {
   outlinePass.edgeGlow = Number(value);
 });
-gui.add(params, 'edgeThickness', 1, 4).onChange((value) => {
+gui.add(params, "edgeThickness", 1, 4).onChange((value) => {
   outlinePass.edgeThickness = Number(value);
 });
-gui.add(params, 'pulsePeriod', 0.0, 5).onChange((value) => {
+gui.add(params, "pulsePeriod", 0.0, 5).onChange((value) => {
   outlinePass.pulsePeriod = Number(value);
 });
-gui.add(params, 'rotate');
-gui.add(params, 'usePatternTexture').onChange((value) => {
+gui.add(params, "rotate");
+gui.add(params, "usePatternTexture").onChange((value) => {
   outlinePass.usePatternTexture = value;
 });
 
 function Configuration() {
-  this.visibleEdgeColor = '#ffffff';
-  this.hiddenEdgeColor = '#190a05';
+  this.visibleEdgeColor = "#ffffff";
+  this.hiddenEdgeColor = "#190a05";
 }
 
 const conf = new Configuration();
-gui.addColor(conf, 'visibleEdgeColor').onChange((value) => {
+gui.addColor(conf, "visibleEdgeColor").onChange((value) => {
   outlinePass.visibleEdgeColor.set(value);
 });
-gui.addColor(conf, 'hiddenEdgeColor').onChange((value) => {
+gui.addColor(conf, "hiddenEdgeColor").onChange((value) => {
   outlinePass.hiddenEdgeColor.set(value);
 });
 
 const yearOptions = [2000, 2004, 2008, 2012, 2016, 2020];
-gui.add(params, 'year', yearOptions).onChange((value) => {
+gui.add(params, "year", yearOptions).onChange((value) => {
   dataset = groupedData.find((d) => +d[0] === value)[1];
   updateGeometry();
 });
@@ -270,17 +294,25 @@ function onWindowResize() {
   camera.updateProjectionMatrix();
   renderer.setSize(width, height);
   composer.setSize(width, height);
-  effectFXAA.uniforms['resolution'].value.set(1 / window.innerWidth, 1 / window.innerHeight);
+  effectFXAA.uniforms["resolution"].value.set(
+    1 / window.innerWidth,
+    1 / window.innerHeight
+  );
 }
 
 function updateGeometry() {
   svgGroup.children.forEach((mesh) => {
-    const pathData = dataset.find((d) => +d['county_fips'] === +mesh.userData.id);
-    const newDepth = pathData ? depthScale(+pathData['candidatevotes']) : 0;
+    const pathData = dataset.find(
+      (d) => +d["county_fips"] === +mesh.userData.id
+    );
+    const newDepth = pathData ? depthScale(+pathData["candidatevotes"]) : 0;
+
+    const partyAffiliation = pathData?.party === "REPUBLICAN" ? 1 : 0;
+
     gsap.to(mesh.geometry.parameters.options, {
       depth: Math.max(newDepth, 0.1),
       duration: 1,
-      ease: 'power1.inOut',
+      ease: "power1.inOut",
       onUpdate: () => {
         const shape = mesh.geometry.parameters.shapes;
         const options = mesh.geometry.parameters.options;
@@ -288,6 +320,16 @@ function updateGeometry() {
         mesh.geometry = new THREE.ExtrudeGeometry(shape, options);
         mesh.geometry.verticesNeedUpdate = true;
         mesh.geometry.computeVertexNormals();
+
+        // Update partyAffiliation attribute
+        const partyAffiliationArray = new Float32Array(
+          mesh.geometry.attributes.position.count
+        );
+        partyAffiliationArray.fill(partyAffiliation);
+        mesh.geometry.setAttribute(
+          "partyAffiliation",
+          new THREE.BufferAttribute(partyAffiliationArray, 1)
+        );
       },
     });
   });
