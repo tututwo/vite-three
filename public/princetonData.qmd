@@ -1,0 +1,42 @@
+---
+title: "EDA"
+format: html
+editor: visual
+---
+
+<https://dataverse.harvard.edu/dataset.xhtml?persistentId=hdl:1902.1/21919>
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+data <- pres_elections_release |> 
+  transmute(election_year,fips,county_name,state,
+            democratic_raw_votes,republican_raw_votes, 
+            winningParty=if_else(
+              democratic_raw_votes >republican_raw_votes, 
+              "Demoncratic",
+              "Republican"
+              ),
+            voteDiff = abs(
+              democratic_raw_votes-republican_raw_votes
+              ),
+            winningPercentage = voteDiff/raw_county_vote_totals 
+            ) |> 
+  filter(election_year > 1999)
+```
+
+```{r}
+data |> 
+ ggplot( aes(x=winningPercentage)) +
+    geom_density(fill="#69b3a2", color="#e9ecef", alpha=0.8)
+```
+
+```{r}
+colnames(pres_elections_release)
+```
+
+```{r}
+write_csv(data,'./princetonData.csv')
+```
