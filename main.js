@@ -25,15 +25,27 @@ data.forEach((d) => {
   d["year"] = +d["election_year"];
   d[depthVariable] = +d[depthVariable];
 });
-const depthScale = d3
-  .scaleLinear()
-  .domain([0, 0.25, 0.5, 1])
-  .range([0, 25, 40, 50]);
-// const depthScale = d3
-//   .scaleSymlog()
-//   .domain([10, 10 ** 6])
-//   .constant(10 ** 4)
-//   .range([0, 100]);
+const depthScale = d3.scaleLinear().domain([0, 0.9]).range([0, 100]);
+
+const colors = [
+  "#46FFF3",
+  "#33E3E6",
+  "#1AC7CC",
+  "#00ABBA",
+  "#0097B3",
+  "#0082AA",
+  "#FF5733",
+  "#FF6F33",
+  "#FF8733",
+  "#FFA233",
+  "#FFB633",
+  "#FFC933",
+];
+
+const colorScale = d3
+  .scaleDiverging()
+  .domain([0, 0.5, 1])
+  .interpolator(d3.interpolateRgbBasis(colors));
 
 let groupedData = d3.groups(data, (d) => d.year);
 
@@ -55,6 +67,13 @@ const textureWidth = 3114; // Assuming there are 3141 counties
 const textureHeight = yearRange.length;
 
 const textureData = new Float32Array(textureWidth * textureHeight * 2);
+const colorTexture = new THREE.DataTexture(
+  new Float32Array(textureWidth * textureHeight * 3),
+  textureWidth,
+  textureHeight,
+  THREE.RGBFormat,
+  THREE.FloatType
+);
 
 yearRange.forEach((year, yearIndex) => {
   Object.keys(countyData).forEach((fips, fipsIndex) => {
@@ -64,7 +83,18 @@ yearRange.forEach((year, yearIndex) => {
       countyData[fips][year]?.party === "Republican" ? 1 : 0;
   });
 });
+yearRange.forEach((year, yearIndex) => {
+  Object.keys(countyData).forEach((fips, fipsIndex) => {
+    const index = (yearIndex * textureWidth + fipsIndex) * 3;
+    const winningPercentage = countyData[fips][year]?.winningPercentage || 0;
+    const color = d3.rgb(colorScale(winningPercentage));
+    colorTexture.image.data[index] = color.r / 255;
+    colorTexture.image.data[index + 1] = color.g / 255;
+    colorTexture.image.data[index + 2] = color.b / 255;
+  });
+});
 
+colorTexture.needsUpdate = true;
 const heightPartyTexture = new THREE.DataTexture(
   textureData,
   textureWidth,
@@ -74,7 +104,7 @@ const heightPartyTexture = new THREE.DataTexture(
 );
 heightPartyTexture.needsUpdate = true;
 const material = new CustomShaderMaterial({
-  baseMaterial: THREE.MeshPhysicalMaterial,
+  baseMaterial: THREE.MeshBasicMaterial,
   vertexShader: /* glsl */ `
     uniform sampler2D heightPartyData;
     uniform float currentYearIndex;
@@ -90,6 +120,9 @@ const material = new CustomShaderMaterial({
     varying float vCurrentParty;
     varying float vNextParty;
     varying float vTransitionFactor;
+    varying vec3 vPosition;
+    varying float vNormalizedHeight;
+    
     void main() {
       vec2 currentUV = vec2((countyIndex + 0.5) / textureSize.x, (currentYearIndex + 0.5) / textureSize.y);
       vec2 nextUV = vec2((countyIndex + 0.5) / textureSize.x, (nextYearIndex + 0.5) / textureSize.y);
@@ -112,24 +145,28 @@ const material = new CustomShaderMaterial({
       vHeight = finalHeight;
       vParty = finalParty;
       
+      vNormalizedHeight = position.z;
       csm_Position = newPosition;
     }
   `,
   fragmentShader: /* glsl */ `
-  varying float vHeight;
+  varying float vNormalizedHeight;
+  varying vec3 vPosition;
+
   varying float vCurrentParty;
   varying float vNextParty;
   varying float vTransitionFactor;
-  
+
   uniform vec3 republicanColor1;
   uniform vec3 republicanColor2;
   uniform vec3 democraticColor1;
   uniform vec3 democraticColor2;
+  uniform float maxHeight;
   
   void main() {
-    // Calculate colors for both parties
-    vec3 republicanColor = mix(republicanColor1, republicanColor2, vHeight / 30.0);
-    vec3 democraticColor = mix(democraticColor1, democraticColor2, vHeight / 30.0);
+     // Calculate colors for both parties
+    vec3 republicanColor = mix(republicanColor1, republicanColor2,vNormalizedHeight);
+    vec3 democraticColor = mix(democraticColor1, democraticColor2, vNormalizedHeight);
     
     // Interpolate between current and next party colors
     vec3 currentColor = mix(democraticColor, republicanColor, vCurrentParty);
@@ -139,26 +176,35 @@ const material = new CustomShaderMaterial({
     vec3 finalColor = mix(currentColor, nextColor, vTransitionFactor);
     
     csm_DiffuseColor = vec4(finalColor, 1.0);
-    csm_Metalness = 0.7;
-    csm_Roughness = 0.2;
+    // csm_Metalness = 0.7;
+    // csm_Roughness = 0.2;
   }
   `,
   uniforms: {
+    maxHeight: { value: depthScale.range()[1] },
     heightPartyData: { value: heightPartyTexture },
     currentYearIndex: { value: 0 },
     nextYearIndex: { value: 0 },
     transitionFactor: { value: 0.0 },
     textureSize: { value: new THREE.Vector2(textureWidth, textureHeight) },
     heightScale: { value: 1.0 },
-    republicanColor1: { value: new THREE.Color(0.7, 0.1, 0.2) },
-    republicanColor2: { value: new THREE.Color(1.0, 0.3, 0.3) },
-    democraticColor1: { value: new THREE.Color(0.1, 0.3, 0.7) },
-    democraticColor2: { value: new THREE.Color(0.3, 0.6, 1.0) },
+    republicanColor1: {
+      value: new THREE.Color(169.0 / 255.0, 100.0 / 255.0, 128.0 / 255.0),
+    },
+    republicanColor2: {
+      value: new THREE.Color(245.0 / 255.0, 254.0 / 255.0, 142.0 / 255.0),
+    },
+    democraticColor1: {
+      value: new THREE.Color(27 / 255, 44 / 255, 149 / 255),
+    },
+    democraticColor2: {
+      value: new THREE.Color(108 / 255, 243 / 255, 249 / 255),
+    },
   },
   // Add MeshPhysicalMaterial properties
-  clearcoat: 0.3,
-  clearcoatRoughness: 0.25,
-  envMapIntensity: 1.5,
+  // clearcoat: 0.3,
+  // clearcoatRoughness: 0.25,
+  // envMapIntensity: 1.5,
 });
 material.uniforms.currentYearIndex.value = yearRange.indexOf(currentYear);
 material.uniforms.nextYearIndex.value = yearRange.indexOf(currentYear);
@@ -167,15 +213,39 @@ const svgLoader = new SVGLoader();
 const svgData = svgLoader.parse(svgMarkup);
 const svgGroup = new THREE.Group();
 
-const geometry = new THREE.BufferGeometry();
 // ... other attributes ...
 function createExtrudeGeometry() {
   svgData.paths.forEach((path, i) => {
     const shapes = path.toShapes(true);
     shapes.forEach((shape, j) => {
       const geometry = new THREE.ExtrudeGeometry(shape, {
+        steps: 10,
         depth: 1,
         bevelEnabled: false,
+        UVGenerator: {
+          generateTopUV: function (geometry, vertices, indexA, indexB, indexC) {
+            return [
+              new THREE.Vector2(0, 1),
+              new THREE.Vector2(0, 1),
+              new THREE.Vector2(0, 1),
+            ];
+          },
+          generateSideWallUV: function (
+            geometry,
+            vertices,
+            indexA,
+            indexB,
+            indexC,
+            indexD
+          ) {
+            return [
+              new THREE.Vector2(0, vertices[indexA].y),
+              new THREE.Vector2(1, vertices[indexB].y),
+              new THREE.Vector2(0, vertices[indexC].y),
+              new THREE.Vector2(1, vertices[indexD].y),
+            ];
+          },
+        },
       });
       const mesh = new THREE.Mesh(geometry, material);
       mesh.userData.id = +path.userData.node.id;
@@ -255,7 +325,7 @@ Lighting
 */
 // Ambient light
 // Ambient light
-const ambientLight = new THREE.AmbientLight(0xffffff, 5);
+const ambientLight = new THREE.AmbientLight(0xffffff, 3.5);
 scene.add(ambientLight);
 
 // Custom helper for ambient light (a small sphere)
@@ -267,7 +337,7 @@ ambientLightHelper.position.set(0, 100, 0); // Position it above the scene
 scene.add(ambientLightHelper);
 
 // Directional light (main light)
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1.6);
 directionalLight.position.set(-1, 1, 20);
 scene.add(directionalLight);
 
@@ -278,7 +348,7 @@ const directionalLightHelper = new THREE.DirectionalLightHelper(
 scene.add(directionalLightHelper);
 
 // Soft light from the back
-const backLight = new THREE.DirectionalLight(0x8888ff, 15);
+const backLight = new THREE.DirectionalLight(0x8888ff, 0.9);
 backLight.position.set(-282, -181, 350);
 scene.add(backLight);
 
@@ -365,7 +435,7 @@ const ambientLightFolder = lightFolder.addFolder("Ambient Light");
 ambientLightFolder.addColor(ambientLight, "color").onChange(() => {
   ambientLightHelper.material.color.set(ambientLight.color);
 });
-ambientLightFolder.add(ambientLight, "intensity", 0, 5);
+ambientLightFolder.add(ambientLight, "intensity", 0, 50);
 
 // Directional Light
 const directionalLightFolder = lightFolder.addFolder("Directional Light");
