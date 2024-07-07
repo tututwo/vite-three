@@ -19,33 +19,43 @@ let selectedObjects = [];
 
 const depthVariable = "winningPercentage"; //
 const countyId = "fips";
-const colroVariable = "winningParty";
+const colorVariable = "winningParty";
+const depthColor = "depthColor";
+const democraticColors = [
+  "#6A6ECA",
+  "#688EFB",
+  "#57B3FF",
+  "#4CDDF5",
+  "#5EECEB",
+  "#54F7DD",
+];
+const republicanColors = [
+  "#E0708F",
+  "#D07890",
+  "#E38274",
+  "#F0AC6E",
+  "#ECDE7D",
+  "#EEFF8F",
+];
+const democraticInterpolator = d3.interpolateRgbBasis(democraticColors);
+const republicanInterpolator = d3.interpolateRgbBasis(republicanColors);
+const colorScale = d3.scaleSequential().domain([0, 1]);
+
 data.forEach((d) => {
   // d["depthVariable"] = +d["depthVariable"];
   d["year"] = +d["election_year"];
   d[depthVariable] = +d[depthVariable];
+  const interpolator =
+    d[colorVariable] === "Republican"
+      ? republicanInterpolator
+      : democraticInterpolator;
+
+  // Apply the color scale with the chosen interpolator
+  d[depthColor] = d3.rgb(
+    colorScale.interpolator(interpolator)(+d[depthVariable])
+  );
 });
 const depthScale = d3.scaleLinear().domain([0, 0.9]).range([0, 100]);
-
-const colors = [
-  "#46FFF3",
-  "#33E3E6",
-  "#1AC7CC",
-  "#00ABBA",
-  "#0097B3",
-  "#0082AA",
-  "#FF5733",
-  "#FF6F33",
-  "#FF8733",
-  "#FFA233",
-  "#FFB633",
-  "#FFC933",
-];
-
-const colorScale = d3
-  .scaleDiverging()
-  .domain([0, 0.5, 1])
-  .interpolator(d3.interpolateRgbBasis(colors));
 
 let groupedData = d3.groups(data, (d) => d.year);
 
@@ -59,152 +69,151 @@ groupedData.forEach(([year, yearData]) => {
     }
     countyData[county[countyId]][year] = {
       height: Math.max(depthScale(+county[depthVariable]), 0.1),
-      party: county[colroVariable],
+      party: county[colorVariable],
     };
   });
 });
-const textureWidth = 3114; // Assuming there are 3141 counties
-const textureHeight = yearRange.length;
+const countyCount = 3114;
+const yearCount = yearRange.length;
+const dataTypeCount = 2; // Height/Party and Color
 
-const textureData = new Float32Array(textureWidth * textureHeight * 2);
-const colorTexture = new THREE.DataTexture(
-  new Float32Array(textureWidth * textureHeight * 3),
-  textureWidth,
-  textureHeight,
-  THREE.RGBFormat,
-  THREE.FloatType
+const textureSideLength = Math.ceil(Math.sqrt(countyCount));
+const textureDepth = yearCount * dataTypeCount;
+
+const texture3DData = new Float32Array(
+  textureSideLength * textureSideLength * textureDepth * 4
 );
 
 yearRange.forEach((year, yearIndex) => {
-  Object.keys(countyData).forEach((fips, fipsIndex) => {
-    const index = (yearIndex * textureWidth + fipsIndex) * 2;
-    textureData[index] = countyData[fips][year]?.height || 0;
-    textureData[index + 1] =
+  Object.keys(countyData).forEach((fips, countyIndex) => {
+    const countyYearData = data.find(
+      (d) => d[countyId] === fips && d.year === year
+    );
+    const x = countyIndex % textureSideLength;
+    const y = Math.floor(countyIndex / textureSideLength);
+
+    // Height and Party data
+    const baseIndex1 =
+      (yearIndex * 2 * textureSideLength * textureSideLength +
+        y * textureSideLength +
+        x) *
+      4;
+    texture3DData[baseIndex1] = countyData[fips][year]?.height || 0;
+    texture3DData[baseIndex1 + 1] =
       countyData[fips][year]?.party === "Republican" ? 1 : 0;
-  });
-});
-yearRange.forEach((year, yearIndex) => {
-  Object.keys(countyData).forEach((fips, fipsIndex) => {
-    const index = (yearIndex * textureWidth + fipsIndex) * 3;
-    const winningPercentage = countyData[fips][year]?.winningPercentage || 0;
-    const color = d3.rgb(colorScale(winningPercentage));
-    colorTexture.image.data[index] = color.r / 255;
-    colorTexture.image.data[index + 1] = color.g / 255;
-    colorTexture.image.data[index + 2] = color.b / 255;
-  });
-});
+    texture3DData[baseIndex1 + 2] = 0;
+    texture3DData[baseIndex1 + 3] = 0;
 
-colorTexture.needsUpdate = true;
-const heightPartyTexture = new THREE.DataTexture(
-  textureData,
-  textureWidth,
-  textureHeight,
-  THREE.RGFormat,
-  THREE.FloatType
-);
-heightPartyTexture.needsUpdate = true;
-const material = new CustomShaderMaterial({
-  baseMaterial: THREE.MeshBasicMaterial,
-  vertexShader: /* glsl */ `
-    uniform sampler2D heightPartyData;
-    uniform float currentYearIndex;
-    uniform float nextYearIndex;
-    uniform float transitionFactor;
-    uniform vec2 textureSize;
-    uniform float heightScale;
-
-    attribute float countyIndex;
-
-    varying float vHeight;
-    varying float vParty;
-    varying float vCurrentParty;
-    varying float vNextParty;
-    varying float vTransitionFactor;
-    varying vec3 vPosition;
-    varying float vNormalizedHeight;
+    // Color data
+    const baseIndex2 =
+      ((yearIndex * 2 + 1) * textureSideLength * textureSideLength +
+        y * textureSideLength +
+        x) *
+      4;
     
-    void main() {
-      vec2 currentUV = vec2((countyIndex + 0.5) / textureSize.x, (currentYearIndex + 0.5) / textureSize.y);
-      vec2 nextUV = vec2((countyIndex + 0.5) / textureSize.x, (nextYearIndex + 0.5) / textureSize.y);
+    const color = countyYearData?.[depthColor] ?? { r: 59, g: 65, b: 73,opacity:1 };
 
-      vec2 currentData = texture2D(heightPartyData, currentUV).rg;
-      vec2 nextData = texture2D(heightPartyData, nextUV).rg;
+    texture3DData[baseIndex2] = color.r / 255;
+    texture3DData[baseIndex2 + 1] = color.g / 255;
+    texture3DData[baseIndex2 + 2] = color.b / 255;
+    texture3DData[baseIndex2 + 3] = color.opacity;
+  });
+});
 
-      float currentHeight = currentData.r;
-      float nextHeight = nextData.r;
-      float finalHeight = mix(currentHeight, nextHeight, transitionFactor);
+const texture3D = new THREE.Data3DTexture(
+  texture3DData,
+  textureSideLength,
+  textureSideLength,
+  textureDepth
+);
+texture3D.format = THREE.RGBAFormat;
+texture3D.type = THREE.FloatType;
+texture3D.needsUpdate = true;
+const material = new CustomShaderMaterial({
+  baseMaterial: THREE.MeshPhysicalMaterial,
+  vertexShader: /* glsl */ `
+  uniform sampler3D countyData;
+uniform float currentYearIndex;
+uniform float nextYearIndex;
+uniform float transitionFactor;
+uniform vec3 textureSize;
+uniform float heightScale;
 
-      float currentParty = currentData.g;
-      float nextParty = nextData.g;
-      float finalParty = mix(currentParty, nextParty, transitionFactor);
-      vCurrentParty = currentData.g;
-      vNextParty = nextData.g;
-      vTransitionFactor = transitionFactor;
-      vec3 newPosition = position;
-      newPosition.z *= finalHeight * heightScale;
-      vHeight = finalHeight;
-      vParty = finalParty;
-      
-      vNormalizedHeight = position.z;
-      csm_Position = newPosition;
+attribute float countyIndex;
+
+varying float vHeight;
+varying float vParty;
+varying vec3 vColor;
+varying float vNormalizedHeight;
+
+void main() {
+  float x = mod(countyIndex, textureSize.x) / textureSize.x;
+  float y = floor(countyIndex / textureSize.x) / textureSize.y;
+  
+  float currentZHeight = (currentYearIndex * 2.0) / textureSize.z;
+  float currentZColor = (currentYearIndex * 2.0 + 1.0) / textureSize.z;
+  float nextZHeight = (nextYearIndex * 2.0) / textureSize.z;
+  float nextZColor = (nextYearIndex * 2.0 + 1.0) / textureSize.z;
+
+  vec4 currentDataHeight = texture(countyData, vec3(x, y, currentZHeight));
+  vec4 nextDataHeight = texture(countyData, vec3(x, y, nextZHeight));
+  vec4 currentDataColor = texture(countyData, vec3(x, y, currentZColor));
+  vec4 nextDataColor = texture(countyData, vec3(x, y, nextZColor));
+
+  vHeight = mix(currentDataHeight.r, nextDataHeight.r, transitionFactor);
+  vParty = mix(currentDataHeight.g, nextDataHeight.g, transitionFactor);
+  vColor = mix(currentDataColor.rgb, nextDataColor.rgb, transitionFactor);
+
+  vec3 newPosition = position;
+  newPosition.z *= vHeight * heightScale;
+  
+  vNormalizedHeight = position.z;
+  csm_Position = newPosition;
+}
     }
   `,
   fragmentShader: /* glsl */ `
-  varying float vNormalizedHeight;
-  varying vec3 vPosition;
+    varying float vNormalizedHeight;
+    varying float vParty;
+    varying vec3 vColor;
 
-  varying float vCurrentParty;
-  varying float vNextParty;
-  varying float vTransitionFactor;
+    uniform vec3 republicanBaseColor;
+    uniform vec3 democraticBaseColor;
 
-  uniform vec3 republicanColor1;
-  uniform vec3 republicanColor2;
-  uniform vec3 democraticColor1;
-  uniform vec3 democraticColor2;
-  uniform float maxHeight;
-  
-  void main() {
-     // Calculate colors for both parties
-    vec3 republicanColor = mix(republicanColor1, republicanColor2,vNormalizedHeight);
-    vec3 democraticColor = mix(democraticColor1, democraticColor2, vNormalizedHeight);
-    
-    // Interpolate between current and next party colors
-    vec3 currentColor = mix(democraticColor, republicanColor, vCurrentParty);
-    vec3 nextColor = mix(democraticColor, republicanColor, vNextParty);
-    
-    // Transition between current and next colors
-    vec3 finalColor = mix(currentColor, nextColor, vTransitionFactor);
-    
-    csm_DiffuseColor = vec4(finalColor, 1.0);
-    // csm_Metalness = 0.7;
-    // csm_Roughness = 0.2;
-  }
+    void main() {
+      vec3 baseColor = mix(democraticBaseColor, republicanBaseColor, vParty);
+      vec3 finalColor = mix(baseColor, vColor, vNormalizedHeight);
+      
+      csm_DiffuseColor = vec4(finalColor, 1.0);
+      csm_Metalness = 0.5;
+      csm_Roughness = 0.5;
+    }
   `,
   uniforms: {
-    maxHeight: { value: depthScale.range()[1] },
-    heightPartyData: { value: heightPartyTexture },
+    countyData: { value: texture3D },
     currentYearIndex: { value: 0 },
     nextYearIndex: { value: 0 },
     transitionFactor: { value: 0.0 },
-    textureSize: { value: new THREE.Vector2(textureWidth, textureHeight) },
+    textureSize: {
+      value: new THREE.Vector3(
+        textureSideLength,
+        textureSideLength,
+        textureDepth
+      ),
+    },
+
     heightScale: { value: 1.0 },
-    republicanColor1: {
-      value: new THREE.Color(169.0 / 255.0, 100.0 / 255.0, 128.0 / 255.0),
+    republicanBaseColor: {
+      value: new THREE.Color(169 / 255, 100 / 255, 128 / 255),
     },
-    republicanColor2: {
-      value: new THREE.Color(245.0 / 255.0, 254.0 / 255.0, 142.0 / 255.0),
-    },
-    democraticColor1: {
+    democraticBaseColor: {
       value: new THREE.Color(27 / 255, 44 / 255, 149 / 255),
-    },
-    democraticColor2: {
-      value: new THREE.Color(108 / 255, 243 / 255, 249 / 255),
     },
   },
   // Add MeshPhysicalMaterial properties
-  // clearcoat: 0.3,
-  // clearcoatRoughness: 0.25,
-  // envMapIntensity: 1.5,
+  clearcoat: 0.3,
+  clearcoatRoughness: 0.25,
+  envMapIntensity: 1.5,
 });
 material.uniforms.currentYearIndex.value = yearRange.indexOf(currentYear);
 material.uniforms.nextYearIndex.value = yearRange.indexOf(currentYear);
@@ -263,6 +272,24 @@ function createOrUpdateGeometry(mesh, countyIndex) {
   geometry.setAttribute(
     "countyIndex",
     new THREE.BufferAttribute(countyIndexArray, 1)
+  );
+
+  // Add this new attribute
+  const topColorArray = new Float32Array(
+    geometry.attributes.position.count * 3
+  );
+  const topColor = data.find((d) => d[countyId] === mesh.userData.id)?.[
+    depthColor
+  ] ?? { r: 59, g: 65, b: 73 };
+
+  for (let i = 0; i < topColorArray.length; i += 3) {
+    topColorArray[i] = topColor.r / 255;
+    topColorArray[i + 1] = topColor.g / 255;
+    topColorArray[i + 2] = topColor.b / 255;
+  }
+  geometry.setAttribute(
+    "topColor",
+    new THREE.BufferAttribute(topColorArray, 3)
   );
 }
 
@@ -325,7 +352,7 @@ Lighting
 */
 // Ambient light
 // Ambient light
-const ambientLight = new THREE.AmbientLight(0xffffff, 3.5);
+const ambientLight = new THREE.AmbientLight(0xffffff, 4.8);
 scene.add(ambientLight);
 
 // Custom helper for ambient light (a small sphere)
@@ -337,8 +364,8 @@ ambientLightHelper.position.set(0, 100, 0); // Position it above the scene
 scene.add(ambientLightHelper);
 
 // Directional light (main light)
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1.6);
-directionalLight.position.set(-1, 1, 20);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+directionalLight.position.set(-350, 50, 350);
 scene.add(directionalLight);
 
 const directionalLightHelper = new THREE.DirectionalLightHelper(
@@ -348,8 +375,8 @@ const directionalLightHelper = new THREE.DirectionalLightHelper(
 scene.add(directionalLightHelper);
 
 // Soft light from the back
-const backLight = new THREE.DirectionalLight(0x8888ff, 0.9);
-backLight.position.set(-282, -181, 350);
+const backLight = new THREE.DirectionalLight("#5D6265",17);
+backLight.position.set(350, 350, 65);
 scene.add(backLight);
 
 const backLightHelper = new THREE.DirectionalLightHelper(backLight, 50);
@@ -418,11 +445,10 @@ function transitionToYear(newYear) {
       material.uniforms.currentYearIndex.value = nextYearIndex;
       material.uniforms.nextYearIndex.value = nextYearIndex;
       material.uniforms.transitionFactor.value = 0;
-      currentYear = newYear; // Update the current year
+      currentYear = newYear;
     },
   });
 }
-
 // Use this function when the year selector changes
 gui.add(params, "year", yearOptions).onChange((value) => {
   transitionToYear(value);
