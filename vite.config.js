@@ -1,5 +1,5 @@
 // vite.config.js
 import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
-// CSVs are imported with `?raw` and parsed by d3, so no plugins are needed
-export default defineConfig({});
+export default defineConfig({ plugins: [react()] });
