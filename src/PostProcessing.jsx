@@ -10,13 +10,7 @@ import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { VignetteShader } from "three/addons/shaders/VignetteShader.js";
 
-const defaultSettings = {
-  ambientOcclusion: 1,
-  depthOfField: false,
-  vignette: true,
-};
-
-export default function PostProcessing({ settings = defaultSettings, outlineMesh }) {
+export default function PostProcessing({ settings, outlineMesh }) {
   const gl = useThree((state) => state.gl);
   const scene = useThree((state) => state.scene);
   const camera = useThree((state) => state.camera);

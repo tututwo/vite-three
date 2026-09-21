@@ -3,12 +3,21 @@ import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { Matrix4, ShapePath } from 'three';
 import {
-  buildSeries, countFlips, defaultSettings, flatHeights, getCountyHeight, heightModes, interpolateSeries,
-  paletteNames, years,
+  basemapBounds, buildSeries, countFlips, defaultSettings, electionAt, flatHeights, getCountyHeight, heightModes,
+  interpolateSeries, paletteNames, years,
 } from './electionData.js';
 import { createCountyMap } from './mapGeometry.js';
 
 const elections = (values) => years.map((_, index) => values[index] ?? null);
+const asset = (name) => readFileSync(new URL(`../public/${name}`, import.meta.url), 'utf8');
+const still = { ...defaultSettings, breath: 0 };
+const fixtureSeries = () => buildSeries({
+  years,
+  counties: {
+    '01001': { diff: elections([900, -400, 0]), total: elections([1000, 400, 50]) },
+    '01003': { diff: elections([Infinity, NaN, 5, 5]), total: elections([10, 10, 0, -3]) },
+  },
+});
 
 test('header distinguishes loading, the first election, zero flips and a single flip', async () => {
   const { createServer } = await import('vite');
@@ -34,14 +43,8 @@ test('header distinguishes loading, the first election, zero flips and a single 
   }
 });
 
-test('election data, signed transitions, and the bundled map + returns', () => {
-  const series = buildSeries({
-    years,
-    counties: {
-      '01001': { diff: elections([900, -400, 0]), total: elections([1000, 400, 50]) },
-      '01003': { diff: elections([Infinity, NaN, 5, 5]), total: elections([10, 10, 0, -3]) },
-    },
-  });
+test('signed series, flips and interpolation', () => {
+  const series = fixtureSeries();
   assert.deepEqual(series['01001']['margin %'].slice(0, 4), [1, -1, 0, 0]);
   assert.deepEqual(series['01001']['margin votes'].slice(0, 3), [1, -Math.sqrt(400 / 900), 0]);
   assert.deepEqual(series['01001'].voted.slice(0, 4), [1, 1, 1, 0], 'a tie still counts as having voted');
@@ -62,11 +65,13 @@ test('election data, signed transitions, and the bundled map + returns', () => {
   assert.equal(interpolateSeries(heights, years.length, 0, 0), 1);
   assert.equal(interpolateSeries(heights, -0.5, 0, 0), 0);
   assert.equal(getCountyHeight(0, 0, 0, defaultSettings), defaultSettings.minHeight);
-  const still = { ...defaultSettings, breath: 0 };
   assert.equal(getCountyHeight(-1, 5, 2, still), still.minHeight + still.maxHeight);
   assert.equal(interpolateSeries(flatHeights, 2.75, 0.5, 0.5), 0);
+  assert.deepEqual([0.4, 0.6, last + 0.4, last + 0.6].map(electionAt), [0, 1, last, 0], 'the caption wraps with the map');
+});
 
-  const data = JSON.parse(readFileSync(new URL('../public/elections.json', import.meta.url), 'utf8'));
+test('bundled returns, county shapes and basemap agree', () => {
+  const data = JSON.parse(asset('elections.json'));
   assert.equal(data.nominees.length, years.length);
   const bundled = buildSeries(data);
   assert.ok(Object.keys(bundled).length > 3000);
@@ -85,12 +90,16 @@ test('election data, signed transitions, and the bundled map + returns', () => {
   const in1964 = flips[years.indexOf(1964)];
   assert.ok(in1964.toDemocratic > 1000 && in1964.toRepublican > 50, 'LBJ landslide, while the Deep South leaves');
 
-  const svg = readFileSync(new URL('../public/counties.svg', import.meta.url), 'utf8');
-  const shapes = new Set([...svg.matchAll(/id="(\d{5})"/g)].map((match) => match[1]));
+  const shapes = new Set([...asset('counties.svg').matchAll(/id="(\d{5})"/g)].map((match) => match[1]));
   assert.ok(shapes.size > 3000);
   // If a simplification level drops another tiny county, give it a successor in export-elections.R.
   assert.deepEqual(Object.keys(bundled).filter((fips) => !shapes.has(fips)), [], 'every county with returns has a shape');
+  assert.ok(asset('basemap.svg').includes(`viewBox="${basemapBounds.join(' ')}"`),
+    'basemapBounds changed: rerun npm run data:basemap so the texture matches where the scene puts it');
+});
 
+test('county map geometry, palette and disposal', () => {
+  const series = fixtureSeries();
   const path = new ShapePath();
   path.moveTo(0, 0).lineTo(10, 0).lineTo(10, 20).lineTo(0, 20).lineTo(0, 0);
   path.userData = { node: { id: '01001' } };

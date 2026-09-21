@@ -5,6 +5,9 @@ export const years = Array.from({ length: 39 }, (_, index) => 1868 + index * 4);
 export const heightModes = ['margin %', 'margin votes'];
 export const flatHeights = new Array(years.length).fill(0);
 export const groundColor = '#faf8f5';
+// public/basemap.svg's viewBox in county map units: x, y, width, height. scripts/build-basemap.mjs
+// draws it and the scene places it from this one value, so the two cannot drift apart.
+export const basemapBounds = [-680, -560, 1620, 1230];
 
 // ramps: [Democratic, Republican], low -> high altitude. Both start at the same near-ground cream,
 // so a county that flips sinks into the floor colour before it rises in the other ramp.
@@ -31,7 +34,6 @@ for (const palette of Object.values(palettes)) palette.fills = palette.ramps.map
 export const paletteNames = Object.keys(palettes);
 
 export const defaultSettings = {
-  year: years[0],
   playing: true,
   height: heightModes[0],
   palette: paletteNames[0],
@@ -85,6 +87,9 @@ export function countFlips(series) {
   }
   return flips;
 }
+
+// The election nearest a fractional timeline position, as an index into `years` (wraps past 2020).
+export const electionAt = (time) => Math.round(time) % years.length;
 
 // Eased value of a per-election series at a fractional election index; each county waits
 // `delay * stagger` of the transition before it starts moving.

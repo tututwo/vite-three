@@ -5,12 +5,11 @@ import assert from 'node:assert/strict';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { geoAlbers, geoAlbersUsa, geoArea, geoBounds, geoPath } from 'd3';
 import mapshaper from 'mapshaper';
-import { groundColor } from '../src/electionData.js';
+import { basemapBounds as bounds, groundColor } from '../src/electionData.js';
 
 const scale = 0.669;
 const k = 1300 * scale;
 const translate = [487.5 * scale, 305 * scale];
-const bounds = [-680, -560, 1620, 1230];
 const [x, y, width, height] = bounds;
 const projection = geoAlbers().scale(k).translate(translate);
 const usa = geoAlbersUsa().scale(k).translate(translate);

@@ -1,4 +1,4 @@
-import { Component, lazy, Suspense, useState } from 'react';
+import { Component, lazy, Suspense, useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { defaultSettings, heightModes, paletteNames, palettes, years } from './electionData.js';
 
@@ -71,7 +71,8 @@ export default function App() {
     return { ...initialSettings, playing: !reducedMotion, breath: reducedMotion ? 0 : initialSettings.breath };
   });
   const [year, setYear] = useState(years[0]);
-  const [seek, setSeek] = useState(null);
+  // Playback position, shared with the scene's frame loop. A ref, so ticking it never re-renders.
+  const timeline = useRef({ time: 0, seconds: 0, year: years[0], transition: null });
   const [flips, setFlips] = useState(null); // per election, handed up by the scene once the map is ready
   const [controlsOpen, setControlsOpen] = useState(() => window.matchMedia('(min-width: 761px)').matches);
   const updateSetting = (name, value) => setSettings((current) => ({ ...current, [name]: value }));
@@ -86,7 +87,7 @@ export default function App() {
           fallback={<p>This interactive 3D map requires WebGL.</p>}
           aria-label="Animated three-dimensional county election map">
           <Suspense fallback={null}>
-            <ElectionScene settings={settings} seek={seek} onYearChange={setYear} onReady={setFlips} />
+            <ElectionScene settings={settings} timeline={timeline} onYearChange={setYear} onReady={setFlips} />
           </Suspense>
         </Canvas>
         {!flips ? <div className="scene-status" role="status">Loading county map…</div> : null}
@@ -119,7 +120,10 @@ export default function App() {
                 const nextYear = Number(event.target.value);
                 setYear(nextYear);
                 updateSetting('playing', false);
-                setSeek({ year: nextYear });
+                // The scene's frame loop eases the map from wherever it is to the chosen election.
+                timeline.current.transition = {
+                  from: timeline.current.time, to: years.indexOf(nextYear), elapsed: 0,
+                };
               }}>
                 {years.map((value) => <option key={value} value={value}>{value}</option>)}
               </select>

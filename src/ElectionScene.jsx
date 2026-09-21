@@ -4,7 +4,9 @@ import { MapControls } from '@react-three/drei/core/MapControls.js';
 import { CanvasTexture, FileLoader, MathUtils, SRGBColorSpace, TextureLoader } from 'three';
 import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
 import { gsap } from 'gsap';
-import { buildSeries, countFlips, defaultSettings, groundColor, palettes, years } from './electionData.js';
+import {
+  basemapBounds, buildSeries, countFlips, defaultSettings, electionAt, groundColor, palettes, years,
+} from './electionData.js';
 import { createCountyMap } from './mapGeometry.js';
 import PostProcessing from './PostProcessing.jsx';
 
@@ -13,6 +15,7 @@ const target = [0, -20, 0];
 const mapUrl = `${import.meta.env.BASE_URL}counties.svg`;
 const electionsUrl = `${import.meta.env.BASE_URL}elections.json`;
 const basemapUrl = `${import.meta.env.BASE_URL}basemap.svg`;
+const [basemapX, basemapY, basemapWidth, basemapHeight] = basemapBounds;
 const asJson = (loader) => loader.setResponseType('json');
 // Start all asset downloads together instead of letting suspending hooks serialize them.
 useLoader.preload(SVGLoader, mapUrl);
@@ -40,7 +43,7 @@ function Caption({ timeline, nominees, palette }) {
   useFrame(() => {
     const current = caption.current;
     if (!current) return;
-    const election = Math.round(timeline.current.time) % years.length;
+    const election = electionAt(timeline.current.time);
     const year = years[election];
     if (current.year === year && current.palette === palette) return;
     current.year = year;
@@ -50,23 +53,23 @@ function Caption({ timeline, nominees, palette }) {
     ctx.clearRect(0, 0, 1024, 400);
     ctx.fillStyle = '#202e45';
     ctx.textAlign = 'center';
-    ctx.font = '600 72px Inter, system-ui, sans-serif';
+    ctx.font = '600 72px system-ui, sans-serif';
     ctx.fillText('Presidential margin', 512, 70);
-    ctx.font = '700 170px Inter, system-ui, sans-serif';
+    ctx.font = '700 170px system-ui, sans-serif';
     ctx.fillText(year, 512, 222);
     for (let x = 0; x < 640; x++) {
       ctx.fillStyle = ramps[x < 320 ? 0 : 1](Math.abs(x - 320) / 320);
       ctx.fillRect(192 + x, 246, 1, 28);
     }
     ctx.fillStyle = '#202e45';
-    ctx.font = '500 40px Inter, system-ui, sans-serif';
+    ctx.font = '500 40px system-ui, sans-serif';
     ctx.textAlign = 'left';
     ctx.fillText('Democratic', 192, 318);
     ctx.textAlign = 'right';
     ctx.fillText('Republican', 832, 318);
     // Few people remember who ran in 1884; the names sit under their party's end of the ramp.
     ctx.fillStyle = '#747b8e';
-    ctx.font = '400 32px Inter, system-ui, sans-serif';
+    ctx.font = '400 32px system-ui, sans-serif';
     ctx.fillText(nominees[election][1], 832, 362);
     ctx.textAlign = 'left';
     ctx.fillText(nominees[election][0], 192, 362);
@@ -81,7 +84,7 @@ function Caption({ timeline, nominees, palette }) {
   );
 }
 
-export default function ElectionScene({ settings, seek, onYearChange, onReady }) {
+export default function ElectionScene({ settings, timeline, onYearChange, onReady }) {
   const svg = useLoader(SVGLoader, mapUrl);
   const elections = useLoader(FileLoader, electionsUrl, asJson);
   const basemap = useLoader(TextureLoader, basemapUrl);
@@ -90,7 +93,6 @@ export default function ElectionScene({ settings, seek, onYearChange, onReady })
   const [map, setMap] = useState(null);
   const outlineMesh = useRef(null);
   const hovered = useRef(null);
-  const timeline = useRef({ time: 0, seconds: 0, year: years[0], transition: null });
   const camera = useThree((state) => state.camera);
   const size = useThree((state) => state.size);
   const gl = useThree((state) => state.gl);
@@ -122,12 +124,6 @@ export default function ElectionScene({ settings, seek, onYearChange, onReady })
     camera.updateProjectionMatrix();
   }, [camera, size.width, size.height]);
 
-  useEffect(() => {
-    if (seek) timeline.current.transition = {
-      from: timeline.current.time, to: years.indexOf(seek.year), elapsed: 0,
-    };
-  }, [seek]);
-
   useFrame((_, delta) => {
     if (!map) return;
     const state = timeline.current;
@@ -137,7 +133,7 @@ export default function ElectionScene({ settings, seek, onYearChange, onReady })
       const interruptedSeek = state.transition !== null;
       state.transition = null;
       state.time = (state.time + step / settings.secondsPerElection) % years.length;
-      const year = years[Math.round(state.time) % years.length];
+      const year = years[electionAt(state.time)];
       if (interruptedSeek || year !== state.year) {
         state.year = year;
         onYearChange(year);
@@ -148,7 +144,7 @@ export default function ElectionScene({ settings, seek, onYearChange, onReady })
       const progress = Math.min(transition.elapsed / 1.5, 1);
       state.time = MathUtils.lerp(transition.from, transition.to, ease(progress));
       if (progress === 1) state.transition = null;
-      state.year = years[Math.round(state.time) % years.length];
+      state.year = years[electionAt(state.time)];
     }
     map.update(state.time, state.seconds, settings);
     if (hovered.current && outlineMesh.current) outlineMesh.current.scale.z = hovered.current.height;
@@ -181,9 +177,11 @@ export default function ElectionScene({ settings, seek, onYearChange, onReady })
         <planeGeometry args={[8000, 8000]} />
         <meshStandardMaterial color={groundColor} roughness={1} />
       </mesh>
-      {map ? <mesh receiveShadow position={[map.position[0] + 130, map.position[1] - 55, 0.05]}>
-        {/* Matches the continuous geographic texture's viewBox: -680 -560 1620 1230. */}
-        <planeGeometry args={[1620, 1230]} />
+      {/* Centred on the texture's viewBox; the county group flips the SVG's downward Y, so this does too. */}
+      {map ? <mesh receiveShadow position={[
+        map.position[0] + basemapX + basemapWidth / 2, map.position[1] - basemapY - basemapHeight / 2, 0.05,
+      ]}>
+        <planeGeometry args={[basemapWidth, basemapHeight]} />
         <meshStandardMaterial map={basemap} transparent roughness={1} depthWrite={false} />
       </mesh> : null}
       <Caption timeline={timeline} nominees={elections.nominees} palette={settings.palette} />
