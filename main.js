@@ -1,4 +1,4 @@
-import data from "./src/princetonData.csv";
+import csv from "./src/princetonData.csv?raw";
 import * as THREE from "three";
 // import { DirectionalLightHelper } from "three/examples/jsm/helpers/DirectionalLightHelper.js";
 import CustomShaderMaterial from "three-custom-shader-material/vanilla";
@@ -20,7 +20,6 @@ let selectedObjects = [];
 const depthVariable = "winningPercentage"; //
 const countyId = "fips";
 const colorVariable = "winningParty";
-const depthColor = "depthColor";
 const democraticColors = [
   "#6A6ECA",
   "#688EFB",
@@ -39,80 +38,55 @@ const republicanColors = [
 ];
 const democraticInterpolator = d3.interpolateRgbBasis(democraticColors);
 const republicanInterpolator = d3.interpolateRgbBasis(republicanColors);
-const colorScale = d3.scaleSequential().domain([0, 1]);
+const depthScale = d3.scaleLinear().domain([0, 0.9]).range([0, 100]);
 
-data.forEach((d) => {
-  // d["depthVariable"] = +d["depthVariable"];
-  d["year"] = +d["election_year"];
-  d[depthVariable] = +d[depthVariable];
+let currentYear = 2000;
+const yearRange = [2000, 2004, 2008, 2012, 2016, 2020];
+const countyData = {}; // fips -> year -> { height, party, color }
+d3.csvParse(csv).forEach((d) => {
+  const share = +d[depthVariable];
   const interpolator =
     d[colorVariable] === "Republican"
       ? republicanInterpolator
       : democraticInterpolator;
-
-  // Apply the color scale with the chosen interpolator
-  d[depthColor] = d3.rgb(
-    colorScale.interpolator(interpolator)(+d[depthVariable])
-  );
+  (countyData[d[countyId]] ??= {})[+d.election_year] = {
+    height: Math.max(depthScale(share), 0.1),
+    party: d[colorVariable],
+    color: d3.rgb(interpolator(share)),
+  };
 });
-const depthScale = d3.scaleLinear().domain([0, 0.9]).range([0, 100]);
 
-let groupedData = d3.groups(data, (d) => d.year);
+const svgMarkup = document.querySelector("svg#extrude-svg-path").outerHTML;
+const svgLoader = new SVGLoader();
+const svgData = svgLoader.parse(svgMarkup);
+console.assert(
+  svgData.paths.filter((path) => countyData[path.userData.node.id]).length >
+    3000,
+  "SVG path ids should be fips codes that match the CSV"
+);
 
-let currentYear = 2000;
-const yearRange = [2000, 2004, 2008, 2012, 2016, 2020];
-const countyData = {}; // Object to store data for all counties and years
-groupedData.forEach(([year, yearData]) => {
-  yearData.forEach((county) => {
-    if (!countyData[county[countyId]]) {
-      countyData[county[countyId]] = {};
-    }
-    countyData[county[countyId]][year] = {
-      height: Math.max(depthScale(+county[depthVariable]), 0.1),
-      party: county[colorVariable],
-    };
-  });
-});
-const countyCount = 3114;
+// One texel per SVG path: a county finds its data by its own path index,
+// and the path id is the fips code that joins it to the CSV
+const countyCount = svgData.paths.length;
 const yearCount = yearRange.length;
 const dataTypeCount = 2; // Height/Party and Color
 
 const textureSideLength = Math.ceil(Math.sqrt(countyCount));
 const textureDepth = yearCount * dataTypeCount;
+const sliceSize = textureSideLength * textureSideLength;
 
-const texture3DData = new Float32Array(
-  textureSideLength * textureSideLength * textureDepth * 4
-);
+const texture3DData = new Float32Array(sliceSize * textureDepth * 4);
 
 yearRange.forEach((year, yearIndex) => {
-  Object.keys(countyData).forEach((fips, countyIndex) => {
-    const countyYearData = data.find(
-      (d) => d[countyId] === fips && d.year === year
-    );
-    const x = countyIndex % textureSideLength;
-    const y = Math.floor(countyIndex / textureSideLength);
+  svgData.paths.forEach((path, countyIndex) => {
+    const county = countyData[path.userData.node.id]?.[year];
+    const color = county?.color ?? { r: 59, g: 65, b: 73, opacity: 1 };
 
-    // Height and Party data
-    const baseIndex1 =
-      (yearIndex * 2 * textureSideLength * textureSideLength +
-        y * textureSideLength +
-        x) *
-      4;
-    texture3DData[baseIndex1] = countyData[fips][year]?.height || 0;
-    texture3DData[baseIndex1 + 1] =
-      countyData[fips][year]?.party === "Republican" ? 1 : 0;
-    texture3DData[baseIndex1 + 2] = 0;
-    texture3DData[baseIndex1 + 3] = 0;
-
-    // Color data
-    const baseIndex2 =
-      ((yearIndex * 2 + 1) * textureSideLength * textureSideLength +
-        y * textureSideLength +
-        x) *
-      4;
-    
-    const color = countyYearData?.[depthColor] ?? { r: 59, g: 65, b: 73,opacity:1 };
-
+    // Even slices hold height + party, odd slices hold color
+    const baseIndex1 = (yearIndex * 2 * sliceSize + countyIndex) * 4;
+    const baseIndex2 = baseIndex1 + sliceSize * 4;
+    texture3DData[baseIndex1] = county?.height || 0;
+    texture3DData[baseIndex1 + 1] = county?.party === "Republican" ? 1 : 0;
     texture3DData[baseIndex2] = color.r / 255;
     texture3DData[baseIndex2 + 1] = color.g / 255;
     texture3DData[baseIndex2 + 2] = color.b / 255;
@@ -136,41 +110,37 @@ const material = new CustomShaderMaterial({
 uniform float currentYearIndex;
 uniform float nextYearIndex;
 uniform float transitionFactor;
-uniform vec3 textureSize;
 uniform float heightScale;
 
 attribute float countyIndex;
 
-varying float vHeight;
 varying float vParty;
 varying vec3 vColor;
 varying float vNormalizedHeight;
 
 void main() {
-  float x = mod(countyIndex, textureSize.x) / textureSize.x;
-  float y = floor(countyIndex / textureSize.x) / textureSize.y;
-  
-  float currentZHeight = (currentYearIndex * 2.0) / textureSize.z;
-  float currentZColor = (currentYearIndex * 2.0 + 1.0) / textureSize.z;
-  float nextZHeight = (nextYearIndex * 2.0) / textureSize.z;
-  float nextZColor = (nextYearIndex * 2.0 + 1.0) / textureSize.z;
+  // One texel per county, row by row. Even slices: height + party, odd slices: color
+  int width = textureSize(countyData, 0).x;
+  int index = int(countyIndex + 0.5);
+  ivec2 texel = ivec2(index % width, index / width);
+  int currentSlice = int(currentYearIndex) * 2;
+  int nextSlice = int(nextYearIndex) * 2;
 
-  vec4 currentDataHeight = texture(countyData, vec3(x, y, currentZHeight));
-  vec4 nextDataHeight = texture(countyData, vec3(x, y, nextZHeight));
-  vec4 currentDataColor = texture(countyData, vec3(x, y, currentZColor));
-  vec4 nextDataColor = texture(countyData, vec3(x, y, nextZColor));
+  vec4 currentDataHeight = texelFetch(countyData, ivec3(texel, currentSlice), 0);
+  vec4 nextDataHeight = texelFetch(countyData, ivec3(texel, nextSlice), 0);
+  vec4 currentDataColor = texelFetch(countyData, ivec3(texel, currentSlice + 1), 0);
+  vec4 nextDataColor = texelFetch(countyData, ivec3(texel, nextSlice + 1), 0);
 
-  vHeight = mix(currentDataHeight.r, nextDataHeight.r, transitionFactor);
+  float height = mix(currentDataHeight.r, nextDataHeight.r, transitionFactor);
   vParty = mix(currentDataHeight.g, nextDataHeight.g, transitionFactor);
   vColor = mix(currentDataColor.rgb, nextDataColor.rgb, transitionFactor);
 
   vec3 newPosition = position;
-  newPosition.z *= vHeight * heightScale;
+  newPosition.z *= height * heightScale;
   
   vNormalizedHeight = position.z;
   csm_Position = newPosition;
 }
-    }
   `,
   fragmentShader: /* glsl */ `
     varying float vNormalizedHeight;
@@ -194,14 +164,6 @@ void main() {
     currentYearIndex: { value: 0 },
     nextYearIndex: { value: 0 },
     transitionFactor: { value: 0.0 },
-    textureSize: {
-      value: new THREE.Vector3(
-        textureSideLength,
-        textureSideLength,
-        textureDepth
-      ),
-    },
-
     heightScale: { value: 1.0 },
     republicanBaseColor: {
       value: new THREE.Color(169 / 255, 100 / 255, 128 / 255),
@@ -217,18 +179,14 @@ void main() {
 });
 material.uniforms.currentYearIndex.value = yearRange.indexOf(currentYear);
 material.uniforms.nextYearIndex.value = yearRange.indexOf(currentYear);
-const svgMarkup = document.querySelector("svg#extrude-svg-path").outerHTML;
-const svgLoader = new SVGLoader();
-const svgData = svgLoader.parse(svgMarkup);
 const svgGroup = new THREE.Group();
 
 // ... other attributes ...
 function createExtrudeGeometry() {
   svgData.paths.forEach((path, i) => {
-    const shapes = path.toShapes(true);
+    const shapes = path.toShapes();
     shapes.forEach((shape, j) => {
       const geometry = new THREE.ExtrudeGeometry(shape, {
-        steps: 10,
         depth: 1,
         bevelEnabled: false,
         UVGenerator: {
@@ -256,47 +214,22 @@ function createExtrudeGeometry() {
           },
         },
       });
+      // Every mesh of a county (islands included) points at that county's texel
+      const countyIndexArray = new Float32Array(
+        geometry.attributes.position.count
+      ).fill(i);
+      geometry.setAttribute(
+        "countyIndex",
+        new THREE.BufferAttribute(countyIndexArray, 1)
+      );
       const mesh = new THREE.Mesh(geometry, material);
-      mesh.userData.id = +path.userData.node.id;
+      mesh.userData.id = path.userData.node.id; // fips, kept as a string ("04015")
       svgGroup.add(mesh);
     });
   });
 }
 
 createExtrudeGeometry();
-// Create an attribute for each year
-function createOrUpdateGeometry(mesh, countyIndex) {
-  const geometry = mesh.geometry;
-  const countyIndexArray = new Float32Array(geometry.attributes.position.count);
-  countyIndexArray.fill(countyIndex);
-  geometry.setAttribute(
-    "countyIndex",
-    new THREE.BufferAttribute(countyIndexArray, 1)
-  );
-
-  // Add this new attribute
-  const topColorArray = new Float32Array(
-    geometry.attributes.position.count * 3
-  );
-  const topColor = data.find((d) => d[countyId] === mesh.userData.id)?.[
-    depthColor
-  ] ?? { r: 59, g: 65, b: 73 };
-
-  for (let i = 0; i < topColorArray.length; i += 3) {
-    topColorArray[i] = topColor.r / 255;
-    topColorArray[i + 1] = topColor.g / 255;
-    topColorArray[i + 2] = topColor.b / 255;
-  }
-  geometry.setAttribute(
-    "topColor",
-    new THREE.BufferAttribute(topColorArray, 3)
-  );
-}
-
-// Call this for each mesh when creating or updating
-svgGroup.children.forEach((mesh, index) => {
-  createOrUpdateGeometry(mesh, index);
-});
 
 svgGroup.scale.y *= -1;
 
@@ -343,7 +276,6 @@ controls.maxDistance = 500;
 controls.maxPolarAngle = Math.PI;
 
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.2;
 
@@ -385,7 +317,6 @@ scene.add(backLightHelper);
 // Postprocessing
 const composer = new EffectComposer(renderer);
 const renderPass = new RenderPass(scene, camera);
-composer.addPass(renderPass);
 composer.addPass(renderPass);
 
 const outlinePass = new OutlinePass(

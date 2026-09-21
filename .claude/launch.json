@@ -1,0 +1,19 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dev",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "exec npx vite --port ${PORT:-5199} --strictPort"],
+      "port": 5199,
+      "autoPort": true
+    },
+    {
+      "name": "preview",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "exec npx vite preview --port ${PORT:-5198} --strictPort"],
+      "port": 5198,
+      "autoPort": true
+    }
+  ]
+}
