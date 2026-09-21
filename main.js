@@ -1,418 +1,490 @@
 import csv from "./src/princetonData.csv?raw";
 import * as THREE from "three";
-// import { DirectionalLightHelper } from "three/examples/jsm/helpers/DirectionalLightHelper.js";
-import CustomShaderMaterial from "three-custom-shader-material/vanilla";
 import { MapControls } from "three/addons/controls/MapControls.js";
 import { SVGLoader } from "three/addons/loaders/SVGLoader.js";
+import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { GTAOPass } from "three/addons/postprocessing/GTAOPass.js";
+import { BokehPass } from "three/addons/postprocessing/BokehPass.js";
 import { OutlinePass } from "three/addons/postprocessing/OutlinePass.js";
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { FXAAShader } from "three/addons/shaders/FXAAShader.js";
+import { VignetteShader } from "three/addons/shaders/VignetteShader.js";
 import GUI from "lil-gui";
 import * as d3 from "d3";
 import { gsap } from "gsap";
 
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-let selectedObjects = [];
-
-const depthVariable = "winningPercentage"; //
 const countyId = "fips";
 const colorVariable = "winningParty";
+// What a column's height means, each shaped into 0..1
+const heightVariables = {
+  // squared: close races stay flat, landslides tower
+  "margin %": (d) => Math.min(+d.winningPercentage / 0.9, 1) ** 2,
+  // sqrt: Los Angeles doesn't flatten everyone else
+  "margin votes": (d, maxVoteDiff) => Math.sqrt(+d.voteDiff / maxVoteDiff),
+};
+// Low -> high altitude. The first two stops are the dusky near-zero colours, so a
+// county that flips sinks into almost the same dark tone before it rises in the other ramp
 const democraticColors = [
-  "#6A6ECA",
+  "#373F73",
+  "#4C5CB8",
   "#688EFB",
   "#57B3FF",
   "#4CDDF5",
   "#5EECEB",
-  "#54F7DD",
+  "#A5FBEA",
 ];
 const republicanColors = [
+  "#684558",
+  "#A33F5D",
   "#E0708F",
-  "#D07890",
   "#E38274",
   "#F0AC6E",
   "#ECDE7D",
-  "#EEFF8F",
+  "#F4FCA5",
 ];
-const democraticInterpolator = d3.interpolateRgbBasis(democraticColors);
-const republicanInterpolator = d3.interpolateRgbBasis(republicanColors);
-const depthScale = d3.scaleLinear().domain([0, 0.9]).range([0, 100]);
+const groundColor = "#30343d";
 
-let currentYear = 2000;
 const yearRange = [2000, 2004, 2008, 2012, 2016, 2020];
-const countyData = {}; // fips -> year -> { height, party, color }
-d3.csvParse(csv).forEach((d) => {
-  const share = +d[depthVariable];
-  const interpolator =
-    d[colorVariable] === "Republican"
-      ? republicanInterpolator
-      : democraticInterpolator;
-  (countyData[d[countyId]] ??= {})[+d.election_year] = {
-    height: Math.max(depthScale(share), 0.1),
-    party: d[colorVariable],
-    color: d3.rgb(interpolator(share)),
-  };
+const yearCount = yearRange.length;
+const params = {
+  year: yearRange[0],
+  playing: true,
+  height: "margin %",
+  secondsPerElection: 3,
+  stagger: 0.5, // share of each transition a county may spend waiting for the wave to reach it
+  breath: 0.04, // idle swell as a fraction of height, 0 = still
+  maxHeight: 110,
+  minHeight: 0.6,
+  heightExponent: 1, // >1 flattens the carpet and exaggerates the towers
+  colorGamma: 0.5, // <1 moves low columns up the ramp, out of the dusky zone
+};
+const state = { time: 0 }; // continuous position on the timeline, in elections (0 = 2000, 1.5 = between 2004 and 2008)
+
+// fips -> height variable -> signed height per election: + Democratic, - Republican.
+// Interpolating the signed value is what makes a flip pass through zero height
+const rows = d3.csvParse(csv);
+const maxVoteDiff = d3.max(rows, (d) => +d.voteDiff);
+const series = {};
+rows.forEach((d) => {
+  const sign = d[colorVariable] === "Republican" ? -1 : 1;
+  const yearIndex = yearRange.indexOf(+d.election_year);
+  for (const [name, shape] of Object.entries(heightVariables)) {
+    ((series[d[countyId]] ??= {})[name] ??= new Array(yearCount).fill(0))[
+      yearIndex
+    ] = sign * shape(d, maxVoteDiff);
+  }
 });
+console.assert(
+  Object.values(series).some(
+    (county) =>
+      Math.min(...county["margin %"]) < 0 && Math.max(...county["margin %"]) > 0
+  ),
+  "Some county should flip party between 2000 and 2020"
+);
 
 const svgMarkup = document.querySelector("svg#extrude-svg-path").outerHTML;
-const svgLoader = new SVGLoader();
-const svgData = svgLoader.parse(svgMarkup);
+const svgData = new SVGLoader().parse(svgMarkup);
 console.assert(
-  svgData.paths.filter((path) => countyData[path.userData.node.id]).length >
-    3000,
+  svgData.paths.filter((path) => series[path.userData.node.id]).length > 3000,
   "SVG path ids should be fips codes that match the CSV"
 );
 
-// One texel per SVG path: a county finds its data by its own path index,
-// and the path id is the fips code that joins it to the CSV
-const countyCount = svgData.paths.length;
-const yearCount = yearRange.length;
-const dataTypeCount = 2; // Height/Party and Color
+// One geometry per county (islands merged), extruded to depth 1 so the instance's z scale is its height
+const flat = new Array(yearCount).fill(0);
+const counties = svgData.paths
+  .map((path) => ({
+    fips: path.userData.node.id, // kept as a string ("04015")
+    series: series[path.userData.node.id] ?? {},
+    shapes: path.toShapes(),
+  }))
+  .filter((county) => county.shapes.length)
+  .map((county) => ({
+    ...county,
+    geometry: mergeGeometries(
+      county.shapes.map(
+        (shape) =>
+          new THREE.ExtrudeGeometry(shape, { depth: 1, bevelEnabled: false })
+      )
+    ),
+  }));
 
-const textureSideLength = Math.ceil(Math.sqrt(countyCount));
-const textureDepth = yearCount * dataTypeCount;
-const sliceSize = textureSideLength * textureSideLength;
-
-const texture3DData = new Float32Array(sliceSize * textureDepth * 4);
-
-yearRange.forEach((year, yearIndex) => {
-  svgData.paths.forEach((path, countyIndex) => {
-    const county = countyData[path.userData.node.id]?.[year];
-    const color = county?.color ?? { r: 59, g: 65, b: 73, opacity: 1 };
-
-    // Even slices hold height + party, odd slices hold color
-    const baseIndex1 = (yearIndex * 2 * sliceSize + countyIndex) * 4;
-    const baseIndex2 = baseIndex1 + sliceSize * 4;
-    texture3DData[baseIndex1] = county?.height || 0;
-    texture3DData[baseIndex1 + 1] = county?.party === "Republican" ? 1 : 0;
-    texture3DData[baseIndex2] = color.r / 255;
-    texture3DData[baseIndex2 + 1] = color.g / 255;
-    texture3DData[baseIndex2 + 2] = color.b / 255;
-    texture3DData[baseIndex2 + 3] = color.opacity;
-  });
-});
-
-const texture3D = new THREE.Data3DTexture(
-  texture3DData,
-  textureSideLength,
-  textureSideLength,
-  textureDepth
+// 256x2 lookup: row 0 Democratic, row 1 Republican, u = altitude
+const rampWidth = 256;
+const rampData = new Uint8Array(rampWidth * 2 * 4);
+const ramps = [democraticColors, republicanColors].map((colors) =>
+  d3.interpolateRgbBasis(colors)
 );
-texture3D.format = THREE.RGBAFormat;
-texture3D.type = THREE.FloatType;
-texture3D.needsUpdate = true;
-const material = new CustomShaderMaterial({
-  baseMaterial: THREE.MeshPhysicalMaterial,
-  vertexShader: /* glsl */ `
-  uniform sampler3D countyData;
-uniform float currentYearIndex;
-uniform float nextYearIndex;
-uniform float transitionFactor;
-uniform float heightScale;
-
-attribute float countyIndex;
-
-varying float vParty;
-varying vec3 vColor;
-varying float vNormalizedHeight;
-
-void main() {
-  // One texel per county, row by row. Even slices: height + party, odd slices: color
-  int width = textureSize(countyData, 0).x;
-  int index = int(countyIndex + 0.5);
-  ivec2 texel = ivec2(index % width, index / width);
-  int currentSlice = int(currentYearIndex) * 2;
-  int nextSlice = int(nextYearIndex) * 2;
-
-  vec4 currentDataHeight = texelFetch(countyData, ivec3(texel, currentSlice), 0);
-  vec4 nextDataHeight = texelFetch(countyData, ivec3(texel, nextSlice), 0);
-  vec4 currentDataColor = texelFetch(countyData, ivec3(texel, currentSlice + 1), 0);
-  vec4 nextDataColor = texelFetch(countyData, ivec3(texel, nextSlice + 1), 0);
-
-  float height = mix(currentDataHeight.r, nextDataHeight.r, transitionFactor);
-  vParty = mix(currentDataHeight.g, nextDataHeight.g, transitionFactor);
-  vColor = mix(currentDataColor.rgb, nextDataColor.rgb, transitionFactor);
-
-  vec3 newPosition = position;
-  newPosition.z *= height * heightScale;
-  
-  vNormalizedHeight = position.z;
-  csm_Position = newPosition;
-}
-  `,
-  fragmentShader: /* glsl */ `
-    varying float vNormalizedHeight;
-    varying float vParty;
-    varying vec3 vColor;
-
-    uniform vec3 republicanBaseColor;
-    uniform vec3 democraticBaseColor;
-
-    void main() {
-      vec3 baseColor = mix(democraticBaseColor, republicanBaseColor, vParty);
-      vec3 finalColor = mix(baseColor, vColor, vNormalizedHeight);
-      
-      csm_DiffuseColor = vec4(finalColor, 1.0);
-      csm_Metalness = 0.5;
-      csm_Roughness = 0.5;
-    }
-  `,
-  uniforms: {
-    countyData: { value: texture3D },
-    currentYearIndex: { value: 0 },
-    nextYearIndex: { value: 0 },
-    transitionFactor: { value: 0.0 },
-    heightScale: { value: 1.0 },
-    republicanBaseColor: {
-      value: new THREE.Color(169 / 255, 100 / 255, 128 / 255),
-    },
-    democraticBaseColor: {
-      value: new THREE.Color(27 / 255, 44 / 255, 149 / 255),
-    },
-  },
-  // Add MeshPhysicalMaterial properties
-  clearcoat: 0.3,
-  clearcoatRoughness: 0.25,
-  envMapIntensity: 1.5,
+ramps.forEach((interpolator, row) => {
+  for (let x = 0; x < rampWidth; x++) {
+    const { r, g, b } = d3.rgb(interpolator(x / (rampWidth - 1)));
+    rampData.set([r, g, b, 255], (row * rampWidth + x) * 4);
+  }
 });
-material.uniforms.currentYearIndex.value = yearRange.indexOf(currentYear);
-material.uniforms.nextYearIndex.value = yearRange.indexOf(currentYear);
-const svgGroup = new THREE.Group();
+const rampTexture = new THREE.DataTexture(rampData, rampWidth, 2);
+rampTexture.colorSpace = THREE.SRGBColorSpace;
+rampTexture.minFilter = rampTexture.magFilter = THREE.LinearFilter;
+rampTexture.needsUpdate = true;
 
-// ... other attributes ...
-function createExtrudeGeometry() {
-  svgData.paths.forEach((path, i) => {
-    const shapes = path.toShapes();
-    shapes.forEach((shape, j) => {
-      const geometry = new THREE.ExtrudeGeometry(shape, {
-        depth: 1,
-        bevelEnabled: false,
-        UVGenerator: {
-          generateTopUV: function (geometry, vertices, indexA, indexB, indexC) {
-            return [
-              new THREE.Vector2(0, 1),
-              new THREE.Vector2(0, 1),
-              new THREE.Vector2(0, 1),
-            ];
-          },
-          generateSideWallUV: function (
-            geometry,
-            vertices,
-            indexA,
-            indexB,
-            indexC,
-            indexD
-          ) {
-            return [
-              new THREE.Vector2(0, vertices[indexA].y),
-              new THREE.Vector2(1, vertices[indexB].y),
-              new THREE.Vector2(0, vertices[indexC].y),
-              new THREE.Vector2(1, vertices[indexD].y),
-            ];
-          },
-        },
-      });
-      // Every mesh of a county (islands included) points at that county's texel
-      const countyIndexArray = new Float32Array(
-        geometry.attributes.position.count
-      ).fill(i);
-      geometry.setAttribute(
-        "countyIndex",
-        new THREE.BufferAttribute(countyIndexArray, 1)
-      );
-      const mesh = new THREE.Mesh(geometry, material);
-      mesh.userData.id = path.userData.node.id; // fips, kept as a string ("04015")
-      svgGroup.add(mesh);
-    });
-  });
-}
-
-createExtrudeGeometry();
-
-svgGroup.scale.y *= -1;
-
-const svgGroupBB = new THREE.Box3().setFromObject(svgGroup);
-const center = svgGroupBB.getCenter(new THREE.Vector3());
-
-svgGroup.position.x = -center.x;
-svgGroup.position.y = -center.y;
-svgGroup.position.z = -center.z;
-
-const scene = new THREE.Scene();
-
-svgGroup.castShadow = true;
-svgGroup.receiveShadow = false;
-scene.add(svgGroup);
-
-const cameraSpecs = {
-  fov: 105,
-  near: 0.01,
-  far: 1000,
+const rampUniforms = {
+  ramp: { value: rampTexture },
+  maxHeight: { value: params.maxHeight },
+  colorGamma: { value: params.colorGamma },
+  noDataColor: { value: new THREE.Color("#3b4149") }, // Alaska reports by district, not by county
+};
+const material = new THREE.MeshStandardMaterial({ roughness: 0.9 });
+material.onBeforeCompile = (shader) => {
+  Object.assign(shader.uniforms, rampUniforms);
+  shader.vertexShader = shader.vertexShader
+    .replace("#include <common>", "#include <common>\nvarying float vHeight;")
+    .replace(
+      "#include <project_vertex>",
+      "#include <project_vertex>\nvHeight = (batchingMatrix * vec4(transformed, 1.0)).z;"
+    );
+  shader.fragmentShader = shader.fragmentShader
+    .replace(
+      "#include <common>",
+      /* glsl */ `#include <common>
+      varying float vHeight;
+      uniform sampler2D ramp;
+      uniform float maxHeight;
+      uniform float colorGamma;
+      uniform vec3 noDataColor;`
+    )
+    .replace(
+      "#include <color_fragment>",
+      /* glsl */ `
+      // Colour is a function of altitude, not of the county: every column climbs the same ramp,
+      // so its walls show the gradient and its roof shows how far it got.
+      // vColor.r is the party (0 Democratic, 1 Republican) and picks the ramp row, vColor.g is 0 without data
+      float rampU = pow(clamp(vHeight / maxHeight, 0.0, 1.0), colorGamma);
+      vec3 rampColor = texture2D(ramp, vec2(rampU, mix(0.25, 0.75, vColor.r))).rgb;
+      diffuseColor.rgb = mix(noDataColor, rampColor, vColor.g);`
+    );
 };
 
-const camera = new THREE.OrthographicCamera(
-  window.innerWidth / -2,
-  window.innerWidth / 2,
-  window.innerHeight / 2,
-  window.innerHeight / -2,
-  cameraSpecs.near,
-  cameraSpecs.far
+const map = new THREE.BatchedMesh(
+  counties.length,
+  d3.sum(counties, (county) => county.geometry.attributes.position.count),
+  0,
+  material
 );
-camera.zoom = 1.9;
-camera.position.z = 250;
-camera.position.y = -150;
+map.castShadow = true;
+map.receiveShadow = true;
+// The whole map is always on screen, per-county culling and sorting would only cost CPU
+map.perObjectFrustumCulled = false;
+map.sortObjects = false;
+counties.forEach((county) => {
+  county.id = map.addInstance(map.addGeometry(county.geometry));
+});
+
+const svgGroup = new THREE.Group();
+svgGroup.add(map);
+svgGroup.scale.y *= -1;
+const svgGroupBB = new THREE.Box3().setFromObject(svgGroup);
+const center = svgGroupBB.getCenter(new THREE.Vector3());
+svgGroup.position.set(-center.x, -center.y, 0);
+
+// Polls close east to west, so that is the way a change sweeps across the map;
+// the jitter keeps neighbours from moving in lockstep
+const mapWidth = svgGroupBB.max.x - svgGroupBB.min.x;
+counties.forEach((county) => {
+  county.geometry.computeBoundingBox();
+  const centroid = county.geometry.boundingBox.getCenter(new THREE.Vector3());
+  const east = (centroid.x - svgGroupBB.min.x) / mapWidth;
+  county.delay = 0.75 * (1 - east) + 0.25 * Math.random();
+  county.phase = centroid.x * 0.03 + centroid.y * 0.02;
+});
+
+const _matrix = new THREE.Matrix4();
+const _color = new THREE.Color();
+function updateCounties(seconds) {
+  const from = Math.floor(state.time) % yearCount;
+  const to = (from + 1) % yearCount; // 2020 wraps back to 2000 so the loop never cuts
+  const progress = state.time - Math.floor(state.time);
+  counties.forEach((county) => {
+    const heights = county.series[params.height] ?? flat;
+    const eased = THREE.MathUtils.smoothstep(
+      (progress - county.delay * params.stagger) / (1 - params.stagger),
+      0,
+      1
+    );
+    const signed = THREE.MathUtils.lerp(heights[from], heights[to], eased);
+    const breath = 1 + params.breath * Math.sin(seconds * 1.6 + county.phase);
+    county.height =
+      params.minHeight +
+      params.maxHeight * Math.abs(signed) ** params.heightExponent * breath;
+    map.setMatrixAt(county.id, _matrix.makeScale(1, 1, county.height));
+    map.setColorAt(
+      county.id,
+      _color.setRGB(signed < 0 ? 1 : 0, heights === flat ? 0 : 1, 1)
+    );
+  });
+}
+updateCounties(0);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(groundColor);
+scene.fog = new THREE.Fog(groundColor, 1200, 3200);
+scene.add(svgGroup);
+
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(8000, 8000),
+  new THREE.MeshStandardMaterial({ color: groundColor, roughness: 1 })
+);
+ground.receiveShadow = true;
+scene.add(ground);
+
+// Caption painted on the ground, like the date in the reference video
+const captionCanvas = Object.assign(document.createElement("canvas"), {
+  width: 1024,
+  height: 400,
+});
+const captionTexture = new THREE.CanvasTexture(captionCanvas);
+captionTexture.anisotropy = 8;
+const caption = new THREE.Mesh(
+  new THREE.PlaneGeometry(240, 94),
+  new THREE.MeshBasicMaterial({ map: captionTexture, transparent: true })
+);
+caption.position.set(150, -245, 0.2);
+scene.add(caption);
+function drawCaption(year) {
+  const ctx = captionCanvas.getContext("2d");
+  ctx.clearRect(0, 0, captionCanvas.width, captionCanvas.height);
+  ctx.fillStyle = "#e8eaee";
+  ctx.textAlign = "center";
+  ctx.font = "600 72px Inter, system-ui, sans-serif";
+  ctx.fillText("Presidential margin", 512, 80);
+  ctx.font = "700 170px Inter, system-ui, sans-serif";
+  ctx.fillText(year, 512, 240);
+  // Legend: both ramps back to back, biggest margins at the ends
+  for (let x = 0; x < 640; x++) {
+    ctx.fillStyle = ramps[x < 320 ? 0 : 1](Math.abs(x - 320) / 320);
+    ctx.fillRect(192 + x, 290, 1, 30);
+  }
+  ctx.fillStyle = "#e8eaee";
+  ctx.font = "500 40px Inter, system-ui, sans-serif";
+  ctx.textAlign = "left";
+  ctx.fillText("Democratic", 192, 368);
+  ctx.textAlign = "right";
+  ctx.fillText("Republican", 832, 368);
+  captionTexture.needsUpdate = true;
+}
+drawCaption(params.year);
+
+const camera = new THREE.PerspectiveCamera(
+  30,
+  window.innerWidth / window.innerHeight,
+  10,
+  6000
+);
+camera.up.set(0, 0, 1); // the map lies in the XY plane
+camera.position.set(-60, -660, 520);
 
 const canvas = document.querySelector("#threejs");
 const renderer = new THREE.WebGLRenderer({ canvas });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+// No tone mapping on purpose: the lights are balanced so roofs land at ~1x the ramp colour.
+// Neutral crushes the dark floor towards blue, AgX washes the palette out
+renderer.shadowMap.enabled = true;
 
 const controls = new MapControls(camera, canvas);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
-controls.screenSpacePanning = false;
-controls.minDistance = 100;
-controls.maxDistance = 500;
-controls.maxPolarAngle = Math.PI;
-
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.2;
+controls.minDistance = 150;
+controls.maxDistance = 2000;
+controls.maxPolarAngle = Math.PI / 2 - 0.15;
+controls.target.set(0, -20, 0);
 
 /*
 Lighting
 */
-// Ambient light
-// Ambient light
-const ambientLight = new THREE.AmbientLight(0xffffff, 4.8);
-scene.add(ambientLight);
+// Soft fill: sky from above, a little bounce from the dark floor
+const fillLight = new THREE.HemisphereLight("#dfe6ff", "#3a3440", 1.2);
+fillLight.position.set(0, 0, 1);
+scene.add(fillLight);
 
-// Custom helper for ambient light (a small sphere)
-const ambientLightHelper = new THREE.Mesh(
-  new THREE.SphereGeometry(5, 8, 8),
-  new THREE.MeshBasicMaterial({ color: ambientLight.color })
-);
-ambientLightHelper.position.set(0, 100, 0); // Position it above the scene
-scene.add(ambientLightHelper);
+// Shadowless light from the camera's side, so the walls facing us sit between the lit and the dark ones
+const frontLight = new THREE.DirectionalLight("#e6ecff", 1.0);
+frontLight.position.set(-200, -600, 300);
+scene.add(frontLight);
 
-// Directional light (main light)
-const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
-directionalLight.position.set(-350, 50, 350);
-scene.add(directionalLight);
-
-const directionalLightHelper = new THREE.DirectionalLightHelper(
-  directionalLight,
-  50
-);
-scene.add(directionalLightHelper);
-
-// Soft light from the back
-const backLight = new THREE.DirectionalLight("#5D6265",17);
-backLight.position.set(350, 350, 65);
-scene.add(backLight);
-
-const backLightHelper = new THREE.DirectionalLightHelper(backLight, 50);
-scene.add(backLightHelper);
+// Key light from the north-west, high enough that towers throw short shadows
+const keyLight = new THREE.DirectionalLight("#fff4e6", 2.4);
+keyLight.position.set(-380, 260, 620);
+keyLight.castShadow = true;
+keyLight.shadow.mapSize.set(4096, 4096);
+keyLight.shadow.radius = 10;
+keyLight.shadow.bias = -0.0003;
+keyLight.shadow.normalBias = 0.6;
+Object.assign(keyLight.shadow.camera, {
+  left: -520,
+  right: 520,
+  top: 420,
+  bottom: -420,
+  near: 100,
+  far: 1600,
+});
+scene.add(keyLight);
 
 // Postprocessing
 const composer = new EffectComposer(renderer);
-const renderPass = new RenderPass(scene, camera);
-composer.addPass(renderPass);
+composer.addPass(new RenderPass(scene, camera));
+
+// Contact darkening between neighbouring columns
+const gtaoPass = new GTAOPass(
+  scene,
+  camera,
+  window.innerWidth,
+  window.innerHeight
+);
+gtaoPass.updateGtaoMaterial({
+  radius: 14,
+  distanceExponent: 1.4,
+  thickness: 8,
+  scale: 1.3,
+  samples: 16,
+});
+composer.addPass(gtaoPass);
+
+// Shallow focus on the orbit target: the far coast and the near floor go soft, like a tabletop model
+const bokehPass = new BokehPass(scene, camera, {
+  focus: 800,
+  aperture: 0.000012, // tiny because the scene is hundreds of units deep
+  maxblur: 0.004,
+});
+composer.addPass(bokehPass);
 
 const outlinePass = new OutlinePass(
   new THREE.Vector2(window.innerWidth, window.innerHeight),
   scene,
   camera
 );
+// The ghost sits exactly on its county, so "hidden" and "visible" edges have to look the same
+outlinePass.hiddenEdgeColor.copy(outlinePass.visibleEdgeColor);
 composer.addPass(outlinePass);
 
+const vignettePass = new ShaderPass(VignetteShader);
+vignettePass.uniforms["offset"].value = 0.75;
+vignettePass.uniforms["darkness"].value = 1.0;
+composer.addPass(vignettePass);
+
+composer.addPass(new OutputPass());
+
 const effectFXAA = new ShaderPass(FXAAShader);
-effectFXAA.uniforms["resolution"].value.set(
-  1 / window.innerWidth,
-  1 / window.innerHeight
-);
 composer.addPass(effectFXAA);
+
+function onResize() {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  const pixelRatio = renderer.getPixelRatio();
+  camera.aspect = width / height;
+  // 30 degrees frames the map at 16:9; narrower windows widen the lens instead of cropping the coasts
+  camera.fov = THREE.MathUtils.radToDeg(
+    2 *
+      Math.atan(
+        Math.tan(THREE.MathUtils.degToRad(15)) *
+          Math.max(1, 16 / 9 / camera.aspect)
+      )
+  );
+  camera.updateProjectionMatrix();
+  renderer.setSize(width, height);
+  composer.setSize(width, height);
+  effectFXAA.uniforms["resolution"].value.set(
+    1 / (width * pixelRatio),
+    1 / (height * pixelRatio)
+  );
+}
+window.addEventListener("resize", onResize);
+onResize();
+
+// Hover: the batch can't be outlined per county, so a colourless stand-in wears the outline
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+const ghost = new THREE.Mesh(
+  undefined,
+  new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: false })
+);
+let hovered = null;
+svgGroup.add(ghost);
+
 function onPointerMove(event) {
   if (event.isPrimary === false) return;
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-  checkIntersection();
-}
-
-function addSelectedObject(object) {
-  selectedObjects = [];
-  selectedObjects.push(object);
-}
-
-function checkIntersection() {
   raycaster.setFromCamera(mouse, camera);
-  const intersects = raycaster.intersectObject(svgGroup, true);
-  if (intersects.length > 0) {
-    const selectedObject = intersects[0].object;
-    addSelectedObject(selectedObject);
-    outlinePass.selectedObjects = selectedObjects;
-  }
+  const hit = raycaster.intersectObject(map)[0];
+  if (!hit) return;
+  hovered = counties.find((county) => county.id === hit.batchId);
+  ghost.geometry = hovered.geometry;
+  outlinePass.selectedObjects = [ghost];
 }
 canvas.addEventListener("pointermove", onPointerMove);
+
 const gui = new GUI();
-const params = {
-  year: 2000,
-};
-
-const yearOptions = [2000, 2004, 2008, 2012, 2016, 2020];
-
-function transitionToYear(newYear) {
-  const currentYearIndex = yearRange.indexOf(currentYear);
-  const nextYearIndex = yearRange.indexOf(newYear);
-
-  gsap.to(material.uniforms.transitionFactor, {
-    value: 1,
-    duration: 1,
-    onUpdate: () => {
-      material.uniforms.currentYearIndex.value = currentYearIndex;
-      material.uniforms.nextYearIndex.value = nextYearIndex;
-    },
-    onComplete: () => {
-      material.uniforms.currentYearIndex.value = nextYearIndex;
-      material.uniforms.nextYearIndex.value = nextYearIndex;
-      material.uniforms.transitionFactor.value = 0;
-      currentYear = newYear;
-    },
+gui
+  .add(params, "year", yearRange)
+  .listen()
+  .onChange((year) => {
+    params.playing = false;
+    gsap.to(state, {
+      time: yearRange.indexOf(year),
+      duration: 1.5,
+      ease: "sine.inOut",
+    });
   });
-}
-// Use this function when the year selector changes
-gui.add(params, "year", yearOptions).onChange((value) => {
-  transitionToYear(value);
+gui.add(params, "playing").listen();
+gui.add(params, "height", Object.keys(heightVariables));
+gui.add(params, "secondsPerElection", 0.5, 10);
+gui.add(params, "stagger", 0, 0.9);
+gui.add(params, "breath", 0, 0.15);
+gui.add(params, "maxHeight", 10, 250).onChange((value) => {
+  rampUniforms.maxHeight.value = value;
 });
-// Light controls
-const lightFolder = gui.addFolder("Lights");
+gui.add(params, "heightExponent", 0.5, 4);
+gui.add(rampUniforms.colorGamma, "value", 0.2, 2).name("colorGamma");
 
-// Ambient Light
-const ambientLightFolder = lightFolder.addFolder("Ambient Light");
-ambientLightFolder.addColor(ambientLight, "color").onChange(() => {
-  ambientLightHelper.material.color.set(ambientLight.color);
-});
-ambientLightFolder.add(ambientLight, "intensity", 0, 50);
+const lightFolder = gui.addFolder("Lights").close();
+lightFolder.add(fillLight, "intensity", 0, 5).name("fill");
+lightFolder.add(frontLight, "intensity", 0, 5).name("front");
+lightFolder.add(keyLight, "intensity", 0, 8).name("key");
+lightFolder.add(keyLight.position, "x", -800, 800);
+lightFolder.add(keyLight.position, "y", -800, 800);
+lightFolder.add(keyLight.position, "z", 100, 1200);
+lightFolder.add(keyLight.shadow, "radius", 0, 12).name("shadow softness");
+lightFolder.add(gtaoPass, "blendIntensity", 0, 2).name("ambient occlusion");
+lightFolder.add(bokehPass, "enabled").name("depth of field");
+lightFolder.add(vignettePass, "enabled").name("vignette");
 
-// Directional Light
-const directionalLightFolder = lightFolder.addFolder("Directional Light");
-directionalLightFolder.addColor(directionalLight, "color");
-directionalLightFolder.add(directionalLight, "intensity", 0, 5);
-directionalLightFolder.add(directionalLight.position, "x", -350, 350);
-directionalLightFolder.add(directionalLight.position, "y", -350, 350);
-directionalLightFolder.add(directionalLight.position, "z", -350, 350);
-
-// Back Light
-const backLightFolder = lightFolder.addFolder("Back Light");
-backLightFolder.addColor(backLight, "color");
-backLightFolder.add(backLight, "intensity", 0, 50);
-backLightFolder.add(backLight.position, "x", -350, 350);
-backLightFolder.add(backLight.position, "y", -350, 350);
-backLightFolder.add(backLight.position, "z", -350, 350);
-function animate() {
+let lastSeconds = 0;
+function animate(milliseconds = 0) {
   requestAnimationFrame(animate);
-  controls.update();
+  const seconds = milliseconds / 1000;
+  const delta = Math.min(seconds - lastSeconds, 0.1);
+  lastSeconds = seconds;
 
+  if (params.playing) {
+    state.time = (state.time + delta / params.secondsPerElection) % yearCount;
+  }
+  const year = yearRange[Math.round(state.time) % yearCount];
+  if (year !== params.year && params.playing) {
+    params.year = year;
+  }
+  if (caption.userData.year !== year) {
+    caption.userData.year = year;
+    drawCaption(year);
+  }
+
+  updateCounties(seconds);
+  if (hovered) ghost.scale.z = hovered.height;
+
+  controls.update();
+  bokehPass.uniforms["focus"].value = camera.position.distanceTo(
+    controls.target
+  );
   composer.render();
 }
 
