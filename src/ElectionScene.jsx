@@ -1,24 +1,25 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useFrame, useLoader, useThree } from '@react-three/fiber';
 import { MapControls } from '@react-three/drei/core/MapControls.js';
-import { CanvasTexture, FileLoader, MathUtils, SRGBColorSpace } from 'three';
+import { CanvasTexture, FileLoader, MathUtils, SRGBColorSpace, TextureLoader } from 'three';
 import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
 import { gsap } from 'gsap';
-import { buildSeries, defaultSettings, ramps, years } from './electionData.js';
+import { buildSeries, countFlips, defaultSettings, groundColor, palettes, years } from './electionData.js';
 import { createCountyMap } from './mapGeometry.js';
 import PostProcessing from './PostProcessing.jsx';
 
 const ease = gsap.parseEase('sine.inOut');
-const groundColor = '#30343d';
 const target = [0, -20, 0];
 const mapUrl = `${import.meta.env.BASE_URL}counties.svg`;
 const electionsUrl = `${import.meta.env.BASE_URL}elections.json`;
+const basemapUrl = `${import.meta.env.BASE_URL}basemap.svg`;
 const asJson = (loader) => loader.setResponseType('json');
-// Two suspending hooks in one component would download one after the other; start both now.
+// Start all asset downloads together instead of letting suspending hooks serialize them.
 useLoader.preload(SVGLoader, mapUrl);
 useLoader.preload(FileLoader, electionsUrl, asJson);
+useLoader.preload(TextureLoader, basemapUrl);
 
-function Caption({ timeline, nominees }) {
+function Caption({ timeline, nominees, palette }) {
   const material = useRef(null);
   const caption = useRef(null);
   const gl = useThree((state) => state.gl);
@@ -29,7 +30,7 @@ function Caption({ timeline, nominees }) {
     texture.anisotropy = Math.min(8, gl.capabilities.getMaxAnisotropy());
     material.current.map = texture;
     material.current.needsUpdate = true;
-    caption.current = { canvas, texture, year: null };
+    caption.current = { canvas, texture, year: null, palette: null };
     return () => {
       caption.current = null;
       texture.dispose();
@@ -41,11 +42,13 @@ function Caption({ timeline, nominees }) {
     if (!current) return;
     const election = Math.round(timeline.current.time) % years.length;
     const year = years[election];
-    if (current.year === year) return;
+    if (current.year === year && current.palette === palette) return;
     current.year = year;
+    current.palette = palette;
+    const { ramps } = palettes[palette];
     const ctx = current.canvas.getContext('2d');
     ctx.clearRect(0, 0, 1024, 400);
-    ctx.fillStyle = '#e8eaee';
+    ctx.fillStyle = '#202e45';
     ctx.textAlign = 'center';
     ctx.font = '600 72px Inter, system-ui, sans-serif';
     ctx.fillText('Presidential margin', 512, 70);
@@ -55,14 +58,14 @@ function Caption({ timeline, nominees }) {
       ctx.fillStyle = ramps[x < 320 ? 0 : 1](Math.abs(x - 320) / 320);
       ctx.fillRect(192 + x, 246, 1, 28);
     }
-    ctx.fillStyle = '#e8eaee';
+    ctx.fillStyle = '#202e45';
     ctx.font = '500 40px Inter, system-ui, sans-serif';
     ctx.textAlign = 'left';
     ctx.fillText('Democratic', 192, 318);
     ctx.textAlign = 'right';
     ctx.fillText('Republican', 832, 318);
     // Few people remember who ran in 1884; the names sit under their party's end of the ramp.
-    ctx.fillStyle = '#b8c9dd';
+    ctx.fillStyle = '#747b8e';
     ctx.font = '400 32px Inter, system-ui, sans-serif';
     ctx.fillText(nominees[election][1], 832, 362);
     ctx.textAlign = 'left';
@@ -81,13 +84,22 @@ function Caption({ timeline, nominees }) {
 export default function ElectionScene({ settings, seek, onYearChange, onReady }) {
   const svg = useLoader(SVGLoader, mapUrl);
   const elections = useLoader(FileLoader, electionsUrl, asJson);
+  const basemap = useLoader(TextureLoader, basemapUrl);
   const series = useMemo(() => buildSeries(elections), [elections]);
+  const flips = useMemo(() => countFlips(series), [series]);
   const [map, setMap] = useState(null);
   const outlineMesh = useRef(null);
   const hovered = useRef(null);
   const timeline = useRef({ time: 0, seconds: 0, year: years[0], transition: null });
   const camera = useThree((state) => state.camera);
   const size = useThree((state) => state.size);
+  const gl = useThree((state) => state.gl);
+
+  useLayoutEffect(() => {
+    basemap.colorSpace = SRGBColorSpace;
+    basemap.anisotropy = Math.min(8, gl.capabilities.getMaxAnisotropy());
+    basemap.needsUpdate = true;
+  }, [basemap, gl]);
 
   useLayoutEffect(() => {
     const resource = createCountyMap(svg, defaultSettings, series);
@@ -98,9 +110,10 @@ export default function ElectionScene({ settings, seek, onYearChange, onReady })
     };
   }, [svg, series]);
 
+  // Ready means the map exists; the flip counts ride along because only the scene has the returns.
   useEffect(() => {
-    if (map) onReady(true);
-  }, [map, onReady]);
+    if (map) onReady(flips);
+  }, [map, onReady, flips]);
 
   useLayoutEffect(() => {
     camera.fov = MathUtils.radToDeg(2 * Math.atan(
@@ -149,7 +162,6 @@ export default function ElectionScene({ settings, seek, onYearChange, onReady })
   return (
     <>
       <color attach="background" args={[groundColor]} />
-      <fog attach="fog" args={[groundColor, 1200, 3200]} />
       {map ? <group position={map.position} scale={[1, -1, 1]}>
         <primitive object={map.mesh} onPointerMove={(event) => {
           if (event.isPrimary === false) return;
@@ -169,7 +181,12 @@ export default function ElectionScene({ settings, seek, onYearChange, onReady })
         <planeGeometry args={[8000, 8000]} />
         <meshStandardMaterial color={groundColor} roughness={1} />
       </mesh>
-      <Caption timeline={timeline} nominees={elections.nominees} />
+      {map ? <mesh receiveShadow position={[map.position[0] + 130, map.position[1] - 55, 0.05]}>
+        {/* Matches the continuous geographic texture's viewBox: -680 -560 1620 1230. */}
+        <planeGeometry args={[1620, 1230]} />
+        <meshStandardMaterial map={basemap} transparent roughness={1} depthWrite={false} />
+      </mesh> : null}
+      <Caption timeline={timeline} nominees={elections.nominees} palette={settings.palette} />
       <hemisphereLight color="#dfe6ff" groundColor="#3a3440" intensity={settings.fill} position={[0, 0, 1]} />
       <directionalLight color="#e6ecff" intensity={settings.front} position={[-200, -600, 300]} />
       <directionalLight color="#fff4e6" intensity={settings.key}

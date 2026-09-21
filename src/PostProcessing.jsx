@@ -8,12 +8,11 @@ import { BokehPass } from "three/addons/postprocessing/BokehPass.js";
 import { OutlinePass } from "three/addons/postprocessing/OutlinePass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
-import { FXAAShader } from "three/addons/shaders/FXAAShader.js";
 import { VignetteShader } from "three/addons/shaders/VignetteShader.js";
 
 const defaultSettings = {
   ambientOcclusion: 1,
-  depthOfField: true,
+  depthOfField: false,
   vignette: true,
 };
 
@@ -28,6 +27,8 @@ export default function PostProcessing({ settings = defaultSettings, outlineMesh
 
   useLayoutEffect(() => {
     const composer = new EffectComposer(gl);
+    // Multisample geometry edges without FXAA blending away small, distant counties.
+    composer.renderTarget1.samples = composer.renderTarget2.samples = Math.min(4, gl.capabilities.maxSamples);
     const gtao = new GTAOPass(scene, camera, 1, 1);
     gtao.updateGtaoMaterial({
       radius: 14,
@@ -49,7 +50,6 @@ export default function PostProcessing({ settings = defaultSettings, outlineMesh
     const vignette = new ShaderPass(VignetteShader);
     vignette.uniforms.offset.value = 0.75;
     vignette.uniforms.darkness.value = 1;
-    const fxaa = new ShaderPass(FXAAShader);
     const passes = [
       new RenderPass(scene, camera),
       gtao,
@@ -57,10 +57,9 @@ export default function PostProcessing({ settings = defaultSettings, outlineMesh
       outline,
       vignette,
       new OutputPass(),
-      fxaa,
     ];
     for (const pass of passes) composer.addPass(pass);
-    pipeline.current = { composer, gtao, bokeh, outline, vignette, fxaa };
+    pipeline.current = { composer, gtao, bokeh, outline, vignette };
 
     return () => {
       pipeline.current = null;
@@ -73,13 +72,9 @@ export default function PostProcessing({ settings = defaultSettings, outlineMesh
   }, [gl, scene, camera]);
 
   useLayoutEffect(() => {
-    const { composer, fxaa } = pipeline.current;
+    const { composer } = pipeline.current;
     composer.setPixelRatio(dpr);
     composer.setSize(size.width, size.height);
-    fxaa.uniforms.resolution.value.set(
-      1 / (size.width * dpr),
-      1 / (size.height * dpr),
-    );
   }, [gl, scene, camera, size.width, size.height, dpr]);
 
   // A positive priority makes this the sole owner of the final render.

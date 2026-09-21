@@ -1,8 +1,10 @@
 import * as THREE from 'three';
 import { rgb } from 'd3';
-import { flatHeights, getCountyHeight, interpolateSeries, ramps } from './electionData.js';
+import { flatHeights, getCountyHeight, groundColor, interpolateSeries, palettes } from './electionData.js';
 
 export function createCountyMap(svgData, settings, series) {
+  const origin = svgData.xml?.getAttribute('data-origin')?.trim().split(/\s+/).map(Number);
+  if (origin && (origin.length !== 2 || !origin.every(Number.isFinite))) throw new Error('Invalid county map origin');
   const counties = svgData.paths.flatMap((path) => {
     const shapes = path.toShapes();
     if (!shapes.length) return [];
@@ -16,23 +18,31 @@ export function createCountyMap(svgData, settings, series) {
 
   const rampWidth = 256;
   const rampData = new Uint8Array(rampWidth * 2 * 4);
-  ramps.forEach((interpolator, row) => {
-    for (let x = 0; x < rampWidth; x++) {
-      const { r, g, b } = rgb(interpolator(x / (rampWidth - 1)));
-      rampData.set([r, g, b, 255], (row * rampWidth + x) * 4);
-    }
-  });
   const rampTexture = new THREE.DataTexture(rampData, rampWidth, 2);
   rampTexture.colorSpace = THREE.SRGBColorSpace;
   rampTexture.minFilter = rampTexture.magFilter = THREE.LinearFilter;
-  rampTexture.needsUpdate = true;
 
   const uniforms = {
     ramp: { value: rampTexture },
     maxHeight: { value: settings.maxHeight },
     colorGamma: { value: settings.colorGamma },
-    noDataColor: { value: new THREE.Color('#3b4149') },
+    noDataColor: { value: new THREE.Color(groundColor) },
   };
+  // A palette is only texels, so switching it never recompiles the shader.
+  let appliedPalette = null;
+  function applyPalette(name) {
+    const palette = palettes[name] ?? Object.values(palettes)[0];
+    palette.ramps.forEach((interpolator, row) => {
+      for (let x = 0; x < rampWidth; x++) {
+        const { r, g, b } = rgb(interpolator(x / (rampWidth - 1)));
+        rampData.set([r, g, b, 255], (row * rampWidth + x) * 4);
+      }
+    });
+    rampTexture.needsUpdate = true;
+    appliedPalette = name;
+  }
+  applyPalette(settings.palette);
+
   const material = new THREE.MeshStandardMaterial({ roughness: 0.9 });
   material.customProgramCacheKey = () => 'county-altitude-ramp-v1';
   material.onBeforeCompile = (shader) => {
@@ -76,6 +86,8 @@ export function createCountyMap(svgData, settings, series) {
     bounds.union(county.geometry.boundingBox);
   }
   const center = bounds.getCenter(new THREE.Vector3());
+  // The asset keeps the mainland's original framing when Alaska/Hawaii move to true positions.
+  if (origin) center.set(...origin, 0);
   const width = bounds.max.x - bounds.min.x || 1;
   const centroid = new THREE.Vector3();
   for (const county of counties) {
@@ -91,10 +103,11 @@ export function createCountyMap(svgData, settings, series) {
   function update(time, seconds, currentSettings) {
     uniforms.maxHeight.value = currentSettings.maxHeight;
     uniforms.colorGamma.value = currentSettings.colorGamma;
+    if (currentSettings.palette !== appliedPalette) applyPalette(currentSettings.palette);
     for (const county of counties) {
       const heights = county.series[currentSettings.height] ?? flatHeights;
       const signed = interpolateSeries(heights, time, county.delay, currentSettings.stagger);
-      // Fades a county in from the no-data grey as it casts its first votes (statehood, new counties).
+      // Fades a county in from the ground color as it casts its first votes (statehood, new counties).
       const voted = interpolateSeries(county.series.voted ?? flatHeights, time, county.delay, currentSettings.stagger);
       county.height = getCountyHeight(signed, seconds, county.phase, currentSettings);
       mesh.setMatrixAt(county.id, matrix.makeScale(1, 1, county.height));

@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "test": "node --test src/electionData.test.js",
     "data:map": "node scripts/build-map.mjs",
+    "data:basemap": "node scripts/build-basemap.mjs",
     "data:elections": "Rscript scripts/export-elections.R"
   },
   "devDependencies": {
