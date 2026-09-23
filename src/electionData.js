@@ -75,12 +75,14 @@ export function buildSeries(data) {
   return series;
 }
 
-// Per election: how many counties changed party since the one before (the first has no "before").
+// Per election: how many counties changed party since the one before (the first has no "before"),
+// out of `compared`, the counties that voted in both, so the share of flips has an honest base.
 export function countFlips(series) {
-  const flips = years.map(() => ({ toDemocratic: 0, toRepublican: 0 }));
+  const flips = years.map(() => ({ toDemocratic: 0, toRepublican: 0, compared: 0 }));
   for (const county of Object.values(series)) {
     const margins = county['margin %'];
     for (let index = 1; index < years.length; index++) {
+      if (county.voted[index - 1] && county.voted[index]) flips[index].compared++;
       // A year without votes (or a tie) is 0 and never counts as a flip.
       if (margins[index - 1] * margins[index] < 0) flips[index][margins[index] > 0 ? 'toDemocratic' : 'toRepublican']++;
     }

@@ -9,7 +9,7 @@ npm test
 npm run build
 ```
 
-The controls select an election year, pause/resume playback, switch the height metric and the colour palette, and adjust animation, lighting and effects. Under the title, the header counts the counties that changed party since the previous election. Drag to pan, scroll to zoom, and right-drag to orbit. Hover a county to outline it. Reduced-motion preferences disable autoplay and breathing on initial load.
+The header's timeline scrubs or steps through the elections; the controls pause/resume playback, switch the height metric and the colour palette, and adjust animation, lighting and effects. Under the title, the header shows the share of counties that changed party since the previous election, the count and which way they went, over a bar per election of that share, which is the year control. Drag to pan, scroll to zoom, and right-drag to orbit. Hover a county to outline it. Reduced-motion preferences disable autoplay and breathing on initial load.
 
 - `src/App.jsx`: React controls, Canvas, loading and error UI.
 - `src/ElectionScene.jsx`: scene, MapControls, caption and a single Fiber animation loop.

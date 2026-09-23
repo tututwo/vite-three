@@ -30,14 +30,16 @@ test('header distinguishes loading, the first election, zero flips and a single 
       flips, previousYear, accents: ['#4b2bbf', '#e0491b'], fills: ['#9a86e0', '#f39367'],
     })).replace(/<[^>]*>/g, '');
     assert.equal(render(undefined, 2016), '', 'loading does not invent a zero');
-    assert.match(render({ toDemocratic: 0, toRepublican: 0 }, undefined), /first election/);
-    assert.doesNotMatch(render({ toDemocratic: 0, toRepublican: 0 }, undefined), /since/);
-    for (const [democratic, republican, expected] of [[64, 15, '79 counties'], [0, 0, '0 counties'], [1, 0, '1 county']]) {
-      const text = render({ toDemocratic: democratic, toRepublican: republican }, 2016);
-      assert.ok(text.includes(`${expected} flipped since 2016`));
+    assert.match(render({ toDemocratic: 0, toRepublican: 0, compared: 0 }, undefined), /first election/);
+    assert.doesNotMatch(render({ toDemocratic: 0, toRepublican: 0, compared: 0 }, undefined), /since/);
+    for (const [democratic, republican, expected] of [[64, 15, '79.0%'], [0, 0, '0.0%'], [1, 0, '1.0%']]) {
+      const text = render({ toDemocratic: democratic, toRepublican: republican, compared: 100 }, 2016);
+      assert.ok(text.includes(`${expected}of counties flipped since 2016`), text);
+      assert.ok(text.includes(`${democratic + republican} of 100 counties`), text);
       assert.ok(text.includes(`${democratic} to Democrats`));
       assert.ok(text.includes(`${republican} to Republicans`));
     }
+    assert.ok(render({ toDemocratic: 0, toRepublican: 0, compared: 0 }, 2016).includes('0.0%'), 'no comparable counties is not NaN');
   } finally {
     await server.close();
   }
@@ -52,8 +54,9 @@ test('signed series, flips and interpolation', () => {
   assert.throws(() => buildSeries({ years: [2000, 2004], counties: {} }), /1868-2020/);
   assert.throws(() => buildSeries(null), /1868-2020/);
   const fixtureFlips = countFlips(series);
-  assert.deepEqual(fixtureFlips[1], { toDemocratic: 0, toRepublican: 1 });
-  assert.deepEqual(fixtureFlips[2], { toDemocratic: 0, toRepublican: 0 }, 'sinking to a tie is not a flip yet');
+  assert.deepEqual(fixtureFlips[1], { toDemocratic: 0, toRepublican: 1, compared: 1 });
+  assert.deepEqual(fixtureFlips[2], { toDemocratic: 0, toRepublican: 0, compared: 1 }, 'sinking to a tie is not a flip yet');
+  assert.deepEqual(fixtureFlips[3], { toDemocratic: 0, toRepublican: 0, compared: 0 }, 'a county that stops voting is not compared');
 
   const last = years.length - 1;
   const heights = [...flatHeights];
@@ -86,9 +89,10 @@ test('bundled returns, county shapes and basemap agree', () => {
   }
   assert.equal(bundled['12086'].voted[years.indexOf(1960)], 1, 'Dade county votes live on in Miami-Dade');
   const flips = countFlips(bundled);
-  assert.deepEqual(flips[0], { toDemocratic: 0, toRepublican: 0 });
+  assert.deepEqual(flips[0], { toDemocratic: 0, toRepublican: 0, compared: 0 });
   const in1964 = flips[years.indexOf(1964)];
   assert.ok(in1964.toDemocratic > 1000 && in1964.toRepublican > 50, 'LBJ landslide, while the Deep South leaves');
+  assert.ok(in1964.compared > 3000 && in1964.compared >= in1964.toDemocratic + in1964.toRepublican, 'the share has a base');
 
   const shapes = new Set([...asset('counties.svg').matchAll(/id="(\d{5})"/g)].map((match) => match[1]));
   assert.ok(shapes.size > 3000);

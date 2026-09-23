@@ -35,18 +35,21 @@ function Slider({ name, label, min, max, step = 0.01, settings, onChange }) {
   );
 }
 
-// The header's one small chart: which way the flipped counties went. It changes every couple of
-// seconds, so it has to read at a glance: two numbers and where the bar splits, no sentences.
+// The header's stat: the share of counties that flipped, big; the count and the split, small. It
+// changes every couple of seconds, so it has to read at a glance: numbers and a bar, no sentences.
 export function FlipCount({ flips, accents, fills, previousYear }) {
-  if (!flips) return <div className="map-flips" aria-hidden="true" />;
+  if (!flips) return <div className="flip-stat" aria-hidden="true" />;
   if (previousYear === undefined) {
-    return <div className="map-flips"><p className="flip-title">The first election in this series</p></div>;
+    return <div className="flip-stat"><p className="flip-title">The first election in this series</p></div>;
   }
   const total = flips.toDemocratic + flips.toRepublican;
+  const share = flips.compared ? total / flips.compared : 0;
   return (
-    <div className="map-flips">
+    <div className="flip-stat">
       <p className="flip-title">
-        <strong>{total.toLocaleString()}</strong> {total === 1 ? 'county' : 'counties'} flipped since {previousYear}
+        <strong>{share.toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 1, maximumFractionDigits: 1 })}</strong>
+        of counties flipped since {previousYear}
+        <small>{total.toLocaleString()} of {flips.compared.toLocaleString()} counties</small>
       </p>
       <div className="flip-chart">
         <p className="flip-side">
@@ -79,6 +82,18 @@ export default function App() {
   const sliderProps = { settings, onChange: updateSetting };
   const yearIndex = years.indexOf(year);
   const palette = palettes[settings.palette];
+  const current = flips?.[yearIndex];
+  const shares = flips?.map((election) => (election.compared
+    ? (election.toDemocratic + election.toRepublican) / election.compared : 0)) ?? [];
+  const peak = Math.max(...shares, 0.01);
+  // Pauses, then the scene's frame loop eases the map from wherever it is to the chosen election.
+  // Playback shows 1868 just before it wraps, so a step on from there starts below zero, not at 2020.
+  const seek = (index) => {
+    const from = timeline.current.time;
+    setYear(years[index]);
+    updateSetting('playing', false);
+    timeline.current.transition = { from: from > years.length - 0.5 ? from - years.length : from, to: index, elapsed: 0 };
+  };
 
   return (
     <main>
@@ -93,12 +108,32 @@ export default function App() {
         {!flips ? <div className="scene-status" role="status">Loading county map…</div> : null}
       </SceneErrorBoundary>
       <header className="map-header">
-        <h1>Presidential margins, <span>{year}</span></h1>
+        <h1>Presidential margins</h1>
         <p className="map-subtitle">
           The taller the county, the wider the gap between the Democratic and Republican candidates.
         </p>
-        <FlipCount flips={flips?.[yearIndex]} accents={palette.accents} fills={palette.fills}
-          previousYear={years[yearIndex - 1]} />
+        <div className="map-flips">
+          {/* Remounted each election, so the wash restarts its fade in the colour of the side that gained. */}
+          {current && yearIndex ? <span key={year} className="flip-wash" aria-hidden="true"
+            style={{ background: palette.fills[current.toRepublican > current.toDemocratic ? 1 : 0] }} /> : null}
+          <FlipCount flips={current} accents={palette.accents} fills={palette.fills} previousYear={years[yearIndex - 1]} />
+          {/* The year control is also a chart, one bar per election's flip share, so the big years show where to jump. */}
+          <div className="flip-timeline">
+            <button type="button" className="step-button" aria-label="Previous election" disabled={yearIndex === 0}
+              onClick={() => seek(yearIndex - 1)}>‹</button>
+            <div className="flip-history">
+              {shares.map((share, index) => <span key={years[index]} style={{
+                left: `${(index / (years.length - 1)) * 100}%`, height: `${(share / peak) * 100}%`,
+                background: palette.fills[flips[index].toRepublican > flips[index].toDemocratic ? 1 : 0],
+              }} />)}
+              <input type="range" min={0} max={years.length - 1} value={yearIndex} aria-label="Election year"
+                aria-valuetext={String(year)} onChange={(event) => seek(event.target.valueAsNumber)} />
+            </div>
+            <button type="button" className="step-button" aria-label="Next election" disabled={yearIndex === years.length - 1}
+              onClick={() => seek(yearIndex + 1)}>›</button>
+          </div>
+          <p className="flip-axis" aria-hidden="true"><span>{years[0]}</span><span>{years.at(-1)}</span></p>
+        </div>
       </header>
       {/* Method and credit sit where a newspaper graphic keeps them: small, at the foot, out of the headline. */}
       <p className="map-note">
@@ -115,19 +150,6 @@ export default function App() {
             </svg>
           </summary>
           <div className="controls-content">
-            <label className="select-control">Election year
-              <select value={year} onChange={(event) => {
-                const nextYear = Number(event.target.value);
-                setYear(nextYear);
-                updateSetting('playing', false);
-                // The scene's frame loop eases the map from wherever it is to the chosen election.
-                timeline.current.transition = {
-                  from: timeline.current.time, to: years.indexOf(nextYear), elapsed: 0,
-                };
-              }}>
-                {years.map((value) => <option key={value} value={value}>{value}</option>)}
-              </select>
-            </label>
             <button className="play-button" onClick={() => updateSetting('playing', !settings.playing)}>
               {settings.playing ? 'Pause animation' : 'Play animation'}
             </button>
