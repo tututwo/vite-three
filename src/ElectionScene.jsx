@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useFrame, useLoader, useThree } from '@react-three/fiber';
 import { MapControls } from '@react-three/drei/core/MapControls.js';
 import { CanvasTexture, FileLoader, MathUtils, SRGBColorSpace, TextureLoader } from 'three';
@@ -91,8 +91,6 @@ export default function ElectionScene({ settings, timeline, onYearChange, onRead
   const series = useMemo(() => buildSeries(elections), [elections]);
   const flips = useMemo(() => countFlips(series), [series]);
   const [map, setMap] = useState(null);
-  const outlineMesh = useRef(null);
-  const hovered = useRef(null);
   const camera = useThree((state) => state.camera);
   const size = useThree((state) => state.size);
   const gl = useThree((state) => state.gl);
@@ -106,10 +104,7 @@ export default function ElectionScene({ settings, timeline, onYearChange, onRead
   useLayoutEffect(() => {
     const resource = createCountyMap(svg, defaultSettings, series);
     setMap(resource);
-    return () => {
-      hovered.current = null;
-      resource.dispose();
-    };
+    return () => resource.dispose();
   }, [svg, series]);
 
   // Ready means the map exists; the flip counts ride along because only the scene has the returns.
@@ -147,31 +142,13 @@ export default function ElectionScene({ settings, timeline, onYearChange, onRead
       state.year = years[electionAt(state.time)];
     }
     map.update(state.time, state.seconds, settings);
-    if (hovered.current && outlineMesh.current) outlineMesh.current.scale.z = hovered.current.height;
   }, -0.5);
-
-  const clearHover = useCallback(() => {
-    hovered.current = null;
-    if (outlineMesh.current) outlineMesh.current.visible = false;
-  }, []);
 
   return (
     <>
       <color attach="background" args={[groundColor]} />
       {map ? <group position={map.position} scale={[1, -1, 1]}>
-        <primitive object={map.mesh} onPointerMove={(event) => {
-          if (event.isPrimary === false) return;
-          event.stopPropagation();
-          const county = map.counties[event.batchId];
-          if (!county) return;
-          hovered.current = county;
-          outlineMesh.current.geometry = county.geometry;
-          outlineMesh.current.scale.z = county.height;
-          outlineMesh.current.visible = true;
-        }} onPointerOut={clearHover} />
-        <mesh ref={outlineMesh} visible={false}>
-          <meshBasicMaterial colorWrite={false} depthWrite={false} />
-        </mesh>
+        <primitive object={map.mesh} />
       </group> : null}
       <mesh receiveShadow>
         <planeGeometry args={[8000, 8000]} />
@@ -195,9 +172,8 @@ export default function ElectionScene({ settings, timeline, onYearChange, onRead
         shadow-camera-top={420} shadow-camera-bottom={-420}
         shadow-camera-near={100} shadow-camera-far={1600} />
       <MapControls makeDefault target={target} enableDamping dampingFactor={0.05}
-        minDistance={150} maxDistance={2000} maxPolarAngle={Math.PI / 2 - 0.15}
-        onStart={clearHover} />
-      <PostProcessing settings={settings} outlineMesh={outlineMesh} />
+        minDistance={150} maxDistance={2000} maxPolarAngle={Math.PI / 2 - 0.15} />
+      <PostProcessing settings={settings} />
     </>
   );
 }

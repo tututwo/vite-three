@@ -1,16 +1,14 @@
 import { useLayoutEffect, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Vector2 } from "three";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { GTAOPass } from "three/addons/postprocessing/GTAOPass.js";
 import { BokehPass } from "three/addons/postprocessing/BokehPass.js";
-import { OutlinePass } from "three/addons/postprocessing/OutlinePass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { VignetteShader } from "three/addons/shaders/VignetteShader.js";
 
-export default function PostProcessing({ settings, outlineMesh }) {
+export default function PostProcessing({ settings }) {
   const gl = useThree((state) => state.gl);
   const scene = useThree((state) => state.scene);
   const camera = useThree((state) => state.camera);
@@ -21,25 +19,24 @@ export default function PostProcessing({ settings, outlineMesh }) {
 
   useLayoutEffect(() => {
     const composer = new EffectComposer(gl);
-    // Multisample geometry edges without FXAA blending away small, distant counties.
-    composer.renderTarget1.samples = composer.renderTarget2.samples = Math.min(4, gl.capabilities.maxSamples);
     const gtao = new GTAOPass(scene, camera, 1, 1);
+    // AO is soft by nature, so half resolution and half the samples hold up, and cut about a
+    // third of the frame.
+    gtao.setSize = (width, height) => GTAOPass.prototype.setSize.call(gtao, width / 2, height / 2);
     gtao.updateGtaoMaterial({
       radius: 14,
       distanceExponent: 1.4,
       thickness: 8,
       scale: 1.3,
-      samples: 16,
+      samples: 8,
     });
+    gtao.updatePdMaterial({ samples: 8 });
 
     const bokeh = new BokehPass(scene, camera, {
       focus: 800,
       aperture: 0.000012,
       maxblur: 0.004,
     });
-    const outline = new OutlinePass(new Vector2(1, 1), scene, camera);
-    // The invisible stand-in coincides with its county, so both edges match.
-    outline.hiddenEdgeColor.copy(outline.visibleEdgeColor);
 
     const vignette = new ShaderPass(VignetteShader);
     vignette.uniforms.offset.value = 0.75;
@@ -48,12 +45,11 @@ export default function PostProcessing({ settings, outlineMesh }) {
       new RenderPass(scene, camera),
       gtao,
       bokeh,
-      outline,
       vignette,
       new OutputPass(),
     ];
     for (const pass of passes) composer.addPass(pass);
-    pipeline.current = { composer, gtao, bokeh, outline, vignette };
+    pipeline.current = { composer, gtao, bokeh, vignette };
 
     return () => {
       pipeline.current = null;
@@ -67,6 +63,10 @@ export default function PostProcessing({ settings, outlineMesh }) {
 
   useLayoutEffect(() => {
     const { composer } = pipeline.current;
+    // Multisample geometry edges without FXAA blending away small, distant counties. At 2x pixel
+    // ratio the edges are already fine and 4 samples cost more than the rest of the frame.
+    // A new ratio always resizes the targets, which reallocates them with this sample count.
+    composer.renderTarget1.samples = composer.renderTarget2.samples = dpr >= 2 ? 0 : Math.min(4, gl.capabilities.maxSamples);
     composer.setPixelRatio(dpr);
     composer.setSize(size.width, size.height);
   }, [gl, scene, camera, size.width, size.height, dpr]);
@@ -81,9 +81,6 @@ export default function PostProcessing({ settings, outlineMesh }) {
     if (controls) {
       passes.bokeh.uniforms.focus.value = camera.position.distanceTo(controls.target);
     }
-    const ghost = outlineMesh.current;
-    passes.outline.selectedObjects.length = ghost?.visible ? 1 : 0;
-    if (ghost?.visible) passes.outline.selectedObjects[0] = ghost;
     passes.composer.render(delta);
   }, 1);
 
