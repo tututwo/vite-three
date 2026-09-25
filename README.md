@@ -12,10 +12,10 @@ npm run build
 The header's timeline scrubs or steps through the elections; the controls pause/resume playback, switch the height metric and the colour palette, and adjust animation, lighting and effects. Under the title, the header shows the share of counties that changed party since the previous election, the count and which way they went, over a bar per election of that share, which is the year control. Drag to pan, scroll to zoom, and right-drag to orbit. Reduced-motion preferences disable autoplay and breathing on initial load.
 
 - `src/App.jsx`: React controls, Canvas, loading and error UI.
-- `src/ElectionScene.jsx`: scene, MapControls, caption and a single Fiber animation loop.
-- `src/electionData.js`: signed heights per county and election, and their interpolation.
-- `src/mapGeometry.js`: one BatchedMesh, county geometry, gradient shader and resource cleanup.
-- `src/PostProcessing.jsx`: Three.js GTAO at half resolution, optional depth of field and vignette passes, rendered by Fiber with multisampled render targets instead of a final FXAA blur.
+- `src/ElectionScene.jsx`: scene, MapControls, caption, the floor with the basemap painted into it, and a single Fiber animation loop.
+- `src/electionData.js`: signed heights per county and election, flip counts and palettes.
+- `src/mapGeometry.js`: all counties in one mesh. The vertex shader eases each county between elections from a data texture (one row per county), so the CPU only sets a few uniforms per frame; the fragment shader colours by altitude and adds ambient occlusion where a wall rises out of the county across its border.
+- `src/PostProcessing.jsx`: renders straight to the canvas with a vignette quad; a Bokeh composer exists only while depth of field is on.
 - `public/counties.svg`, `public/elections.json`, and `public/basemap.svg`: generated assets, loaded in parallel at runtime. Counties and the static Canada/Mexico/ocean basemap share one continuous Albers projection, including Alaska and Hawaii at their geographic positions.
 
 ## Data
@@ -34,4 +34,4 @@ npm run data:basemap     # Natural Earth + us-atlas -> aligned static basemap.sv
 - Basemap context: [Natural Earth 1:50m](https://www.naturalearthdata.com/), public-domain country boundaries and lakes. The local texture uses the same continuous projection as the counties.
 - `data/`: the source `.Rdata` plus the original R exploration (raw CSVs, `.qmd` notebooks). Kept out of `public/` so Vite does not ship it.
 
-GPU resources are recreated and released with the scene lifecycle, including React Strict Mode. React is kept on the 19.2 release line to match Fiber 9.7's peer dependency range. The existing color pipeline uses no tone mapping (`Canvas flat`). Depth of field defaults off and the scene has no distance fog; depth of field remains available in Lights & effects. Canvas rendering uses a 1.5–2 pixel ratio. Below 2× it adds up to four MSAA samples to preserve small county details; at 2× the pixel density does that alone, and the samples cost more than the rest of the frame. Controls collapse into a bottom panel on narrow screens, with reduced-motion, reduced-transparency and increased-contrast preferences supported.
+GPU resources are recreated and released with the scene lifecycle, including React Strict Mode. React is kept on the 19.2 release line to match Fiber 9.7's peer dependency range. The existing color pipeline uses no tone mapping (`Canvas flat`). Depth of field defaults off and the scene has no distance fog; depth of field remains available in Lights & effects. Canvas rendering uses a 1.5–2 pixel ratio, with the canvas's own MSAA below 2×, and draws frames on demand while playback is paused without breathing. Controls collapse into a bottom panel on narrow screens, with reduced-motion, reduced-transparency and increased-contrast preferences supported.

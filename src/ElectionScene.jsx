@@ -16,6 +16,15 @@ const mapUrl = `${import.meta.env.BASE_URL}counties.svg`;
 const electionsUrl = `${import.meta.env.BASE_URL}elections.json`;
 const basemapUrl = `${import.meta.env.BASE_URL}basemap.svg`;
 const [basemapX, basemapY, basemapWidth, basemapHeight] = basemapBounds;
+const floorSize = 8000;
+// The basemap is painted into the floor's own material, fading to the floor colour through its
+// transparent edges, so the floor is one opaque plane shaded once instead of two stacked ones.
+function paintBasemap(shader) {
+  shader.fragmentShader = shader.fragmentShader.replace('#include <map_fragment>', /* glsl */ `
+    vec4 basemapColor = texture2D(map, vMapUv);
+    diffuseColor.rgb = mix(diffuseColor.rgb, basemapColor.rgb, basemapColor.a);`);
+}
+const floorProgramKey = () => 'floor-basemap-v1';
 const asJson = (loader) => loader.setResponseType('json');
 // Start all asset downloads together instead of letting suspending hooks serialize them.
 useLoader.preload(SVGLoader, mapUrl);
@@ -94,12 +103,26 @@ export default function ElectionScene({ settings, timeline, onYearChange, onRead
   const camera = useThree((state) => state.camera);
   const size = useThree((state) => state.size);
   const gl = useThree((state) => state.gl);
+  const invalidate = useThree((state) => state.invalidate);
+
+  // On demand (paused, no breathing), a new setting or a seek still needs a frame to show it.
+  useEffect(() => invalidate(), [invalidate, settings]);
 
   useLayoutEffect(() => {
     basemap.colorSpace = SRGBColorSpace;
     basemap.anisotropy = Math.min(8, gl.capabilities.getMaxAnisotropy());
     basemap.needsUpdate = true;
   }, [basemap, gl]);
+
+  // Places the texture's viewBox on the floor. The county group flips the SVG's downward Y, so the
+  // viewBox's centre is flipped too; clamping keeps the transparent edge beyond it.
+  useLayoutEffect(() => {
+    if (!map) return;
+    const centerX = map.position[0] + basemapX + basemapWidth / 2;
+    const centerY = map.position[1] - basemapY - basemapHeight / 2;
+    basemap.repeat.set(floorSize / basemapWidth, floorSize / basemapHeight);
+    basemap.offset.set(0.5 - (floorSize / 2 + centerX) / basemapWidth, 0.5 - (floorSize / 2 + centerY) / basemapHeight);
+  }, [basemap, map]);
 
   useLayoutEffect(() => {
     const resource = createCountyMap(svg, defaultSettings, series);
@@ -124,24 +147,34 @@ export default function ElectionScene({ settings, timeline, onYearChange, onRead
     const state = timeline.current;
     const step = Math.min(delta, 0.1);
     state.seconds += step;
-    if (settings.playing) {
-      const interruptedSeek = state.transition !== null;
-      state.transition = null;
-      state.time = (state.time + step / settings.secondsPerElection) % years.length;
-      const year = years[electionAt(state.time)];
-      if (interruptedSeek || year !== state.year) {
-        state.year = year;
-        onYearChange(year);
+    const { transition } = state;
+    if (transition) {
+      // A seek goes straight from what is on screen to the chosen election, however many elections
+      // lie between, and playback (if resumed meanwhile) carries on from there once it lands.
+      if (!transition.held) {
+        map.hold();
+        transition.held = true;
+        state.time = transition.to;
+        state.year = years[transition.to];
       }
-    } else if (state.transition) {
-      const transition = state.transition;
       transition.elapsed += step;
       const progress = Math.min(transition.elapsed / 1.5, 1);
-      state.time = MathUtils.lerp(transition.from, transition.to, ease(progress));
+      map.show(-1, transition.to, ease(progress));
       if (progress === 1) state.transition = null;
-      state.year = years[electionAt(state.time)];
+      else invalidate();
+    } else {
+      if (settings.playing) {
+        state.time = (state.time + step / settings.secondsPerElection) % years.length;
+        const year = years[electionAt(state.time)];
+        if (year !== state.year) {
+          state.year = year;
+          onYearChange(year);
+        }
+      }
+      const election = Math.floor(state.time);
+      map.show(election, (election + 1) % years.length, state.time - election);
     }
-    map.update(state.time, state.seconds, settings);
+    map.update(state.seconds, settings);
   }, -0.5);
 
   return (
@@ -150,30 +183,25 @@ export default function ElectionScene({ settings, timeline, onYearChange, onRead
       {map ? <group position={map.position} scale={[1, -1, 1]}>
         <primitive object={map.mesh} />
       </group> : null}
-      <mesh receiveShadow>
-        <planeGeometry args={[8000, 8000]} />
-        <meshStandardMaterial color={groundColor} roughness={1} />
+      {/* Drawn after the counties, so depth testing skips the floor under them on GPUs without hidden-surface removal. */}
+      <mesh receiveShadow renderOrder={1}>
+        <planeGeometry args={[floorSize, floorSize]} />
+        <meshStandardMaterial color={groundColor} map={basemap} roughness={1}
+          onBeforeCompile={paintBasemap} customProgramCacheKey={floorProgramKey} />
       </mesh>
-      {/* Centred on the texture's viewBox; the county group flips the SVG's downward Y, so this does too. */}
-      {map ? <mesh receiveShadow position={[
-        map.position[0] + basemapX + basemapWidth / 2, map.position[1] - basemapY - basemapHeight / 2, 0.05,
-      ]}>
-        <planeGeometry args={[basemapWidth, basemapHeight]} />
-        <meshStandardMaterial map={basemap} transparent roughness={1} depthWrite={false} />
-      </mesh> : null}
       <Caption timeline={timeline} nominees={elections.nominees} palette={settings.palette} />
       <hemisphereLight color="#dfe6ff" groundColor="#3a3440" intensity={settings.fill} position={[0, 0, 1]} />
       <directionalLight color="#e6ecff" intensity={settings.front} position={[-200, -600, 300]} />
       <directionalLight color="#fff4e6" intensity={settings.key}
         position={[settings.keyX, settings.keyY, settings.keyZ]} castShadow
-        shadow-mapSize={[4096, 4096]} shadow-radius={settings.shadowSoftness}
+        shadow-mapSize={[2048, 2048]} shadow-radius={settings.shadowSoftness / 2}
         shadow-bias={-0.0003} shadow-normalBias={0.6}
         shadow-camera-left={-520} shadow-camera-right={520}
         shadow-camera-top={420} shadow-camera-bottom={-420}
         shadow-camera-near={100} shadow-camera-far={1600} />
       <MapControls makeDefault target={target} enableDamping dampingFactor={0.05}
         minDistance={150} maxDistance={2000} maxPolarAngle={Math.PI / 2 - 0.15} />
-      <PostProcessing settings={settings} />
+      <PostProcessing settings={settings} counties={map?.mesh} />
     </>
   );
 }

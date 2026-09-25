@@ -4,7 +4,9 @@ import { defaultSettings, heightModes, paletteNames, palettes, years } from './e
 
 const ElectionScene = lazy(() => import('./ElectionScene.jsx'));
 const camera = { position: [-60, -660, 520], up: [0, 0, 1], fov: 30, near: 10, far: 6000 };
-const renderer = { antialias: false }; // The postprocessing composer owns MSAA.
+// Multisampling below 2x pixel ratio only: at 2x the pixels are small enough, and the samples
+// would add to every frame on exactly the laptops that run hot.
+const renderer = { antialias: globalThis.devicePixelRatio < 2 };
 const initialSettings = {
   ...defaultSettings,
   fill: 1.2, front: 1, key: 2.4,
@@ -86,19 +88,19 @@ export default function App() {
   const shares = flips?.map((election) => (election.compared
     ? (election.toDemocratic + election.toRepublican) / election.compared : 0)) ?? [];
   const peak = Math.max(...shares, 0.01);
-  // Pauses, then the scene's frame loop eases the map from wherever it is to the chosen election.
-  // Playback shows 1868 just before it wraps, so a step on from there starts below zero, not at 2020.
+  // Pauses, then the scene's frame loop morphs the map from what is on screen to the chosen election.
   const seek = (index) => {
-    const from = timeline.current.time;
     setYear(years[index]);
     updateSetting('playing', false);
-    timeline.current.transition = { from: from > years.length - 0.5 ? from - years.length : from, to: index, elapsed: 0 };
+    timeline.current.transition = { to: index, elapsed: 0 };
   };
 
   return (
     <main>
       <SceneErrorBoundary>
+        {/* Paused without breathing nothing moves, so frames are drawn only when something changes. */}
         <Canvas flat shadows="percentage" camera={camera} gl={renderer} dpr={[1.5, 2]}
+          frameloop={settings.playing || settings.breath > 0 ? 'always' : 'demand'}
           fallback={<p>This interactive 3D map requires WebGL.</p>}
           aria-label="Animated three-dimensional county election map">
           <Suspense fallback={null}>

@@ -40,7 +40,7 @@ export const defaultSettings = {
   secondsPerElection: 2,
   stagger: 0.5,
   breath: 0.04,
-  maxHeight: 110,
+  maxHeight: 34,
   minHeight: 0.6,
   heightExponent: 1,
   colorGamma: 0.5,
@@ -91,20 +91,5 @@ export function countFlips(series) {
 }
 
 // The election nearest a fractional timeline position, as an index into `years` (wraps past 2020).
+// The counties ease between elections in the vertex shader (src/mapGeometry.js).
 export const electionAt = (time) => Math.round(time) % years.length;
-
-// Eased value of a per-election series at a fractional election index; each county waits
-// `delay * stagger` of the transition before it starts moving.
-export function interpolateSeries(values, time, delay, stagger) {
-  const election = Math.floor(time);
-  const from = ((election % years.length) + years.length) % years.length;
-  const to = (from + 1) % years.length;
-  const progress = Math.max(0, Math.min(1, (time - election - delay * stagger) / (1 - stagger)));
-  const eased = progress * progress * (3 - 2 * progress);
-  return values[from] + (values[to] - values[from]) * eased;
-}
-
-export function getCountyHeight(signed, seconds, phase, settings) {
-  const breath = 1 + settings.breath * Math.sin(seconds * 1.6 + phase);
-  return settings.minHeight + settings.maxHeight * Math.abs(signed) ** settings.heightExponent * breath;
-}

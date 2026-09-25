@@ -1,10 +1,9 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { Matrix4, ShapePath } from 'three';
+import { ShapePath } from 'three';
 import {
-  basemapBounds, buildSeries, countFlips, defaultSettings, electionAt, flatHeights, getCountyHeight, heightModes,
-  interpolateSeries, paletteNames, years,
+  basemapBounds, buildSeries, countFlips, defaultSettings, electionAt, flatHeights, heightModes, paletteNames, years,
 } from './electionData.js';
 import { createCountyMap } from './mapGeometry.js';
 
@@ -45,7 +44,7 @@ test('header distinguishes loading, the first election, zero flips and a single 
   }
 });
 
-test('signed series, flips and interpolation', () => {
+test('signed series and flips', () => {
   const series = fixtureSeries();
   assert.deepEqual(series['01001']['margin %'].slice(0, 4), [1, -1, 0, 0]);
   assert.deepEqual(series['01001']['margin votes'].slice(0, 3), [1, -Math.sqrt(400 / 900), 0]);
@@ -59,17 +58,6 @@ test('signed series, flips and interpolation', () => {
   assert.deepEqual(fixtureFlips[3], { toDemocratic: 0, toRepublican: 0, compared: 0 }, 'a county that stops voting is not compared');
 
   const last = years.length - 1;
-  const heights = [...flatHeights];
-  heights[0] = 1;
-  heights[1] = heights[last] = -1;
-  assert.equal(interpolateSeries(heights, 0.5, 0, 0), 0, 'a party flip passes through zero');
-  assert.equal(interpolateSeries(heights, 0.2, 1, 0.5), 1, 'stagger waits for the wave');
-  assert.equal(interpolateSeries(heights, last + 0.5, 0, 0), 0, 'last election wraps into first');
-  assert.equal(interpolateSeries(heights, years.length, 0, 0), 1);
-  assert.equal(interpolateSeries(heights, -0.5, 0, 0), 0);
-  assert.equal(getCountyHeight(0, 0, 0, defaultSettings), defaultSettings.minHeight);
-  assert.equal(getCountyHeight(-1, 5, 2, still), still.minHeight + still.maxHeight);
-  assert.equal(interpolateSeries(flatHeights, 2.75, 0.5, 0.5), 0);
   assert.deepEqual([0.4, 0.6, last + 0.4, last + 0.6].map(electionAt), [0, 1, last, 0], 'the caption wraps with the map');
 });
 
@@ -104,26 +92,57 @@ test('bundled returns, county shapes and basemap agree', () => {
 
 test('county map geometry, palette and disposal', () => {
   const series = fixtureSeries();
-  const path = new ShapePath();
-  path.moveTo(0, 0).lineTo(10, 0).lineTo(10, 20).lineTo(0, 20).lineTo(0, 0);
-  path.userData = { node: { id: '01001' } };
-  const map = createCountyMap({ paths: [path] }, still, series);
-  assert.deepEqual(map.position, [-5, 10, 0]);
-  map.update(0.5, 0, { ...still, stagger: 0 });
-  assert.equal(map.counties[0].height, still.minHeight);
-  const matrix = new Matrix4();
-  map.mesh.getMatrixAt(0, matrix);
-  assert.ok(Math.abs(matrix.elements[10] - still.minHeight) < 1e-6);
+  // Two 10x20 counties that share the border at x = 10.
+  const county = (x, id) => {
+    const path = new ShapePath();
+    path.moveTo(x, 0).lineTo(x + 10, 0).lineTo(x + 10, 20).lineTo(x, 20).lineTo(x, 0);
+    path.userData = { node: { id } };
+    return path;
+  };
+  const path = county(0, '01001');
+  const map = createCountyMap({ paths: [path, county(10, '01003')] }, still, series);
+  assert.deepEqual(map.position, [-10, 10, 0]);
+
+  // The vertex shader reads one row per county: [margin %, margin votes, voted] per election, then [delay, phase].
+  const { image } = map.uniforms.series.value;
+  const texel = (row, column) => [...image.data.slice((row * image.width + column) * 4, (row * image.width + column + 1) * 4)];
+  assert.equal(image.width, years.length + 1);
+  assert.deepEqual(texel(0, 0), [1, 1, 1, 0]);
+  assert.deepEqual(texel(0, 1), [-1, Math.fround(-Math.sqrt(400 / 900)), 1, 0]);
+  assert.deepEqual(texel(1, 0), [0, 0, 0, 0], 'garbage returns stay flat');
+  assert.ok(texel(0, years.length)[0] > texel(1, years.length)[0], 'the western county waits longer into each transition');
+
+  const { county: row, neighbor, position } = map.mesh.geometry.attributes;
+  const across = new Set();
+  for (let vertex = 0; vertex < neighbor.count; vertex++) {
+    if (neighbor.getX(vertex) >= 0) across.add(`${row.getX(vertex)}->${neighbor.getX(vertex)} at x=${position.getX(vertex)}`);
+  }
+  assert.deepEqual([...across].sort(), ['0->1 at x=10', '1->0 at x=10'], 'only walls on the shared border rise out of a neighbour');
+
+  map.update(3, { ...still, height: 'margin votes', ambientOcclusion: 0.5 });
+  const { seconds, heightMode, maxHeight, occlusion } = map.uniforms;
+  assert.deepEqual([seconds, heightMode, maxHeight, occlusion].map(({ value }) => value), [3, 1, still.maxHeight, 0.5]);
+
+  // A seek starts from what is on screen: hold() freezes it the way the vertex shader computes it.
+  const held = map.uniforms.held.value.image.data;
+  const shown = () => [...held.slice(0, 3)].map((value) => +value.toFixed(5));
+  map.update(0, { ...still, stagger: 0 });
+  map.show(0, 1, 0.5);
+  map.hold();
+  assert.deepEqual(shown(), [0, 0.16667, 1], 'halfway from 1868 to 1872');
+  map.show(-1, 2, 0.5);
+  map.hold();
+  assert.deepEqual(shown(), [0, 0.08333, 1], 'a seek during a seek starts from where the first one had got to');
 
   assert.deepEqual(paletteNames, ['Lavender & peach', 'Blue & red']);
   const texels = map.uniforms.ramp.value.image.data;
   const lavender = texels.slice();
   const version = map.uniforms.ramp.value.version;
-  map.update(0, 0, { ...still, palette: 'Blue & red' });
+  map.update(0, { ...still, palette: 'Blue & red' });
   assert.notDeepEqual(texels, lavender, 'switching palette repaints the ramp');
   assert.ok(map.uniforms.ramp.value.version > version, 'and re-uploads it');
   assert.deepEqual([...texels.slice(0, 3)], [...lavender.slice(0, 3)], 'both palettes leave the floor at the same cream');
-  const resources = [map.mesh.geometry, map.mesh.material, map.uniforms.ramp.value, map.counties[0].geometry];
+  const resources = [map.mesh.geometry, map.mesh.material, map.mesh.customDepthMaterial, map.uniforms.ramp.value, map.uniforms.series.value, map.uniforms.held.value];
   let disposed = 0;
   resources.forEach((resource) => resource.addEventListener('dispose', () => disposed++));
   map.dispose();

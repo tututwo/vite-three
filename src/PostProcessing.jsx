@@ -1,88 +1,93 @@
 import { useLayoutEffect, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
+import { MultiplyBlending } from "three";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
-import { GTAOPass } from "three/addons/postprocessing/GTAOPass.js";
 import { BokehPass } from "three/addons/postprocessing/BokehPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
-import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
-import { VignetteShader } from "three/addons/shaders/VignetteShader.js";
 
-export default function PostProcessing({ settings }) {
+// The vignette is three's mix towards black (offset 0.75), multiplied over the finished frame by
+// one quad instead of a full-screen pass. The canvas holds sRGB values, so the linear falloff is
+// raised to 1/2.2 there; inside the depth-of-field composer the frame is still linear.
+const vignetteShader = {
+  uniforms: { encoding: { value: 1 / 2.2 } },
+  vertexShader: /* glsl */ `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = vec4(position.xy, 0.0, 1.0);
+    }`,
+  fragmentShader: /* glsl */ `
+    varying vec2 vUv;
+    uniform float encoding;
+    void main() {
+      vec2 offset = (vUv - 0.5) * 0.75;
+      gl_FragColor = vec4(vec3(pow(1.0 - dot(offset, offset), encoding)), 1.0);
+    }`,
+};
+
+export default function PostProcessing({ settings, counties }) {
   const gl = useThree((state) => state.gl);
   const scene = useThree((state) => state.scene);
   const camera = useThree((state) => state.camera);
   const controls = useThree((state) => state.controls);
   const size = useThree((state) => state.size);
   const dpr = useThree((state) => state.viewport.dpr);
-  const pipeline = useRef(null);
+  const depthOfField = useRef(null);
+  const vignette = useRef(null);
 
+  // Depth of field is the one effect that needs full-screen passes, so its composer exists only
+  // while it is switched on; otherwise the scene renders straight to the canvas.
   useLayoutEffect(() => {
+    if (!settings.depthOfField) return;
     const composer = new EffectComposer(gl);
-    const gtao = new GTAOPass(scene, camera, 1, 1);
-    // AO is soft by nature, so half resolution and half the samples hold up, and cut about a
-    // third of the frame.
-    gtao.setSize = (width, height) => GTAOPass.prototype.setSize.call(gtao, width / 2, height / 2);
-    gtao.updateGtaoMaterial({
-      radius: 14,
-      distanceExponent: 1.4,
-      thickness: 8,
-      scale: 1.3,
-      samples: 8,
-    });
-    gtao.updatePdMaterial({ samples: 8 });
-
     const bokeh = new BokehPass(scene, camera, {
       focus: 800,
       aperture: 0.000012,
       maxblur: 0.004,
     });
-
-    const vignette = new ShaderPass(VignetteShader);
-    vignette.uniforms.offset.value = 0.75;
-    vignette.uniforms.darkness.value = 1;
-    const passes = [
-      new RenderPass(scene, camera),
-      gtao,
-      bokeh,
-      vignette,
-      new OutputPass(),
-    ];
+    // Bokeh measures depth with its own override material, which has to raise the columns too.
+    if (counties) {
+      const { onBeforeCompile, customProgramCacheKey } = counties.customDepthMaterial;
+      Object.assign(bokeh._materialDepth, { onBeforeCompile, customProgramCacheKey });
+    }
+    const passes = [new RenderPass(scene, camera), bokeh, new OutputPass()];
     for (const pass of passes) composer.addPass(pass);
-    pipeline.current = { composer, gtao, bokeh, vignette };
+    depthOfField.current = { composer, bokeh };
 
     return () => {
-      pipeline.current = null;
+      depthOfField.current = null;
       for (const pass of passes) pass.dispose();
-      // Three r186's GTAOPass.dispose() omits these two owned materials.
-      gtao.gtaoMaterial.dispose();
-      gtao.blendMaterial.dispose();
       composer.dispose();
     };
-  }, [gl, scene, camera]);
+  }, [gl, scene, camera, counties, settings.depthOfField]);
 
   useLayoutEffect(() => {
-    const { composer } = pipeline.current;
-    // Multisample geometry edges without FXAA blending away small, distant counties. At 2x pixel
-    // ratio the edges are already fine and 4 samples cost more than the rest of the frame.
-    // A new ratio always resizes the targets, which reallocates them with this sample count.
+    const composer = depthOfField.current?.composer;
+    if (!composer) return;
+    // The canvas's own MSAA does not reach the scene drawn into the composer, so the composer
+    // multisamples below 2x pixel ratio, like the canvas. A new ratio resizes (and so reallocates) the targets.
     composer.renderTarget1.samples = composer.renderTarget2.samples = dpr >= 2 ? 0 : Math.min(4, gl.capabilities.maxSamples);
     composer.setPixelRatio(dpr);
     composer.setSize(size.width, size.height);
-  }, [gl, scene, camera, size.width, size.height, dpr]);
+  }, [gl, scene, camera, counties, size.width, size.height, dpr, settings.depthOfField]);
 
   // A positive priority makes this the sole owner of the final render.
   useFrame((_, delta) => {
-    const passes = pipeline.current;
-    if (!passes) return;
-    passes.gtao.blendIntensity = settings.ambientOcclusion;
-    passes.bokeh.enabled = settings.depthOfField;
-    passes.vignette.enabled = settings.vignette;
+    const effects = depthOfField.current;
+    vignette.current.material.uniforms.encoding.value = effects ? 1 : 1 / 2.2;
+    if (!effects) return gl.render(scene, camera);
     if (controls) {
-      passes.bokeh.uniforms.focus.value = camera.position.distanceTo(controls.target);
+      effects.bokeh.uniforms.focus.value = camera.position.distanceTo(controls.target);
     }
-    passes.composer.render(delta);
+    effects.composer.render(delta);
   }, 1);
 
-  return null;
+  return (
+    <mesh ref={vignette} visible={settings.vignette} renderOrder={1e6} frustumCulled={false}>
+      <planeGeometry args={[2, 2]} />
+      <shaderMaterial args={[vignetteShader]} blending={MultiplyBlending} premultipliedAlpha transparent
+        depthTest={false} depthWrite={false} />
+    </mesh>
+  );
 }

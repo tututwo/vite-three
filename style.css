@@ -42,8 +42,7 @@ button:active { transform: scale(0.98); }
   border-radius: 18px;
   background: rgb(250 249 247 / 92%);
   box-shadow: 0 2px 6px rgb(32 46 69 / 4%), 0 12px 36px rgb(32 46 69 / 10%), 0 0 0 1px rgb(32 46 69 / 6%);
-  -webkit-backdrop-filter: blur(20px) saturate(130%);
-  backdrop-filter: blur(20px) saturate(130%);
+  /* No backdrop blur: over a canvas that redraws every frame it is re-blurred every frame. */
 }
 .controls-heading {
   display: flex;
@@ -210,9 +209,9 @@ input[type='range'] { display: block; width: 100%; height: 32px; margin: 0; acce
   button:active { transform: none; }
 }
 @media (prefers-reduced-transparency: reduce) {
-  .controls-panel { background: #faf9f7; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .controls-panel { background: #faf9f7; }
 }
 @media (prefers-contrast: more) {
   :root { --control-muted: #424650; --control-line: #747987; }
-  .controls-panel { background: #faf9f7; border-color: #747987; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .controls-panel { background: #faf9f7; border-color: #747987; }
 }
