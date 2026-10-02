@@ -1,0 +1,10 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "election-3d",
+  "compatibility_date": "2026-09-28",
+  "assets": {
+    "directory": "./dist"
+  },
+  // gordontu.com's own Worker takes gordontu.com/*; this more specific route wins and hands the piece's path here.
+  "routes": [{ "pattern": "gordontu.com/data-visualization/presidential-margins-1868-2020/live*", "zone_name": "gordontu.com" }]
+}
