@@ -1,7 +1,11 @@
 import { interpolateRgbBasis } from 'd3';
 
-// Every presidential election in public/elections.json (see scripts/export-elections.R).
-export const years = Array.from({ length: 39 }, (_, index) => 1868 + index * 4);
+// Every presidential election in public/elections.json (see scripts/export-elections.R). County returns end
+// in 2020; 2024 is a turn with state results only (public/electoral.json).
+export const years = Array.from({ length: 40 }, (_, index) => 1868 + index * 4);
+export const lastCountyYear = 2020;
+const countyElections = years.indexOf(lastCountyYear) + 1;
+export const modes = ['territory', 'result', 'shift', 'loyalty'];
 export const heightModes = ['margin %', 'margin votes'];
 export const flatHeights = new Array(years.length).fill(0);
 export const groundColor = '#faf8f5';
@@ -55,7 +59,27 @@ export function countyMetrics(county, index) {
   const previousMargin = marginAt(index - 1);
   const shift = margin !== null && previousMargin !== null ? margin - previousMargin : null;
   return { margin, previousMargin, shift, flipped: shift === null ? null : previousMargin * margin < 0,
-    total: margin === null ? null : county.total[index] };
+    total: margin === null ? null : county.total[index], leader: margin === null ? null : leaderOf(county, index) };
+}
+
+// Who led: 'D', 'R', 'tie', or 'O' when everyone else's votes together beat both parties. The returns only
+// keep third parties as one sum (other = total - D - R), so 'O' never names a single winning candidate.
+function leaderOf(county, index) {
+  const diff = county.diff[index], other = county.other?.[index] ?? 0;
+  const democratic = (county.total[index] - other + diff) / 2;
+  return other > Math.max(democratic, democratic - diff) ? 'O' : diff > 0 ? 'D' : diff < 0 ? 'R' : 'tie';
+}
+
+// Per election: who led and for how many elections in a row (0 when nobody led or there was no return).
+// A missing return, a tie or a change of leader, third parties included, ends a streak.
+export function streaks(county) {
+  let previous = { leader: null, length: 0 };
+  return years.map((_, index) => {
+    const { leader } = countyMetrics(county, index);
+    const led = leader && leader !== 'tie' ? leader : null;
+    previous = { leader: led, length: !led ? 0 : previous.leader === led ? previous.length + 1 : 1 };
+    return previous;
+  });
 }
 
 export const marginLabel = (margin) => !Number.isFinite(margin) ? 'No data'
@@ -66,7 +90,7 @@ export const shiftLabel = (shift) => !Number.isFinite(shift) ? 'No comparison'
 // data.counties[fips] = { diff: Democratic minus Republican votes, total: votes cast }, null = did not vote.
 // Heights are signed (+ Democratic, - Republican) so that a flip has to pass through zero.
 export function buildSeries(data) {
-  if (String(data?.years) !== String(years)) throw new Error('elections.json does not cover 1868-2020');
+  if (String(data?.years) !== String(years)) throw new Error('elections.json does not cover 1868-2024');
   let maxVoteDiff = 0;
   for (const county of Object.values(data.counties)) {
     for (let index = 0; index < years.length; index++) {
@@ -75,14 +99,20 @@ export function buildSeries(data) {
   }
 
   const series = {};
-  for (const [fips, { diff, total }] of Object.entries(data.counties)) {
+  for (const [fips, { diff, total, other }] of Object.entries(data.counties)) {
     const county = series[fips] = {
       'margin %': [...flatHeights],
       'margin votes': [...flatHeights],
       shift: [...flatHeights],
       voted: [...flatHeights],
       compared: [...flatHeights],
+      loyalty: [...flatHeights],
+      otherLed: [...flatHeights],
     };
+    streaks({ diff, total, other }).forEach(({ leader, length }, index) => {
+      county.loyalty[index] = (leader === 'R' ? -1 : 1) * length / countyElections;
+      county.otherLed[index] = Number(leader === 'O');
+    });
     for (let index = 0; index < years.length; index++) {
       const votes = diff[index];
       const { margin, shift } = countyMetrics({ diff, total }, index);
@@ -116,9 +146,30 @@ export function countFlips(series) {
   return flips;
 }
 
+// Streaks that ended in election `index`: the county led in the election before, and a different leader
+// (or a tie) now. A missing return is a gap, not an ending.
+export function brokenStreaks(counties, index) {
+  const broken = [];
+  if (!index) return broken;
+  for (const [fips, county] of Object.entries(counties ?? {})) {
+    const { leader } = countyMetrics(county, index);
+    if (!leader) continue;
+    const before = streaks(county)[index - 1];
+    if (before.leader && before.leader !== leader) broken.push({ fips, ...before, start: years[index - before.length], next: leader });
+  }
+  return broken.sort((a, b) => b.length - a.length || a.fips.localeCompare(b.fips));
+}
+
 // Rank every available result/comparison; the optional filter never changes map coverage.
+// Loyalty ranks current streaks, or with the filter, the streaks that ended this election.
 export function rankCounties(counties, index, mode = 'result', flippedOnly = false) {
   if (!Number.isInteger(index) || index < 0 || index >= years.length) return [];
+  if (mode === 'loyalty') {
+    if (flippedOnly) return brokenStreaks(counties, index).map((streak) => ({ ...countyMetrics(counties[streak.fips], index), ...streak, value: streak.length }));
+    return Object.entries(counties ?? {}).map(([fips, county]) => ({ fips, ...countyMetrics(county, index), ...streaks(county)[index] }))
+      .filter(({ length }) => length).map((county) => ({ ...county, value: county.length, start: years[index - county.length + 1] }))
+      .sort((a, b) => b.value - a.value || a.fips.localeCompare(b.fips));
+  }
   const ranked = [];
   for (const [fips, county] of Object.entries(counties ?? {})) {
     const metrics = countyMetrics(county, index);

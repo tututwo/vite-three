@@ -3,8 +3,9 @@ import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { ShapePath } from 'three';
 import {
-  basemapBounds, buildSeries, countFlips, defaultSettings, electionAt, flatHeights, heightModes, paletteNames, rankFlippedCounties, years,
+  basemapBounds, brokenStreaks, buildSeries, countFlips, defaultSettings, electionAt, flatHeights, heightModes, paletteNames, rankFlippedCounties, streaks, years,
 } from './electionData.js';
+import { countyCounts, electoralCounts } from './victory.js';
 import { createCountyMap } from './mapGeometry.js';
 
 const elections = (values) => years.map((_, index) => values[index] ?? null);
@@ -98,8 +99,8 @@ test('signed series and flips', () => {
   assert.deepEqual(series['01001']['margin votes'].slice(0, 3), [1, -Math.sqrt(400 / 900), 0]);
   assert.deepEqual(series['01001'].voted.slice(0, 4), [1, 1, 1, 0], 'a tie still counts as having voted');
   for (const values of Object.values(series['01003'])) assert.deepEqual(values, flatHeights, 'garbage never becomes a height');
-  assert.throws(() => buildSeries({ years: [2000, 2004], counties: {} }), /1868-2020/);
-  assert.throws(() => buildSeries(null), /1868-2020/);
+  assert.throws(() => buildSeries({ years: [2000, 2004], counties: {} }), /1868-2024/);
+  assert.throws(() => buildSeries(null), /1868-2024/);
   const fixtureFlips = countFlips(series);
   assert.deepEqual(fixtureFlips[1], { toDemocratic: 0, toRepublican: 1, compared: 1 });
   assert.deepEqual(fixtureFlips[2], { toDemocratic: 0, toRepublican: 0, compared: 1 }, 'sinking to a tie is not a flip yet');
@@ -222,4 +223,25 @@ test('county map geometry, palette and disposal', () => {
   assert.deepEqual(anchored.position, [-315.105, 206.925, 0], 'geographic extents must not shift the mainland framing');
   anchored.dispose();
   assert.throws(() => createCountyMap({ paths: [path], xml: { getAttribute: () => 'invalid' } }, still, series), /Invalid county map origin/);
+});
+
+test('loyalty streaks and the five counts', () => {
+  // D, D, third parties together ahead, D, tie, missing, R: a third-party lead, a tie and a gap each end a streak.
+  const county = { diff: elections([10, 10, 1, 10, 0, null, -5]), total: elections([30, 30, 30, 30, 30, null, 30]), other: elections([0, 0, 20, 0, 0, null, 0]) };
+  assert.deepEqual(streaks(county).slice(0, 7).map(({ leader, length }) => `${leader}${length}`), ['D1', 'D2', 'O1', 'D1', 'null0', 'null0', 'R1']);
+
+  const returns = JSON.parse(asset('elections.json'));
+  const electoral = JSON.parse(asset('electoral.json'));
+  const at = (year) => years.indexOf(year);
+  const e2016 = electoralCounts(electoral.elections[at(2016)]);
+  assert.deepEqual([e2016.won, e2016.cast], [{ D: 232, R: 306, O: 0 }, { D: 227, R: 304, O: 7, none: 0 }]);
+  assert.deepEqual([e2016.tippingPoint.state, e2016.tippingPoint.votes], ['WI', 22748]);
+  assert.deepEqual([e2016.states.D, e2016.states.R, e2016.dc], [20, 30, 'D']);
+  assert.deepEqual(['FL', 537], ((tip) => [tip.state, tip.votes])(electoralCounts(electoral.elections[at(2000)]).tippingPoint));
+  assert.deepEqual(countyCounts(returns, at(2016), electoral.countyLand).counties, { D: 486, R: 2623, O: 1, tie: 0 });
+  assert.equal(countyCounts(returns, at(2024), electoral.countyLand), null, '2024 has state results only');
+
+  const broken = brokenStreaks(returns.counties, at(2016));
+  assert.deepEqual([broken[0].fips, broken[0].leader, broken[0].length, broken[0].start], ['21063', 'D', 36, 1872], 'Elliott, Kentucky');
+  assert.equal(broken.filter(({ length }) => length >= 5).length, 106);
 });

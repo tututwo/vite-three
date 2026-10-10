@@ -1,6 +1,7 @@
 import { useEffect, useId, useMemo, useRef } from 'react';
 import { line, scaleLinear } from 'd3';
-import { countyMetrics, marginLabel, shiftLabel, years } from './electionData.js';
+import { countyMetrics, marginLabel, shiftLabel, streaks, years } from './electionData.js';
+import { LoyaltyStrip } from './Electoral.jsx';
 import './county-ui.css';
 
 function MarginHistory({ records, yearIndex, palette }) {
@@ -40,6 +41,7 @@ export default function CountyDetails({ elections, fips, yearIndex, palette, onC
   const county = elections?.counties[fips];
   const location = elections?.countyNames[fips];
   const records = useMemo(() => years.map((year, index) => ({ year, ...countyMetrics(county, index) })), [county]);
+  const streakList = useMemo(() => streaks(county), [county]);
   useEffect(() => {
     // User selections reveal the panel; restoring a URL keeps the initial viewport.
     heading.current?.focus({ preventScroll: document.activeElement === document.body });
@@ -72,6 +74,7 @@ export default function CountyDetails({ elections, fips, yearIndex, palette, onC
       <div className="county-shift-metric"><dt>{yearIndex ? `Shift since ${years[yearIndex - 1]}` : 'Shift · first election'}</dt><dd>{shiftLabel(current.shift)}</dd></div>
     </dl>
     <p className="county-lead-status">{leadStatus}</p>
+    <LoyaltyStrip county={current} streakList={streakList} yearIndex={yearIndex} palette={palette} />
     {current.margin === null && <p className="county-missing" role="status">No valid return for {current.year}. This county’s available history remains below.</p>}
     <MarginHistory records={records} yearIndex={yearIndex} palette={palette} />
     <p className="county-history-summary">{available.length

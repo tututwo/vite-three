@@ -84,8 +84,11 @@ export default function ElectionScene({ settings, timeline, onYearChange, electi
     basemap.offset.set(0.5 - (floorSize / 2 + centerX) / basemapWidth, 0.5 - (floorSize / 2 + centerY) / basemapHeight);
   }, [basemap, map]);
 
+  const mode = useRef(settings.mode);
+  mode.current = settings.mode;
   useLayoutEffect(() => {
     const resource = createCountyMap(svg, defaultSettings, series);
+    resource.uniforms.flatten.value = Number(mode.current === 'territory');
     setMap(resource);
     return () => resource.dispose();
   }, [svg, series]);
@@ -230,6 +233,14 @@ export default function ElectionScene({ settings, timeline, onYearChange, electi
       map.show(election, next, settings.reducedMotion ? 0 : state.time - election);
     }
     map.update(state.seconds, request ? { ...settings, breath: 0 } : settings);
+    // Territory is the flat strategic view: the columns settle onto the floor, and rise again when leaving it.
+    const flatten = map.uniforms.flatten;
+    const flat = Number(settings.mode === 'territory');
+    if (flatten.value !== flat) {
+      flatten.value = settings.reducedMotion || request ? flat : MathUtils.damp(flatten.value, flat, 4, step);
+      if (Math.abs(flatten.value - flat) < 0.002) flatten.value = flat;
+      else invalidate();
+    }
   }, -0.5);
 
   function captureFrame(canvas) {

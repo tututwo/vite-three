@@ -1,4 +1,4 @@
-# County presidential returns 1868-2020 -> public/elections.json
+# County presidential returns 1868-2020 (+ an empty 2024 turn) -> public/elections.json
 # Source: Amlani & Algara, Harvard Dataverse (the .Rdata in data/). Usage: npm run data:elections
 load("data/dataverse_shareable_presidential_county_returns_1868_2020.Rdata")
 d <- pres_elections_release
@@ -55,13 +55,19 @@ votes <- aggregate(
 )
 votes <- votes[votes$total > 0, ]
 
-# Per county: Democratic minus Republican votes and all votes cast, null where it did not vote
+# 2024 is a turn with state results only (public/electoral.json): every county is null there.
+years <- c(years, 2024)
+nominees <- rbind(nominees, data.frame(election_year = 2024, dem_nominee = "Kamala Harris", rep_nominee = "Donald Trump"))
+
+# Per county: Democratic minus Republican votes, all votes cast, and everyone else's votes
+# (other = total - D - R, so a county where neither party led can be told apart), null where it did not vote
 counties <- lapply(split(votes, votes$fips), function(county) {
-  diff <- total <- rep(NA_real_, length(years))
+  diff <- total <- other <- rep(NA_real_, length(years))
   at <- match(county$election_year, years)
   diff[at] <- county$dem - county$rep
   total[at] <- county$total
-  list(diff = diff, total = total)
+  other[at] <- county$total - county$dem - county$rep
+  list(diff = diff, total = total, other = other)
 })
 
 jsonlite::write_json(

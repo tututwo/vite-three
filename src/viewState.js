@@ -1,4 +1,4 @@
-import { defaultSettings, heightModes, paletteNames, years } from './electionData.js';
+import { defaultSettings, heightModes, lastCountyYear, modes, paletteNames, years } from './electionData.js';
 
 const asUrl = (url) => {
   try { return new URL(url, 'https://election-map.invalid'); }
@@ -10,8 +10,8 @@ export function parseViewState(url, countyNames) {
   const params = asUrl(url).searchParams;
   const county = params.get('county');
   return {
-    year: years.includes(Number(params.get('year'))) ? Number(params.get('year')) : years.at(-1),
-    mode: params.get('mode') === 'shift' ? 'shift' : 'result',
+    year: years.includes(Number(params.get('year'))) ? Number(params.get('year')) : lastCountyYear,
+    mode: modes.includes(params.get('mode')) ? params.get('mode') : modes[0],
     county: /^\d{5}$/.test(county ?? '') && (!countyNames || Object.hasOwn(countyNames, county)) ? county : null,
     flippedOnly: params.get('flipped') === '1',
     palette: paletteNames.includes(params.get('palette')) ? params.get('palette') : defaultSettings.palette,

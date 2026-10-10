@@ -9,7 +9,16 @@ npm test
 npm run build
 ```
 
-The app opens paused at **2020 · Result**. Use **Result / Shift**, the election year selector, previous/next buttons and Play/Pause to explore the map. Result colors show the D/R lead and preserve the vote-share or vote-count height setting. Shift colors show movement toward Democrats or Republicans; heights use the absolute change in margin, in percentage points. Gray means a tie/no change, cream means no valid data, and gold marks the selected county. The first election has no previous comparison.
+The app opens paused at **2020 · Territory**. Four map modes share one engine:
+
+- **Territory** lays the counties flat and colours each by who led (deeper colour = wider vote-share lead). Grey marks counties where third parties, together, beat both parties.
+- **Margin** (`mode=result`) raises the D/R lead and keeps the vote-share or vote-count height setting.
+- **Shift** shows movement toward Democrats or Republicans; heights use the absolute change in margin, in percentage points.
+- **Loyalty** raises each county by how many elections in a row it had the same leader. A missing return, a tie or any change of leader, third parties included, ends a streak, so a county that changes sides drops to one level.
+
+The **40 turns** timeline under the toolbar shows who won the electors and the popular vote in every election 1868–2024, marks third parties that won electors, popular-vote winners who lost, and voting-rights milestones; selecting a turn changes the year. 2024 has state results only, because county returns end in 2020. Gray means a tie/no change, cream means no valid data, and gold marks the selected county. The first election has no previous comparison.
+
+**Same votes, five counts** (the sidebar) counts each election five ways: counties led, land area (48 contiguous states and DC), states won, popular vote and the Electoral College, with the tipping-point state, wasted votes and people per elector. **Road to 270** under the map lines the states up from the safest Republican to the safest Democratic lead, each as wide as its electors, and outlines the state that delivered the majority. The county card adds a loyalty strip, and **Streaks ended this election** lists counties that left a long streak.
 
 The ranking shows the five largest absolute margins (Result) or shifts (Shift), including counties that did not flip. **View all counties** expands it. **Flipped counties only** affects the list, not the map or nationwide statistics; it is unavailable in 1868. The data sidebar reports nationwide changes in the D/R lead among all comparable counties. In 2020, 79 of 3,110 comparable counties changed lead.
 
@@ -25,24 +34,29 @@ The interface shares one grid: title/actions, a 44px toolbar with year/playback/
 - `src/CountySearch.jsx`, `src/CountyDetails.jsx`: accessible local search, SVG/D3 county history and data table.
 - `src/viewState.js`, `src/exportCard.js`: validated URL state and native Canvas PNG composition.
 - `src/ElectionScene.jsx`: scene, MapControls, the floor with the basemap painted into it, and a single Fiber animation loop.
-- `src/electionData.js`: shared raw margin/shift/validity definitions, flip counts, stable rankings, visual series and palettes.
+- `src/electionData.js`: shared raw margin/shift/validity definitions, county leader (third parties included), loyalty streaks, flip counts, stable rankings, visual series and palettes.
+- `src/victory.js`, `src/Electoral.jsx`: the five counts, road to a majority, tipping point, wasted votes and people per elector; their panels, the turn timeline and the loyalty strip.
 - `src/mapGeometry.js`: all counties in one mesh. The vertex shader eases each county between elections from a data texture (one row per county), so the CPU only sets a few uniforms per frame; the fragment shader colours by altitude and adds ambient occlusion where a wall rises out of the county across its border.
 - `src/PostProcessing.jsx`: renders straight to the canvas with a vignette quad; a Bokeh composer exists only while depth of field is on.
-- `public/counties.svg`, `public/elections.json`, `public/county-names.json`, and `public/basemap.svg`: generated assets, loaded in parallel at runtime. Counties and the static Canada/Mexico/ocean basemap share one continuous Albers projection, including Alaska and Hawaii at their geographic positions.
+- `public/counties.svg`, `public/elections.json`, `public/county-names.json`, `public/electoral.json` and `public/basemap.svg`: generated assets, loaded in parallel at runtime. Counties and the static Canada/Mexico/ocean basemap share one continuous Albers projection, including Alaska and Hawaii at their geographic positions.
 
 ## Data
 
-All 39 presidential elections from 1868 to 2020; 2024 is not included. Margin = `100 × (D − R) / all votes`; shift = current margin minus the immediately previous election’s margin. Valid returns require a finite difference and a finite, positive total. A flip requires two valid margins of strictly opposite sign; ties are valid and do not count as flips. Strong third-party years (1912, 1924, 1968, 1992) can read as closer than the actual county winner because only the D/R lead is shown. Counties without data use the background colour (territories, Hawaii before 1960); Alaska reports by district and also uses the background colour.
+County returns cover all 39 presidential elections from 1868 to 2020 (`elections.json` keeps an empty 2024 column so the map has 40 turns); state results cover 1868–2024. Margin = `100 × (D − R) / all votes`; shift = current margin minus the immediately previous election’s margin. Valid returns require a finite difference and a finite, positive total. A flip requires two valid margins of strictly opposite sign; ties are valid and do not count as flips. `other = total − D − R` keeps third parties as one sum, so a third-party-led county (342 in 1892, 759 in 1912, 236 in 1924, 262 in 1948, 518 in 1968) never names a single candidate; Margin and Shift still show only the D/R lead. Counties without data use the background colour (territories, Hawaii before 1960); Alaska reports by district and also uses the background colour.
 
 ```sh
 npm run data:elections   # data/*.Rdata -> public/elections.json (needs R with jsonlite)
 npm run data:map -- 10   # us-atlas -> mapshaper simplify dp 10% -> public/counties.svg + county-names.json
 npm run data:basemap     # Natural Earth + us-atlas -> aligned static basemap.svg (network needed only to regenerate)
+npm run data:electoral   # data/state-results.csv, state-population.csv, county-land.csv -> public/electoral.json
 ```
 
 - `scripts/export-elections.R` sums counties that were renamed or merged into the shape that covers them today (Dade -> Miami-Dade, Shannon -> Oglala Lakota, the Virginia cities, ...) and fixes misspelled nominees. `npm test` fails if a county with returns has no shape on the map.
 - `scripts/build-map.mjs` simplifies the shared topology, so neighbours stay watertight, then moves Alaska/Hawaii out of their source insets into continuous Albers coordinates. Mainland paths and their scene origin are preserved. Lower the percentage for chunkier counties; small islands may disappear during simplification.
 - Returns: Amlani & Algara, county presidential returns 1868-2020 (Harvard Dataverse). Shapes: `us-atlas` (Census 2017).
+- `data/state-results.csv`: votes and electors per state from [The American Presidency Project](https://www.presidency.ucsb.edu/statistics/elections) (UC Santa Barbara), one page per election, with Maine/Nebraska district rows; Maine 2016's districts come from its certificate of ascertainment at the National Archives. `scripts/build-electoral.mjs` checks every election's counted electors against the official totals and holds the short list of exceptions: Greeley's death (1872), faithless and unpledged electors (1948–2016), and the 2000 abstention.
+- `data/state-population.csv`: resident population per census, U.S. Census Bureau `apportionment.csv` for 1910–2020 and Wikipedia's census table for 1860–1900. Each election uses the census that set its electors (1912–1928 all use 1910, as Congress did not reapportion after 1920).
+- `data/county-land.csv`: Census 2020 Gazetteer land area per county, for the Territory land share.
 - Basemap context: [Natural Earth 1:50m](https://www.naturalearthdata.com/), public-domain country boundaries and lakes. The local texture uses the same continuous projection as the counties.
 - `data/`: the source `.Rdata` plus the original R exploration (raw CSVs, `.qmd` notebooks). Kept out of `public/` so Vite does not ship it.
 
@@ -50,6 +64,6 @@ GPU resources are recreated and released with the scene lifecycle, including Rea
 
 ## Verification
 
-`npm run build` creates the static deployment in `dist/data-visualization/presidential-margins-1868-2020/live/`. Acceptance was performed through the running browser, including real PNG downloads, URL restoration, keyboard use, narrow layouts, reduced motion and rendering failures. No new test code is retained, per the latest instruction. Existing tests are preserved; their old ranking expectations have not been rewritten for the new Result/Shift interface.
+`npm run build` creates the static deployment in `dist/data-visualization/presidential-margins-1868-2020/live/`. Acceptance was performed through the running browser, including real PNG downloads, URL restoration, keyboard use, narrow layouts, reduced motion and rendering failures. One test covers loyalty streaks and the five counts (2016 Wisconsin tipping point, 2000 Florida, Elliott County's broken streak). The older ranking test still expects the pre-Result/Shift list and fails; it has not been rewritten.
 
 See [the implementation and browser acceptance report](IMPLEMENTATION_REPORT.md) for desktop/mobile screenshots, downloaded cards, and known limits.

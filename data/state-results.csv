@@ -1,0 +1,1906 @@
+year,state,district,chosen_by,total_votes,d_votes,r_votes,top_other_votes,d_electors,r_electors,other_electors
+1868,Alabama,,popular vote,149594,72921,76667,0,0,8,0
+1868,Arkansas,,popular vote,41190,19078,22112,0,0,5,0
+1868,California,,popular vote,108656,54068,54588,0,0,5,0
+1868,Connecticut,,popular vote,98570,47781,50789,0,0,6,0
+1868,Delaware,,popular vote,18571,10957,7614,0,3,0,0
+1868,Florida,,legislature,,,,,0,3,0
+1868,Georgia,,popular vote,159816,102707,57109,0,9,0,0
+1868,Illinois,,popular vote,449420,199116,250304,0,0,16,0
+1868,Indiana,,popular vote,343528,166980,176548,0,0,13,0
+1868,Iowa,,popular vote,194439,74040,120399,0,0,8,0
+1868,Kansas,,popular vote,43630,13600,30027,0,0,3,0
+1868,Kentucky,,popular vote,155455,115889,39566,0,11,0,0
+1868,Louisiana,,popular vote,113488,80225,33263,0,7,0,0
+1868,Maine,,popular vote,112962,42460,70502,0,0,7,0
+1868,Maryland,,popular vote,92795,62357,30438,0,7,0,0
+1868,Massachusetts,,popular vote,195508,59103,136379,0,0,12,0
+1868,Michigan,,popular vote,225632,97069,128563,0,0,8,0
+1868,Minnesota,,popular vote,71620,28075,43545,0,0,4,0
+1868,Missouri,,popular vote,152488,65628,86860,0,0,11,0
+1868,Nebraska,,popular vote,15291,5519,9772,0,0,3,0
+1868,Nevada,,popular vote,11689,5215,6474,0,0,3,0
+1868,New Hampshire,,popular vote,68304,30575,37718,0,0,5,0
+1868,New Jersey,,popular vote,163133,83001,80132,0,7,0,0
+1868,New York,,popular vote,849771,429883,419888,0,33,0,0
+1868,North Carolina,,popular vote,181498,84559,96939,0,0,9,0
+1868,Ohio,,popular vote,518665,238506,280159,0,0,21,0
+1868,Oregon,,popular vote,22086,11125,10961,0,3,0,0
+1868,Pennsylvania,,popular vote,655662,313382,342280,0,0,26,0
+1868,Rhode Island,,popular vote,19511,6494,13017,0,0,4,0
+1868,South Carolina,,popular vote,107538,45237,62301,0,0,6,0
+1868,Tennessee,,popular vote,82757,26129,56628,0,0,10,0
+1868,Vermont,,popular vote,56224,12051,44173,0,0,5,0
+1868,West Virginia,,popular vote,49321,20306,29015,0,0,5,0
+1868,Wisconsin,,popular vote,193628,84708,108920,0,0,8,0
+1872,Alabama,,popular vote,169716,79444,90272,0,0,10,0
+1872,Arkansas,,popular vote,79300,37927,41373,0,0,0,0
+1872,California,,popular vote,95785,40717,54007,0,0,6,0
+1872,Connecticut,,popular vote,95992,45685,50307,0,0,6,0
+1872,Delaware,,popular vote,21822,10205,11129,0,0,3,0
+1872,Florida,,popular vote,33190,15427,17763,0,0,4,0
+1872,Georgia,,popular vote,138906,76356,62550,0,0,0,0
+1872,Illinois,,popular vote,429971,184884,241936,0,0,21,0
+1872,Indiana,,popular vote,349779,163632,186147,0,0,15,0
+1872,Iowa,,popular vote,216365,71189,131566,0,0,11,0
+1872,Kansas,,popular vote,100512,32970,66805,0,0,5,0
+1872,Kentucky,,popular vote,191552,100208,88970,0,0,0,0
+1872,Louisiana,,popular vote,128692,57029,71663,0,0,0,0
+1872,Maine,,popular vote,90523,29097,61426,0,0,7,0
+1872,Maryland,,popular vote,134447,67687,66760,0,0,0,0
+1872,Massachusetts,,popular vote,192650,59195,133455,0,0,13,0
+1872,Michigan,,popular vote,221569,78651,138768,0,0,11,0
+1872,Minnesota,,popular vote,91339,35131,56040,0,0,5,0
+1872,Mississippi,,popular vote,129457,47282,82175,0,0,8,0
+1872,Missouri,,popular vote,273059,151434,119196,0,0,0,0
+1872,Nebraska,,popular vote,25932,7603,18329,0,0,3,0
+1872,Nevada,,popular vote,14649,6236,8413,0,0,3,0
+1872,New Hampshire,,popular vote,68906,31425,37168,0,0,5,0
+1872,New Jersey,,popular vote,168467,76801,91666,0,0,9,0
+1872,New York,,popular vote,829692,387279,440758,0,0,35,0
+1872,North Carolina,,popular vote,165163,70130,94772,0,0,10,0
+1872,Ohio,,popular vote,529435,244320,281852,0,0,22,0
+1872,Oregon,,popular vote,20107,7742,11818,0,0,3,0
+1872,Pennsylvania,,popular vote,561629,212040,349589,0,0,29,0
+1872,Rhode Island,,popular vote,18994,5329,13665,0,0,4,0
+1872,South Carolina,,popular vote,95452,22699,72290,0,0,7,0
+1872,Tennessee,,popular vote,179046,93391,85655,0,0,0,0
+1872,Texas,,popular vote,115700,67675,47910,0,0,0,0
+1872,Vermont,,popular vote,52961,10926,41480,0,0,5,0
+1872,Virginia,,popular vote,185195,91647,93463,0,0,11,0
+1872,West Virginia,,popular vote,62467,29532,32320,0,0,5,0
+1872,Wisconsin,,popular vote,192255,86390,105012,0,0,10,0
+1876,Alabama,,popular vote,171699,102989,68708,0,10,0,0
+1876,Arkansas,,popular vote,96946,58086,38649,0,6,0,0
+1876,California,,popular vote,155784,76460,79258,0,0,6,0
+1876,Colorado,,legislature,,,,,0,3,0
+1876,Connecticut,,popular vote,122134,61927,59033,0,6,0,0
+1876,Delaware,,popular vote,24133,13381,10752,0,3,0,0
+1876,Florida,,popular vote,46776,22927,23849,0,0,4,0
+1876,Georgia,,popular vote,180690,130157,50533,0,11,0,0
+1876,Illinois,,popular vote,554368,258611,278232,0,0,21,0
+1876,Indiana,,popular vote,430020,213516,206971,0,15,0,0
+1876,Iowa,,popular vote,293398,112121,171326,0,0,11,0
+1876,Kansas,,popular vote,124134,37902,78324,0,0,5,0
+1876,Kentucky,,popular vote,259614,159696,97156,0,12,0,0
+1876,Louisiana,,popular vote,145823,70508,75315,0,0,8,0
+1876,Maine,,popular vote,117045,49917,66300,0,0,7,0
+1876,Maryland,,popular vote,163759,91779,71980,0,8,0,0
+1876,Massachusetts,,popular vote,259619,108777,150063,0,0,13,0
+1876,Michigan,,popular vote,318426,141665,166901,0,0,11,0
+1876,Minnesota,,popular vote,124119,48816,72982,0,0,5,0
+1876,Mississippi,,popular vote,164776,112173,52603,0,8,0,0
+1876,Missouri,,popular vote,350610,202086,145027,0,15,0,0
+1876,Nebraska,,popular vote,49258,17343,31915,0,0,3,0
+1876,Nevada,,popular vote,19691,9308,10383,0,0,3,0
+1876,New Hampshire,,popular vote,80143,38510,41540,0,0,5,0
+1876,New Jersey,,popular vote,220193,115962,103517,0,9,0,0
+1876,New York,,popular vote,1015503,521949,489207,0,35,0,0
+1876,North Carolina,,popular vote,233911,125427,108484,0,10,0,0
+1876,Ohio,,popular vote,658650,323182,330698,0,0,22,0
+1876,Oregon,,popular vote,29873,14157,15207,0,0,3,0
+1876,Pennsylvania,,popular vote,758973,366204,384157,0,0,29,0
+1876,Rhode Island,,popular vote,26499,10712,15787,0,0,4,0
+1876,South Carolina,,popular vote,182683,90897,91786,0,0,7,0
+1876,Tennessee,,popular vote,222743,133177,89566,0,12,0,0
+1876,Texas,,popular vote,151431,106372,45013,0,8,0,0
+1876,Vermont,,popular vote,64460,20254,44092,0,0,5,0
+1876,Virginia,,popular vote,236288,140770,95518,0,11,0,0
+1876,West Virginia,,popular vote,99647,56546,41997,0,5,0,0
+1876,Wisconsin,,popular vote,257799,123927,130668,0,0,10,0
+1880,Alabama,,popular vote,151902,91130,56350,0,10,0,0
+1880,Arkansas,,popular vote,108870,60775,42436,0,6,0,0
+1880,California,,popular vote,164218,80426,80282,0,5,1,0
+1880,Colorado,,popular vote,53546,24647,27450,0,0,3,0
+1880,Connecticut,,popular vote,132798,64411,67071,0,0,6,0
+1880,Delaware,,popular vote,29458,15181,14148,0,3,0,0
+1880,Florida,,popular vote,51618,27964,23654,0,4,0,0
+1880,Georgia,,popular vote,157451,102981,54470,0,11,0,0
+1880,Illinois,,popular vote,622305,277321,318036,0,0,21,0
+1880,Indiana,,popular vote,470758,225523,232169,0,0,15,0
+1880,Iowa,,popular vote,323140,105845,183904,0,0,11,0
+1880,Kansas,,popular vote,201054,59789,121520,0,0,5,0
+1880,Kentucky,,popular vote,266884,149068,106059,0,12,0,0
+1880,Louisiana,,popular vote,104462,65047,38978,0,8,0,0
+1880,Maine,,popular vote,143903,65211,74052,0,0,7,0
+1880,Maryland,,popular vote,173049,93706,78515,0,8,0,0
+1880,Massachusetts,,popular vote,282505,111960,165198,0,0,13,0
+1880,Michigan,,popular vote,353076,131596,185335,0,0,11,0
+1880,Minnesota,,popular vote,150806,53314,93939,0,0,5,0
+1880,Mississippi,,popular vote,117068,75750,34844,0,8,0,0
+1880,Missouri,,popular vote,397289,208600,153647,0,15,0,0
+1880,Nebraska,,popular vote,87355,28523,54979,0,0,3,0
+1880,Nevada,,popular vote,18343,9611,8732,0,3,0,0
+1880,New Hampshire,,popular vote,86361,40797,44856,0,0,5,0
+1880,New Jersey,,popular vote,245928,122565,120555,0,9,0,0
+1880,New York,,popular vote,1103945,534511,555544,0,0,35,0
+1880,North Carolina,,popular vote,240946,124204,115616,0,10,0,0
+1880,Ohio,,popular vote,724984,340867,375048,0,0,22,0
+1880,Oregon,,popular vote,40841,19955,20619,0,0,3,0
+1880,Pennsylvania,,popular vote,874783,407428,444704,0,0,29,0
+1880,Rhode Island,,popular vote,29235,10779,18195,0,0,4,0
+1880,South Carolina,,popular vote,169793,111236,57954,0,7,0,0
+1880,Tennessee,,popular vote,243263,129569,107677,0,12,0,0
+1880,Texas,,popular vote,240659,155963,57225,0,8,0,0
+1880,Vermont,,popular vote,65098,18316,45567,0,0,5,0
+1880,Virginia,,popular vote,212660,128647,83634,0,11,0,0
+1880,West Virginia,,popular vote,112641,57390,46243,0,5,0,0
+1880,Wisconsin,,popular vote,267202,114650,144406,0,0,10,0
+1884,Alabama,,popular vote,153624,92736,59444,0,10,0,0
+1884,Arkansas,,popular vote,125779,72734,51198,0,7,0,0
+1884,California,,popular vote,196988,89288,102369,0,0,8,0
+1884,Colorado,,popular vote,66519,27723,36084,0,0,3,0
+1884,Connecticut,,popular vote,137221,67167,65879,0,6,0,0
+1884,Delaware,,popular vote,29984,16957,12953,0,3,0,0
+1884,Florida,,popular vote,59990,31769,28031,0,4,0,0
+1884,Georgia,,popular vote,143610,94667,48603,0,12,0,0
+1884,Illinois,,popular vote,672670,312351,337469,0,0,22,0
+1884,Indiana,,popular vote,495423,245041,238511,0,15,0,0
+1884,Iowa,,popular vote,393542,177316,197089,0,0,13,0
+1884,Kansas,,popular vote,250991,90111,154410,0,0,9,0
+1884,Kentucky,,popular vote,276503,152894,118822,0,13,0,0
+1884,Louisiana,,popular vote,109399,62594,46347,0,8,0,0
+1884,Maine,,popular vote,130489,52153,72217,0,0,6,0
+1884,Maryland,,popular vote,185838,96941,85748,0,8,0,0
+1884,Massachusetts,,popular vote,303383,122352,146724,0,0,14,0
+1884,Michigan,,popular vote,401186,189361,192669,0,0,13,0
+1884,Minnesota,,popular vote,190236,70135,111819,0,0,7,0
+1884,Mississippi,,popular vote,120688,77653,43035,0,9,0,0
+1884,Missouri,,popular vote,441268,236023,203081,0,16,0,0
+1884,Nebraska,,popular vote,134202,54391,76912,0,0,5,0
+1884,Nevada,,popular vote,12779,5577,7176,0,0,3,0
+1884,New Hampshire,,popular vote,84586,39198,43254,0,0,4,0
+1884,New Jersey,,popular vote,260853,127747,123436,0,9,0,0
+1884,New York,,popular vote,1167003,563048,562001,0,36,0,0
+1884,North Carolina,,popular vote,268356,142905,125021,0,11,0,0
+1884,Ohio,,popular vote,784620,368280,400092,0,0,23,0
+1884,Oregon,,popular vote,52683,24598,26845,0,0,3,0
+1884,Pennsylvania,,popular vote,899563,392915,474350,0,0,30,0
+1884,Rhode Island,,popular vote,32771,12391,19030,0,0,4,0
+1884,South Carolina,,popular vote,92812,69845,21730,0,9,0,0
+1884,Tennessee,,popular vote,259978,133770,124101,0,12,0,0
+1884,Texas,,popular vote,326458,226375,93345,0,13,0,0
+1884,Vermont,,popular vote,59409,17331,39514,0,0,4,0
+1884,Virginia,,popular vote,284977,145491,139356,0,12,0,0
+1884,West Virginia,,popular vote,132145,67311,63096,0,6,0,0
+1884,Wisconsin,,popular vote,319847,146447,161155,0,0,11,0
+1888,Alabama,,popular vote,175085,117314,57177,0,10,0,0
+1888,Arkansas,,popular vote,157058,86062,59752,0,7,0,0
+1888,California,,popular vote,251339,117729,124816,0,0,8,0
+1888,Colorado,,popular vote,91946,37549,50772,0,0,3,0
+1888,Connecticut,,popular vote,153978,74920,74584,0,6,0,0
+1888,Delaware,,popular vote,29764,16414,12950,0,3,0,0
+1888,Florida,,popular vote,66500,39557,26529,0,4,0,0
+1888,Georgia,,popular vote,142936,100493,40499,0,12,0,0
+1888,Illinois,,popular vote,747813,348351,370475,0,0,22,0
+1888,Indiana,,popular vote,536988,260990,263366,0,0,15,0
+1888,Iowa,,popular vote,404694,179876,211607,0,0,13,0
+1888,Kansas,,popular vote,331133,102739,182845,0,0,9,0
+1888,Kentucky,,popular vote,344868,183830,155138,0,13,0,0
+1888,Louisiana,,popular vote,115891,85032,30660,0,8,0,0
+1888,Maine,,popular vote,128253,50472,73730,0,0,6,0
+1888,Maryland,,popular vote,210941,106188,99986,0,8,0,0
+1888,Massachusetts,,popular vote,344243,151590,183892,0,0,14,0
+1888,Michigan,,popular vote,475356,213469,236387,0,0,13,0
+1888,Minnesota,,popular vote,263162,104372,142492,0,0,7,0
+1888,Mississippi,,popular vote,115786,85451,30095,0,9,0,0
+1888,Missouri,,popular vote,521359,261943,236252,0,16,0,0
+1888,Nebraska,,popular vote,202630,80552,108417,0,0,5,0
+1888,Nevada,,popular vote,12573,5303,7229,0,0,3,0
+1888,New Hampshire,,popular vote,90770,43382,45734,0,0,4,0
+1888,New Jersey,,popular vote,303801,151508,144360,0,9,0,0
+1888,New York,,popular vote,1321270,635965,650338,0,0,36,0
+1888,North Carolina,,popular vote,285946,148336,134784,0,11,0,0
+1888,Ohio,,popular vote,839357,395456,416054,0,0,23,0
+1888,Oregon,,popular vote,61889,26518,33291,0,0,3,0
+1888,Pennsylvania,,popular vote,997568,446633,526091,0,0,30,0
+1888,Rhode Island,,popular vote,40775,17530,21969,0,0,4,0
+1888,South Carolina,,popular vote,79997,65824,13736,0,9,0,0
+1888,Tennessee,,popular vote,304313,158779,139511,0,12,0,0
+1888,Texas,,popular vote,363484,236290,93991,0,13,0,0
+1888,Vermont,,popular vote,63476,16788,45193,0,0,4,0
+1888,Virginia,,popular vote,304087,152004,150399,0,12,0,0
+1888,West Virginia,,popular vote,159440,78677,78171,0,6,0,0
+1888,Wisconsin,,popular vote,354614,155232,176553,0,0,11,0
+1892,Alabama,,popular vote,232543,138135,9184,84984,11,0,0
+1892,Arkansas,,popular vote,148117,87834,47072,11831,8,0,0
+1892,California,,popular vote,269585,118151,118027,25311,8,1,0
+1892,Colorado,,popular vote,93881,0,38620,53584,0,0,4
+1892,Connecticut,,popular vote,164593,82395,77030,809,6,0,0
+1892,Delaware,,popular vote,37235,18581,18077,0,3,0,0
+1892,Florida,,popular vote,35567,30154,0,4843,4,0,0
+1892,Georgia,,popular vote,223961,129386,48305,42937,13,0,0
+1892,Idaho,,popular vote,19407,0,8599,10520,0,0,3
+1892,Illinois,,popular vote,873667,426281,399308,22207,24,0,0
+1892,Indiana,,popular vote,553613,262740,255615,22208,15,0,0
+1892,Iowa,,popular vote,443159,196367,219795,20595,0,13,0
+1892,Kansas,,popular vote,323591,0,156134,162888,0,0,10
+1892,Kentucky,,popular vote,340864,175461,135462,23500,13,0,0
+1892,Louisiana,,popular vote,118287,87922,27903,2462,8,0,0
+1892,Maine,,popular vote,116013,48024,62878,2045,0,6,0
+1892,Maryland,,popular vote,213275,113866,92736,796,8,0,0
+1892,Massachusetts,,popular vote,391028,176813,202814,3210,0,15,0
+1892,Michigan,,popular vote,466917,202396,222708,20031,5,9,0
+1892,Minnesota,,popular vote,267461,101055,122836,29336,0,9,0
+1892,Mississippi,,popular vote,52519,40030,1398,10118,9,0,0
+1892,Missouri,,popular vote,541583,268400,227646,41204,17,0,0
+1892,Montana,,popular vote,44461,17690,18871,7338,0,3,0
+1892,Nebraska,,popular vote,200205,24956,87213,83134,0,8,0
+1892,Nevada,,popular vote,10826,703,2811,7226,0,0,3
+1892,New Hampshire,,popular vote,89328,42081,45658,292,0,4,0
+1892,New Jersey,,popular vote,337485,170987,156059,969,10,0,0
+1892,New York,,popular vote,1336793,654868,609350,16429,36,0,0
+1892,North Carolina,,popular vote,280270,132951,100346,44336,11,0,0
+1892,North Dakota,,popular vote,36118,0,17519,17700,1,1,1
+1892,Ohio,,popular vote,850164,404115,405187,14850,1,22,0
+1892,Oregon,,popular vote,78378,14243,35002,26875,0,3,1
+1892,Pennsylvania,,popular vote,1003000,452264,516011,8714,0,32,0
+1892,Rhode Island,,popular vote,53196,24336,26975,228,0,4,0
+1892,South Carolina,,popular vote,70504,54680,13345,2407,9,0,0
+1892,South Dakota,,popular vote,70513,9081,34888,26544,0,4,0
+1892,Tennessee,,popular vote,265732,136468,100537,23918,12,0,0
+1892,Texas,,popular vote,422447,239148,77478,99688,15,0,0
+1892,Vermont,,popular vote,55793,16325,37992,42,0,4,0
+1892,Virginia,,popular vote,292238,164136,113098,12275,12,0,0
+1892,Washington,,popular vote,87968,29802,36459,19165,0,4,0
+1892,West Virginia,,popular vote,171079,84467,80292,4167,6,0,0
+1892,Wisconsin,,popular vote,371481,177325,171101,9919,12,0,0
+1892,Wyoming,,popular vote,16703,0,8454,7722,0,3,0
+1896,Alabama,,popular vote,194580,130298,55673,0,11,0,0
+1896,Arkansas,,popular vote,149396,110103,37512,0,8,0,0
+1896,California,,popular vote,299374,123143,146688,0,1,8,0
+1896,Colorado,,popular vote,189539,161005,26271,0,4,0,0
+1896,Connecticut,,popular vote,174394,56740,110285,0,0,6,0
+1896,Delaware,,popular vote,31538,13425,16883,0,0,3,0
+1896,Florida,,popular vote,46468,30683,11298,0,4,0,0
+1896,Georgia,,popular vote,163309,94733,60107,0,13,0,0
+1896,Idaho,,popular vote,29631,23135,6324,0,3,0,0
+1896,Illinois,,popular vote,1090766,465593,607130,0,0,24,0
+1896,Indiana,,popular vote,637089,305538,323754,0,0,15,0
+1896,Iowa,,popular vote,521550,223744,289293,0,0,13,0
+1896,Kansas,,popular vote,336085,173049,159484,0,10,0,0
+1896,Kentucky,,popular vote,445928,217894,218171,0,1,12,0
+1896,Louisiana,,popular vote,101046,77175,22037,0,8,0,0
+1896,Maine,,popular vote,118419,34587,80403,0,0,6,0
+1896,Maryland,,popular vote,250249,104150,136959,0,0,8,0
+1896,Massachusetts,,popular vote,401269,105414,278976,0,0,15,0
+1896,Michigan,,popular vote,545583,237164,293336,0,0,14,0
+1896,Minnesota,,popular vote,341762,139735,193503,0,0,9,0
+1896,Mississippi,,popular vote,69591,63355,4819,0,9,0,0
+1896,Missouri,,popular vote,674032,363667,304940,0,17,0,0
+1896,Montana,,popular vote,53330,42628,10509,0,3,0,0
+1896,Nebraska,,popular vote,223181,115007,103064,0,8,0,0
+1896,Nevada,,popular vote,10314,7802,1938,0,3,0,0
+1896,New Hampshire,,popular vote,83670,21271,57444,0,0,4,0
+1896,New Jersey,,popular vote,371014,133675,221367,0,0,10,0
+1896,New York,,popular vote,1423876,551369,819838,0,0,36,0
+1896,North Carolina,,popular vote,331337,174408,155122,0,11,0,0
+1896,North Dakota,,popular vote,47391,20686,26335,0,0,3,0
+1896,Ohio,,popular vote,1014295,474882,525991,0,0,23,0
+1896,Oregon,,popular vote,97335,46739,48700,0,0,4,0
+1896,Pennsylvania,,popular vote,1194355,427125,728300,0,0,32,0
+1896,Rhode Island,,popular vote,54785,14459,37437,0,0,4,0
+1896,South Carolina,,popular vote,68938,58801,9313,0,9,0,0
+1896,South Dakota,,popular vote,82937,41225,41040,0,4,0,0
+1896,Tennessee,,popular vote,320903,167168,148683,0,12,0,0
+1896,Texas,,popular vote,515987,267803,163413,0,15,0,0
+1896,Utah,,popular vote,78098,64607,13491,0,3,0,0
+1896,Vermont,,popular vote,63831,10179,51127,0,0,4,0
+1896,Virginia,,popular vote,294674,154708,135379,0,12,0,0
+1896,Washington,,popular vote,93583,51646,39153,0,4,0,0
+1896,West Virginia,,popular vote,201757,94480,105379,0,0,6,0
+1896,Wisconsin,,popular vote,447409,165523,268135,0,0,12,0
+1896,Wyoming,,popular vote,21093,10376,10072,0,3,0,0
+1900,Alabama,,popular vote,160477,96368,55634,0,11,0,0
+1900,Arkansas,,popular vote,127966,81242,44800,0,8,0,0
+1900,California,,popular vote,302399,124985,164755,0,0,9,0
+1900,Colorado,,popular vote,220895,122705,92701,0,4,0,0
+1900,Connecticut,,popular vote,180195,74014,102572,0,0,6,0
+1900,Delaware,,popular vote,41989,18852,22535,0,0,3,0
+1900,Florida,,popular vote,39777,28273,7463,0,4,0,0
+1900,Georgia,,popular vote,121410,81180,34260,0,13,0,0
+1900,Idaho,,popular vote,56760,28260,27198,0,3,0,0
+1900,Illinois,,popular vote,1131898,503061,597985,0,0,24,0
+1900,Indiana,,popular vote,664094,309584,336063,0,0,15,0
+1900,Iowa,,popular vote,530345,209261,307799,0,0,13,0
+1900,Kansas,,popular vote,353766,162601,185955,0,0,10,0
+1900,Kentucky,,popular vote,467580,234889,226801,0,13,0,0
+1900,Louisiana,,popular vote,67906,53668,14234,0,8,0,0
+1900,Maine,,popular vote,107698,37822,66413,0,0,6,0
+1900,Maryland,,popular vote,264386,122237,136151,0,0,8,0
+1900,Massachusetts,,popular vote,414804,156997,238866,0,0,15,0
+1900,Michigan,,popular vote,543789,211432,316014,0,0,14,0
+1900,Minnesota,,popular vote,316311,112901,190461,0,0,9,0
+1900,Mississippi,,popular vote,59055,51706,5707,0,9,0,0
+1900,Missouri,,popular vote,683658,351922,314092,0,17,0,0
+1900,Montana,,popular vote,63856,37311,25409,0,3,0,0
+1900,Nebraska,,popular vote,241430,114013,121835,0,0,8,0
+1900,Nevada,,popular vote,10196,6347,3849,0,3,0,0
+1900,New Hampshire,,popular vote,92364,35489,54799,0,0,4,0
+1900,New Jersey,,popular vote,401050,164808,221707,0,0,10,0
+1900,New York,,popular vote,1548043,678462,822013,0,0,36,0
+1900,North Carolina,,popular vote,292518,157733,132997,0,11,0,0
+1900,North Dakota,,popular vote,57783,20524,35898,0,0,3,0
+1900,Ohio,,popular vote,1040073,474882,543918,0,0,23,0
+1900,Oregon,,popular vote,84216,33385,46526,0,0,4,0
+1900,Pennsylvania,,popular vote,1173210,424232,712665,0,0,32,0
+1900,Rhode Island,,popular vote,56548,19812,33784,0,0,4,0
+1900,South Carolina,,popular vote,50698,47173,3525,0,9,0,0
+1900,South Dakota,,popular vote,96169,39538,54574,0,0,4,0
+1900,Tennessee,,popular vote,273860,145240,123108,0,12,0,0
+1900,Texas,,popular vote,424334,267945,131174,0,15,0,0
+1900,Utah,,popular vote,93071,44949,47089,0,0,3,0
+1900,Vermont,,popular vote,56212,12849,42569,0,0,4,0
+1900,Virginia,,popular vote,264208,146079,115769,0,12,0,0
+1900,Washington,,popular vote,107523,44833,57455,0,0,4,0
+1900,West Virginia,,popular vote,220796,98807,119829,0,0,6,0
+1900,Wisconsin,,popular vote,442501,159163,265760,0,0,12,0
+1900,Wyoming,,popular vote,24708,10164,14482,0,0,3,0
+1904,Alabama,,popular vote,108785,79797,22472,0,11,0,0
+1904,Arkansas,,popular vote,116328,64434,46760,0,9,0,0
+1904,California,,popular vote,331768,89294,205226,0,0,10,0
+1904,Colorado,,popular vote,243667,100105,134661,0,0,5,0
+1904,Connecticut,,popular vote,191136,72909,111089,0,0,7,0
+1904,Delaware,,popular vote,43856,19347,23705,0,0,3,0
+1904,Florida,,popular vote,39302,27046,8314,0,5,0,0
+1904,Georgia,,popular vote,130986,83466,24004,0,13,0,0
+1904,Idaho,,popular vote,72577,18480,47783,0,0,3,0
+1904,Illinois,,popular vote,1076495,327606,632645,0,0,27,0
+1904,Indiana,,popular vote,682206,274356,368289,0,0,15,0
+1904,Iowa,,popular vote,485703,149141,307907,0,0,13,0
+1904,Kansas,,popular vote,329047,86164,213455,0,0,10,0
+1904,Kentucky,,popular vote,435946,217170,205457,0,13,0,0
+1904,Louisiana,,popular vote,53908,47708,5205,0,9,0,0
+1904,Maine,,popular vote,96036,27648,64438,0,0,6,0
+1904,Maryland,,popular vote,224229,109446,109497,0,7,1,0
+1904,Massachusetts,,popular vote,445100,165746,257813,0,0,16,0
+1904,Michigan,,popular vote,520443,134163,361863,0,0,14,0
+1904,Minnesota,,popular vote,292860,55187,216651,0,0,11,0
+1904,Mississippi,,popular vote,58721,53480,3280,0,10,0,0
+1904,Missouri,,popular vote,643861,296312,321449,0,0,18,0
+1904,Montana,,popular vote,63568,21816,33994,0,0,3,0
+1904,Nebraska,,popular vote,225732,52921,138558,0,0,8,0
+1904,Nevada,,popular vote,12115,3982,6864,0,0,3,0
+1904,New Hampshire,,popular vote,90151,34071,54157,0,0,4,0
+1904,New Jersey,,popular vote,432547,164566,245164,0,0,12,0
+1904,New York,,popular vote,1617765,683981,859533,0,0,39,0
+1904,North Carolina,,popular vote,207818,124091,82442,0,12,0,0
+1904,North Dakota,,popular vote,70279,14273,52595,0,0,4,0
+1904,Ohio,,popular vote,1004395,344674,600095,0,0,23,0
+1904,Oregon,,popular vote,89656,17327,60309,0,0,4,0
+1904,Pennsylvania,,popular vote,1236738,337998,840949,0,0,34,0
+1904,Rhode Island,,popular vote,68656,24839,41605,0,0,4,0
+1904,South Carolina,,popular vote,55890,53320,2570,0,9,0,0
+1904,South Dakota,,popular vote,101395,21969,72083,0,0,4,0
+1904,Tennessee,,popular vote,242750,131653,105363,0,12,0,0
+1904,Texas,,popular vote,233609,167088,51307,0,18,0,0
+1904,Utah,,popular vote,101626,33413,62446,0,0,3,0
+1904,Vermont,,popular vote,51888,9777,40459,0,0,4,0
+1904,Virginia,,popular vote,130410,80649,48180,0,12,0,0
+1904,Washington,,popular vote,145151,28098,101540,0,0,5,0
+1904,West Virginia,,popular vote,239986,100855,132620,0,0,7,0
+1904,Wisconsin,,popular vote,443440,124205,280314,0,0,13,0
+1904,Wyoming,,popular vote,30614,8930,20489,0,0,3,0
+1908,Alabama,,popular vote,105152,74391,25561,0,11,0,0
+1908,Arkansas,,popular vote,151845,87020,56684,0,9,0,0
+1908,California,,popular vote,386625,127492,214398,0,0,10,0
+1908,Colorado,,popular vote,263858,126644,123693,0,5,0,0
+1908,Connecticut,,popular vote,189903,68255,112815,0,0,7,0
+1908,Delaware,,popular vote,48007,22055,25014,0,0,3,0
+1908,Florida,,popular vote,49360,31104,10654,0,5,0,0
+1908,Georgia,,popular vote,132794,72413,41692,0,13,0,0
+1908,Idaho,,popular vote,97293,36162,52621,0,0,3,0
+1908,Illinois,,popular vote,1155254,450810,629932,0,0,27,0
+1908,Indiana,,popular vote,721117,338262,348993,0,0,15,0
+1908,Iowa,,popular vote,494770,200771,275210,0,0,13,0
+1908,Kansas,,popular vote,376043,161209,197316,0,0,10,0
+1908,Kentucky,,popular vote,490719,244092,235711,0,13,0,0
+1908,Louisiana,,popular vote,75117,63568,8958,0,9,0,0
+1908,Maine,,popular vote,106335,35403,66987,0,0,6,0
+1908,Maryland,,popular vote,238531,115908,116513,0,6,2,0
+1908,Massachusetts,,popular vote,456905,155533,265966,0,0,16,0
+1908,Michigan,,popular vote,538124,174619,333313,0,0,14,0
+1908,Minnesota,,popular vote,331328,109411,195846,0,0,11,0
+1908,Mississippi,,popular vote,66904,60287,4363,0,10,0,0
+1908,Missouri,,popular vote,715841,346574,347203,0,0,18,0
+1908,Montana,,popular vote,69233,29511,32471,0,0,3,0
+1908,Nebraska,,popular vote,266799,131099,126997,0,8,0,0
+1908,Nevada,,popular vote,24526,11212,10775,0,3,0,0
+1908,New Hampshire,,popular vote,89595,33655,53144,0,0,4,0
+1908,New Jersey,,popular vote,467111,182522,265298,0,0,12,0
+1908,New York,,popular vote,1638350,667468,870070,0,0,39,0
+1908,North Carolina,,popular vote,252554,136928,114887,0,12,0,0
+1908,North Dakota,,popular vote,94524,32884,57680,0,0,4,0
+1908,Ohio,,popular vote,1121552,502721,572312,0,0,23,0
+1908,Oklahoma,,popular vote,254260,122362,110473,0,7,0,0
+1908,Oregon,,popular vote,110539,37792,62454,0,0,4,0
+1908,Pennsylvania,,popular vote,1267450,448782,745779,0,0,34,0
+1908,Rhode Island,,popular vote,72317,24706,43942,0,0,4,0
+1908,South Carolina,,popular vote,66379,62288,3945,0,9,0,0
+1908,South Dakota,,popular vote,114775,40266,67536,0,0,4,0
+1908,Tennessee,,popular vote,257180,135608,117977,0,12,0,0
+1908,Texas,,popular vote,292913,216662,65605,0,18,0,0
+1908,Utah,,popular vote,108757,42610,61165,0,0,3,0
+1908,Vermont,,popular vote,52680,11496,39552,0,0,4,0
+1908,Virginia,,popular vote,137065,82946,52572,0,12,0,0
+1908,Washington,,popular vote,183570,58383,106062,0,0,5,0
+1908,West Virginia,,popular vote,258098,111410,137869,0,0,7,0
+1908,Wisconsin,,popular vote,454438,166662,247744,0,0,13,0
+1908,Wyoming,,popular vote,37608,14918,20846,0,0,3,0
+1912,Alabama,,popular vote,117959,82438,9807,22680,12,0,0
+1912,Arizona,,popular vote,23687,10324,2986,6949,3,0,0
+1912,Arkansas,,popular vote,125104,68814,25585,21644,9,0,0
+1912,California,,popular vote,677877,283436,3847,283610,2,0,11
+1912,Colorado,,popular vote,265954,113912,58386,71752,6,0,0
+1912,Connecticut,,popular vote,190404,74561,68324,34129,7,0,0
+1912,Delaware,,popular vote,48690,22631,15997,8886,3,0,0
+1912,Florida,,popular vote,51911,36417,4279,4806,6,0,0
+1912,Georgia,,popular vote,121470,93087,5191,21985,14,0,0
+1912,Idaho,,popular vote,105754,33921,32810,25527,4,0,0
+1912,Illinois,,popular vote,1146173,405048,253593,386478,29,0,0
+1912,Indiana,,popular vote,654474,281890,151267,162007,15,0,0
+1912,Iowa,,popular vote,492353,185322,119805,161819,13,0,0
+1912,Kansas,,popular vote,365560,143663,74845,120210,10,0,0
+1912,Kentucky,,popular vote,453707,219585,115520,102766,13,0,0
+1912,Louisiana,,popular vote,79248,60871,3833,9283,10,0,0
+1912,Maine,,popular vote,129641,51113,26545,48495,6,0,0
+1912,Maryland,,popular vote,231981,112674,54956,57789,8,0,0
+1912,Massachusetts,,popular vote,488056,173408,155948,142228,18,0,0
+1912,Michigan,,popular vote,547971,150201,151434,213243,0,0,15
+1912,Minnesota,,popular vote,334219,106426,64334,125856,0,0,12
+1912,Mississippi,,popular vote,64483,57324,1560,3549,10,0,0
+1912,Missouri,,popular vote,698566,330746,207821,124375,18,0,0
+1912,Montana,,popular vote,80256,28129,18575,22709,4,0,0
+1912,Nebraska,,popular vote,249483,109008,54226,72681,8,0,0
+1912,Nevada,,popular vote,20115,7986,3196,5620,3,0,0
+1912,New Hampshire,,popular vote,87961,34724,32927,17794,4,0,0
+1912,New Jersey,,popular vote,433663,178638,89066,145679,14,0,0
+1912,New Mexico,,popular vote,48807,20437,17164,8347,3,0,0
+1912,New York,,popular vote,1588315,655573,455487,390093,45,0,0
+1912,North Carolina,,popular vote,243776,144407,29129,69135,12,0,0
+1912,North Dakota,,popular vote,86474,29549,22990,25726,5,0,0
+1912,Ohio,,popular vote,1037114,424834,278168,229807,24,0,0
+1912,Oklahoma,,popular vote,253694,119143,90726,41630,10,0,0
+1912,Oregon,,popular vote,137040,47064,34673,37600,5,0,0
+1912,Pennsylvania,,popular vote,1217736,395637,273360,444894,0,0,38
+1912,Rhode Island,,popular vote,77894,30412,27703,16878,5,0,0
+1912,South Carolina,,popular vote,50403,48355,536,1293,9,0,0
+1912,South Dakota,,popular vote,116327,48942,0,58811,0,0,5
+1912,Tennessee,,popular vote,251933,133021,60475,54041,12,0,0
+1912,Texas,,popular vote,300961,218921,28310,26715,20,0,0
+1912,Utah,,popular vote,112272,36576,42013,24174,0,4,0
+1912,Vermont,,popular vote,62804,15350,23303,22129,0,4,0
+1912,Virginia,,popular vote,136975,90332,23288,21776,12,0,0
+1912,Washington,,popular vote,322799,86840,70445,113698,0,0,7
+1912,West Virginia,,popular vote,268728,113097,56754,79112,8,0,0
+1912,Wisconsin,,popular vote,399975,164230,130596,62448,13,0,0
+1912,Wyoming,,popular vote,42283,15310,14560,9232,3,0,0
+1916,Alabama,,popular vote,131142,99409,28809,0,12,0,0
+1916,Arizona,,popular vote,58019,33170,20522,0,3,0,0
+1916,Arkansas,,popular vote,168348,112186,47148,0,9,0,0
+1916,California,,popular vote,999250,465936,462516,0,13,0,0
+1916,Colorado,,popular vote,294375,178816,102308,0,6,0,0
+1916,Connecticut,,popular vote,213874,99786,106514,0,0,7,0
+1916,Delaware,,popular vote,51810,24753,26011,0,0,3,0
+1916,Florida,,popular vote,80734,55984,14611,0,6,0,0
+1916,Georgia,,popular vote,158690,125845,11225,0,14,0,0
+1916,Idaho,,popular vote,134615,70054,55368,0,4,0,0
+1916,Illinois,,popular vote,2192707,950229,1152549,0,0,29,0
+1916,Indiana,,popular vote,718853,334063,341005,0,0,15,0
+1916,Iowa,,popular vote,518738,221699,280439,0,0,13,0
+1916,Kansas,,popular vote,629813,314588,277658,0,10,0,0
+1916,Kentucky,,popular vote,520078,269990,241854,0,13,0,0
+1916,Louisiana,,popular vote,92974,79875,6466,0,10,0,0
+1916,Maine,,popular vote,136314,64033,69508,0,0,6,0
+1916,Maryland,,popular vote,262039,138359,117347,0,8,0,0
+1916,Massachusetts,,popular vote,531822,247885,268784,0,0,18,0
+1916,Michigan,,popular vote,646873,283993,337952,0,0,15,0
+1916,Minnesota,,popular vote,387367,179155,179544,0,0,12,0
+1916,Mississippi,,popular vote,86679,80422,4253,0,10,0,0
+1916,Missouri,,popular vote,786773,398032,369339,0,18,0,0
+1916,Montana,,popular vote,178009,101104,66933,0,4,0,0
+1916,Nebraska,,popular vote,287315,158827,117771,0,8,0,0
+1916,Nevada,,popular vote,33314,17776,12127,0,3,0,0
+1916,New Hampshire,,popular vote,89127,43781,43725,0,4,0,0
+1916,New Jersey,,popular vote,494442,211018,268982,0,0,14,0
+1916,New Mexico,,popular vote,66879,33693,31097,0,3,0,0
+1916,New York,,popular vote,1706305,759426,879238,0,0,45,0
+1916,North Carolina,,popular vote,289837,168383,120890,0,12,0,0
+1916,North Dakota,,popular vote,115390,55206,53471,0,5,0,0
+1916,Ohio,,popular vote,1165091,604161,514753,0,24,0,0
+1916,Oklahoma,,popular vote,292327,148123,97233,0,10,0,0
+1916,Oregon,,popular vote,261650,120087,126813,0,0,5,0
+1916,Pennsylvania,,popular vote,1297189,521784,703823,0,0,38,0
+1916,Rhode Island,,popular vote,87816,40394,44858,0,0,5,0
+1916,South Carolina,,popular vote,63950,61845,1550,0,9,0,0
+1916,South Dakota,,popular vote,128942,59191,64217,0,0,5,0
+1916,Tennessee,,popular vote,272190,153280,116223,0,12,0,0
+1916,Texas,,popular vote,372467,286514,64999,0,20,0,0
+1916,Utah,,popular vote,143145,84145,54137,0,4,0,0
+1916,Vermont,,popular vote,64475,22708,40250,0,0,4,0
+1916,Virginia,,popular vote,153993,102825,49358,0,12,0,0
+1916,Washington,,popular vote,380994,183388,167208,0,7,0,0
+1916,West Virginia,,popular vote,289671,140403,143124,0,1,7,0
+1916,Wisconsin,,popular vote,447134,191363,220822,0,0,13,0
+1916,Wyoming,,popular vote,51906,28376,21698,0,3,0,0
+1920,Alabama,,popular vote,233951,156064,74719,0,12,0,0
+1920,Arizona,,popular vote,66803,29546,37016,0,0,3,0
+1920,Arkansas,,popular vote,183637,107409,71117,0,9,0,0
+1920,California,,popular vote,943463,229191,624992,0,0,13,0
+1920,Colorado,,popular vote,292053,104936,173248,0,0,6,0
+1920,Connecticut,,popular vote,365518,120721,229238,0,0,7,0
+1920,Delaware,,popular vote,94875,39911,52858,0,0,3,0
+1920,Florida,,popular vote,145684,90515,44853,0,6,0,0
+1920,Georgia,,popular vote,149558,106112,42981,0,14,0,0
+1920,Idaho,,popular vote,138359,46930,91351,0,0,4,0
+1920,Illinois,,popular vote,2094714,534395,1420480,0,0,29,0
+1920,Indiana,,popular vote,1262974,511364,696370,0,0,15,0
+1920,Iowa,,popular vote,894959,227804,634674,0,0,13,0
+1920,Kansas,,popular vote,570243,185464,369268,0,0,10,0
+1920,Kentucky,,popular vote,918636,456497,452480,0,13,0,0
+1920,Louisiana,,popular vote,126397,87519,38539,0,10,0,0
+1920,Maine,,popular vote,197840,58961,136355,0,0,6,0
+1920,Maryland,,popular vote,428443,180626,236117,0,0,8,0
+1920,Massachusetts,,popular vote,993718,276691,681153,0,0,18,0
+1920,Michigan,,popular vote,1048411,233450,762865,0,0,15,0
+1920,Minnesota,,popular vote,735838,142994,519421,0,0,12,0
+1920,Mississippi,,popular vote,82351,69136,11576,0,10,0,0
+1920,Missouri,,popular vote,1332140,574699,727252,0,0,18,0
+1920,Montana,,popular vote,179006,57372,109430,0,0,4,0
+1920,Nebraska,,popular vote,382743,119608,247498,0,0,8,0
+1920,Nevada,,popular vote,27194,9851,15479,0,0,3,0
+1920,New Hampshire,,popular vote,159092,62662,95196,0,0,4,0
+1920,New Jersey,,popular vote,910251,258761,615333,0,0,14,0
+1920,New Mexico,,popular vote,105412,46668,57634,0,0,3,0
+1920,New York,,popular vote,2898513,781238,1871167,0,0,45,0
+1920,North Carolina,,popular vote,538649,305367,232819,0,12,0,0
+1920,North Dakota,,popular vote,205786,37422,160082,0,0,5,0
+1920,Ohio,,popular vote,2021653,780037,1182022,0,0,24,0
+1920,Oklahoma,,popular vote,485678,216122,243840,0,0,10,0
+1920,Oregon,,popular vote,238522,80019,143592,0,0,5,0
+1920,Pennsylvania,,popular vote,1851248,503202,1218215,0,0,38,0
+1920,Rhode Island,,popular vote,167981,55062,107463,0,0,5,0
+1920,South Carolina,,popular vote,66808,64170,2610,0,9,0,0
+1920,South Dakota,,popular vote,182237,35938,110692,0,0,5,0
+1920,Tennessee,,popular vote,428036,206558,219229,0,0,12,0
+1920,Texas,,popular vote,486109,287920,114658,0,20,0,0
+1920,Utah,,popular vote,145828,56639,81555,0,0,4,0
+1920,Vermont,,popular vote,89961,20919,68212,0,0,4,0
+1920,Virginia,,popular vote,231000,141670,87456,0,12,0,0
+1920,Washington,,popular vote,398715,84298,223137,0,0,7,0
+1920,West Virginia,,popular vote,509936,220785,282007,0,0,8,0
+1920,Wisconsin,,popular vote,701281,113422,498576,0,0,13,0
+1920,Wyoming,,popular vote,56253,17429,35091,0,0,3,0
+1924,Alabama,,popular vote,166593,112966,45005,8084,12,0,0
+1924,Arizona,,popular vote,73961,26235,30516,17210,0,3,0
+1924,Arkansas,,popular vote,138540,84790,40583,13167,9,0,0
+1924,California,,popular vote,1281778,105514,733250,424649,0,13,0
+1924,Colorado,,popular vote,342261,75238,195171,69945,0,6,0
+1924,Connecticut,,popular vote,400396,110184,246322,42416,0,7,0
+1924,Delaware,,popular vote,90885,33445,52441,4979,0,3,0
+1924,Florida,,popular vote,109158,62083,30633,8625,6,0,0
+1924,Georgia,,popular vote,166635,123262,30300,12687,14,0,0
+1924,Idaho,,popular vote,147690,23951,69791,53948,0,4,0
+1924,Illinois,,popular vote,2470067,576975,1453321,432027,0,29,0
+1924,Indiana,,popular vote,1272390,492245,703042,71700,0,15,0
+1924,Iowa,,popular vote,976770,160382,537458,274448,0,13,0
+1924,Kansas,,popular vote,662456,156320,407671,98461,0,10,0
+1924,Kentucky,,popular vote,816070,375593,398966,38465,0,13,0
+1924,Louisiana,,popular vote,121951,93218,24670,0,10,0,0
+1924,Maine,,popular vote,192192,41964,138440,11382,0,6,0
+1924,Maryland,,popular vote,358630,148072,162414,47157,0,8,0
+1924,Massachusetts,,popular vote,1129837,280831,703476,141225,0,18,0
+1924,Michigan,,popular vote,1160419,152359,874631,122014,0,15,0
+1924,Minnesota,,popular vote,822146,55913,420759,339192,0,12,0
+1924,Mississippi,,popular vote,112442,100474,8494,3474,10,0,0
+1924,Missouri,,popular vote,1310095,574962,648488,83986,0,18,0
+1924,Montana,,popular vote,174425,33805,74138,65876,0,4,0
+1924,Nebraska,,popular vote,463559,137299,218985,105681,0,8,0
+1924,Nevada,,popular vote,26921,5909,11243,9769,0,3,0
+1924,New Hampshire,,popular vote,164769,57201,98575,8993,0,4,0
+1924,New Jersey,,popular vote,1088054,298043,676277,109028,0,14,0
+1924,New Mexico,,popular vote,112830,48542,54745,9543,0,3,0
+1924,New York,,popular vote,3263939,950796,1820058,474913,0,45,0
+1924,North Carolina,,popular vote,481608,284190,190754,6651,12,0,0
+1924,North Dakota,,popular vote,199081,13858,94931,89922,0,5,0
+1924,Ohio,,popular vote,2016296,477887,1176130,358008,0,24,0
+1924,Oklahoma,,popular vote,527928,255798,225755,41141,10,0,0
+1924,Oregon,,popular vote,279488,67589,142579,68403,0,5,0
+1924,Pennsylvania,,popular vote,2144850,409192,1401481,307567,0,38,0
+1924,Rhode Island,,popular vote,210115,76606,125286,7628,0,5,0
+1924,South Carolina,,popular vote,50755,49008,1123,623,9,0,0
+1924,South Dakota,,popular vote,203868,27214,101299,75355,0,5,0
+1924,Tennessee,,popular vote,301030,159339,130831,10666,12,0,0
+1924,Texas,,popular vote,657054,483381,130794,42879,20,0,0
+1924,Utah,,popular vote,156990,47001,77327,32662,0,4,0
+1924,Vermont,,popular vote,102917,16124,80498,5964,0,4,0
+1924,Virginia,,popular vote,223603,139717,73328,10369,12,0,0
+1924,Washington,,popular vote,421549,42842,220224,150727,0,7,0
+1924,West Virginia,,popular vote,583662,257232,288635,36723,0,8,0
+1924,Wisconsin,,popular vote,840827,68115,311614,453678,0,0,13
+1924,Wyoming,,popular vote,79900,12868,41858,25174,0,3,0
+1928,Alabama,,popular vote,248981,127796,120725,0,12,0,0
+1928,Arizona,,popular vote,91254,38537,52533,0,0,3,0
+1928,Arkansas,,popular vote,197726,119196,77784,0,9,0,0
+1928,California,,popular vote,1796656,614365,1162323,0,0,13,0
+1928,Colorado,,popular vote,392242,133131,253872,0,0,6,0
+1928,Connecticut,,popular vote,553118,252085,296641,0,0,7,0
+1928,Delaware,,popular vote,104602,35354,68860,0,0,3,0
+1928,Florida,,popular vote,253672,101764,144168,0,0,6,0
+1928,Georgia,,popular vote,231592,129604,101800,0,14,0,0
+1928,Idaho,,popular vote,154230,53074,99848,0,0,4,0
+1928,Illinois,,popular vote,3107489,1313817,1769141,0,0,29,0
+1928,Indiana,,popular vote,1421314,562691,848290,0,0,15,0
+1928,Iowa,,popular vote,1009189,379011,623570,0,0,13,0
+1928,Kansas,,popular vote,713200,193003,513672,0,0,10,0
+1928,Kentucky,,popular vote,940521,381070,558064,0,0,13,0
+1928,Louisiana,,popular vote,215833,164655,51160,0,10,0,0
+1928,Maine,,popular vote,262170,81179,179923,0,0,6,0
+1928,Maryland,,popular vote,528348,223626,301479,0,0,8,0
+1928,Massachusetts,,popular vote,1577823,792758,775566,0,18,0,0
+1928,Michigan,,popular vote,1372082,396762,965396,0,0,15,0
+1928,Minnesota,,popular vote,970976,396451,560977,0,0,12,0
+1928,Mississippi,,popular vote,151568,124538,27030,0,10,0,0
+1928,Missouri,,popular vote,1500845,662684,834080,0,0,18,0
+1928,Montana,,popular vote,194108,78578,113300,0,0,4,0
+1928,Nebraska,,popular vote,547128,197950,345745,0,0,8,0
+1928,Nevada,,popular vote,32417,14090,18327,0,0,3,0
+1928,New Hampshire,,popular vote,196757,80715,115404,0,0,4,0
+1928,New Jersey,,popular vote,1549381,616517,926050,0,0,14,0
+1928,New Mexico,,popular vote,118077,48211,69708,0,0,3,0
+1928,New York,,popular vote,4405626,2089863,2193344,0,0,45,0
+1928,North Carolina,,popular vote,635150,286227,348923,0,0,12,0
+1928,North Dakota,,popular vote,239845,106648,131419,0,0,5,0
+1928,Ohio,,popular vote,2508346,864210,1627546,0,0,24,0
+1928,Oklahoma,,popular vote,618427,219174,394046,0,0,10,0
+1928,Oregon,,popular vote,319942,109223,205341,0,0,5,0
+1928,Pennsylvania,,popular vote,3150612,1067586,2055382,0,0,38,0
+1928,Rhode Island,,popular vote,237194,118973,117522,0,5,0,0
+1928,South Carolina,,popular vote,68605,62700,5858,0,9,0,0
+1928,South Dakota,,popular vote,261857,102660,157603,0,0,5,0
+1928,Tennessee,,popular vote,353192,157143,195388,0,0,12,0
+1928,Texas,,popular vote,708999,341032,367036,0,0,20,0
+1928,Utah,,popular vote,176603,80985,94618,0,0,4,0
+1928,Vermont,,popular vote,135191,44440,90404,0,0,4,0
+1928,Virginia,,popular vote,305364,140146,164609,0,0,12,0
+1928,Washington,,popular vote,500840,156772,335844,0,0,7,0
+1928,West Virginia,,popular vote,642752,263784,375551,0,0,8,0
+1928,Wisconsin,,popular vote,1016831,450259,544205,0,0,13,0
+1928,Wyoming,,popular vote,82835,29299,52748,0,0,3,0
+1932,Alabama,,popular vote,245303,207910,34675,0,11,0,0
+1932,Arizona,,popular vote,118251,79264,36104,0,3,0,0
+1932,Arkansas,,popular vote,216569,186829,27465,0,9,0,0
+1932,California,,popular vote,2266972,1324157,847902,0,22,0,0
+1932,Colorado,,popular vote,457696,250877,189617,0,6,0,0
+1932,Connecticut,,popular vote,594183,281632,288420,0,0,8,0
+1932,Delaware,,popular vote,112901,54319,57073,0,0,3,0
+1932,Florida,,popular vote,276943,206307,69170,0,7,0,0
+1932,Georgia,,popular vote,255590,234118,19863,0,12,0,0
+1932,Idaho,,popular vote,186520,109479,71312,0,4,0,0
+1932,Illinois,,popular vote,3407926,1882304,1432756,0,29,0,0
+1932,Indiana,,popular vote,1576927,862054,677184,0,14,0,0
+1932,Iowa,,popular vote,1036687,598019,414433,0,11,0,0
+1932,Kansas,,popular vote,791978,424204,349498,0,9,0,0
+1932,Kentucky,,popular vote,983059,580574,394716,0,11,0,0
+1932,Louisiana,,popular vote,268804,249418,18853,0,10,0,0
+1932,Maine,,popular vote,298444,128907,166631,0,0,5,0
+1932,Maryland,,popular vote,511054,314314,184184,0,8,0,0
+1932,Massachusetts,,popular vote,1580114,800148,736959,0,17,0,0
+1932,Michigan,,popular vote,1664765,871700,739894,0,19,0,0
+1932,Minnesota,,popular vote,1002843,600806,363959,0,11,0,0
+1932,Mississippi,,popular vote,146034,140168,5180,0,9,0,0
+1932,Missouri,,popular vote,1609894,1025406,564713,0,15,0,0
+1932,Montana,,popular vote,216479,127286,78078,0,4,0,0
+1932,Nebraska,,popular vote,570135,359082,201177,0,7,0,0
+1932,Nevada,,popular vote,41430,28756,12674,0,3,0,0
+1932,New Hampshire,,popular vote,205520,100680,103629,0,0,4,0
+1932,New Jersey,,popular vote,1630063,806630,775684,0,16,0,0
+1932,New Mexico,,popular vote,151606,95089,54217,0,3,0,0
+1932,New York,,popular vote,4688614,2534959,1937963,0,47,0,0
+1932,North Carolina,,popular vote,711498,497566,208344,0,13,0,0
+1932,North Dakota,,popular vote,256290,178350,71772,0,4,0,0
+1932,Ohio,,popular vote,2609728,1301695,1227319,0,26,0,0
+1932,Oklahoma,,popular vote,704633,516468,188165,0,11,0,0
+1932,Oregon,,popular vote,368751,213871,136019,0,5,0,0
+1932,Pennsylvania,,popular vote,2859021,1295948,1453540,0,0,36,0
+1932,Rhode Island,,popular vote,266170,146604,115266,0,4,0,0
+1932,South Carolina,,popular vote,104407,102347,1978,0,8,0,0
+1932,South Dakota,,popular vote,288438,183515,99212,0,4,0,0
+1932,Tennessee,,popular vote,390273,259473,126752,0,11,0,0
+1932,Texas,,popular vote,863406,760348,97959,0,23,0,0
+1932,Utah,,popular vote,206578,116750,84795,0,4,0,0
+1932,Vermont,,popular vote,136980,56266,78984,0,0,3,0
+1932,Virginia,,popular vote,297942,203979,89637,0,11,0,0
+1932,Washington,,popular vote,614814,353260,208645,0,8,0,0
+1932,West Virginia,,popular vote,743774,405124,330731,0,8,0,0
+1932,Wisconsin,,popular vote,1114814,707410,347741,0,12,0,0
+1932,Wyoming,,popular vote,96962,54370,39583,0,3,0,0
+1936,Alabama,,popular vote,275744,238196,35358,0,11,0,0
+1936,Arizona,,popular vote,124163,86722,33433,0,3,0,0
+1936,Arkansas,,popular vote,179431,146765,32049,0,9,0,0
+1936,California,,popular vote,2638882,1766836,836431,0,22,0,0
+1936,Colorado,,popular vote,488685,295021,181267,0,6,0,0
+1936,Connecticut,,popular vote,690723,382129,278685,0,8,0,0
+1936,Delaware,,popular vote,127603,69702,54014,0,3,0,0
+1936,Florida,,popular vote,327436,249117,78248,0,7,0,0
+1936,Georgia,,popular vote,293170,255363,36943,0,12,0,0
+1936,Idaho,,popular vote,199617,125683,66256,0,4,0,0
+1936,Illinois,,popular vote,3956522,2282999,1570393,0,29,0,0
+1936,Indiana,,popular vote,1650897,934974,691570,0,14,0,0
+1936,Iowa,,popular vote,1142737,621756,487977,0,11,0,0
+1936,Kansas,,popular vote,865507,464520,397727,0,9,0,0
+1936,Kentucky,,popular vote,926214,541944,369702,0,11,0,0
+1936,Louisiana,,popular vote,329778,292894,36791,0,10,0,0
+1936,Maine,,popular vote,304240,126333,168823,0,0,5,0
+1936,Maryland,,popular vote,624896,389612,231435,0,8,0,0
+1936,Massachusetts,,popular vote,1840357,942716,768613,0,17,0,0
+1936,Michigan,,popular vote,1805098,1016794,699733,0,19,0,0
+1936,Minnesota,,popular vote,1129975,698811,350461,0,11,0,0
+1936,Mississippi,,popular vote,162142,157333,4467,0,9,0,0
+1936,Missouri,,popular vote,1828635,1111043,697891,0,15,0,0
+1936,Montana,,popular vote,230502,159690,63598,0,4,0,0
+1936,Nebraska,,popular vote,608023,347445,247731,0,7,0,0
+1936,Nevada,,popular vote,43848,31925,11923,0,3,0,0
+1936,New Hampshire,,popular vote,218114,108460,104642,0,4,0,0
+1936,New Jersey,,popular vote,1820437,1083850,720322,0,16,0,0
+1936,New Mexico,,popular vote,169135,106037,61727,0,3,0,0
+1936,New York,,popular vote,5596398,3293222,2180670,0,47,0,0
+1936,North Carolina,,popular vote,839475,616141,223294,0,13,0,0
+1936,North Dakota,,popular vote,273716,163148,72751,0,4,0,0
+1936,Ohio,,popular vote,3012660,1747140,1127855,0,26,0,0
+1936,Oklahoma,,popular vote,749740,501069,245122,0,11,0,0
+1936,Oregon,,popular vote,414021,266733,122706,0,5,0,0
+1936,Pennsylvania,,popular vote,4138105,2353788,1690300,0,36,0,0
+1936,Rhode Island,,popular vote,310278,164338,125031,0,4,0,0
+1936,South Carolina,,popular vote,115437,113791,1646,0,8,0,0
+1936,South Dakota,,popular vote,296452,160137,125977,0,4,0,0
+1936,Tennessee,,popular vote,475533,327083,146516,0,11,0,0
+1936,Texas,,popular vote,843482,734485,103874,0,23,0,0
+1936,Utah,,popular vote,216679,150248,64555,0,4,0,0
+1936,Vermont,,popular vote,143689,62124,81023,0,0,3,0
+1936,Virginia,,popular vote,334590,234980,98336,0,11,0,0
+1936,Washington,,popular vote,692338,459579,206892,0,8,0,0
+1936,West Virginia,,popular vote,829945,502582,325358,0,8,0,0
+1936,Wisconsin,,popular vote,1258560,802984,380828,0,12,0,0
+1936,Wyoming,,popular vote,103382,62624,38739,0,3,0,0
+1940,Alabama,,popular vote,294219,250726,42184,0,11,0,0
+1940,Arizona,,popular vote,150039,95267,54030,0,3,0,0
+1940,Arkansas,,popular vote,200429,157213,42122,0,9,0,0
+1940,California,,popular vote,3268791,1877618,1351419,0,22,0,0
+1940,Colorado,,popular vote,549004,265554,279576,0,0,6,0
+1940,Connecticut,,popular vote,781502,417621,361819,0,8,0,0
+1940,Delaware,,popular vote,136374,74599,61440,0,3,0,0
+1940,Florida,,popular vote,485640,359334,126158,0,7,0,0
+1940,Georgia,,popular vote,312686,265194,46495,0,12,0,0
+1940,Idaho,,popular vote,235168,127842,106553,0,4,0,0
+1940,Illinois,,popular vote,4217935,2149934,2047240,0,29,0,0
+1940,Indiana,,popular vote,1782747,874063,899466,0,0,14,0
+1940,Iowa,,popular vote,1215432,578802,632370,0,0,11,0
+1940,Kansas,,popular vote,860297,364725,489169,0,0,9,0
+1940,Kentucky,,popular vote,970163,557322,410384,0,11,0,0
+1940,Louisiana,,popular vote,372305,319751,52446,0,10,0,0
+1940,Maine,,popular vote,320840,156478,163951,0,0,5,0
+1940,Maryland,,popular vote,660104,384546,269534,0,8,0,0
+1940,Massachusetts,,popular vote,2026993,1076522,939700,0,17,0,0
+1940,Michigan,,popular vote,2085929,1032991,1039917,0,0,19,0
+1940,Minnesota,,popular vote,1251188,644196,596274,0,11,0,0
+1940,Mississippi,,popular vote,175824,168267,7364,0,9,0,0
+1940,Missouri,,popular vote,1833729,958476,871009,0,15,0,0
+1940,Montana,,popular vote,247873,145698,99579,0,4,0,0
+1940,Nebraska,,popular vote,615878,263677,352201,0,0,7,0
+1940,Nevada,,popular vote,53174,31945,21229,0,3,0,0
+1940,New Hampshire,,popular vote,235419,125292,110127,0,4,0,0
+1940,New Jersey,,popular vote,1972552,1016808,945475,0,16,0,0
+1940,New Mexico,,popular vote,183258,103699,79315,0,3,0,0
+1940,New York,,popular vote,6301596,3251918,3027478,0,47,0,0
+1940,North Carolina,,popular vote,822648,609015,213633,0,13,0,0
+1940,North Dakota,,popular vote,280775,124036,154590,0,0,4,0
+1940,Ohio,,popular vote,3319912,1733139,1586773,0,26,0,0
+1940,Oklahoma,,popular vote,826212,474313,348872,0,11,0,0
+1940,Oregon,,popular vote,481240,258415,219555,0,5,0,0
+1940,Pennsylvania,,popular vote,4078714,2171035,1889848,0,36,0,0
+1940,Rhode Island,,popular vote,321152,182181,138654,0,4,0,0
+1940,South Carolina,,popular vote,99830,95470,4360,0,8,0,0
+1940,South Dakota,,popular vote,308427,131362,177065,0,0,4,0
+1940,Tennessee,,popular vote,522823,351601,169153,0,11,0,0
+1940,Texas,,popular vote,1041168,840151,199152,0,23,0,0
+1940,Utah,,popular vote,247819,154277,93151,0,4,0,0
+1940,Vermont,,popular vote,143062,64269,78371,0,0,3,0
+1940,Virginia,,popular vote,346608,235961,109363,0,11,0,0
+1940,Washington,,popular vote,793833,462145,322123,0,8,0,0
+1940,West Virginia,,popular vote,868076,495662,372414,0,8,0,0
+1940,Wisconsin,,popular vote,1405522,704821,679206,0,12,0,0
+1940,Wyoming,,popular vote,112240,59287,52633,0,3,0,0
+1944,Alabama,,popular vote,244743,198918,44540,0,11,0,0
+1944,Arizona,,popular vote,137634,80926,56287,0,4,0,0
+1944,Arkansas,,popular vote,212954,148965,63551,0,9,0,0
+1944,California,,popular vote,3520875,1988564,1512965,0,25,0,0
+1944,Colorado,,popular vote,505039,234331,268731,0,0,6,0
+1944,Connecticut,,popular vote,831990,435146,390527,0,8,0,0
+1944,Delaware,,popular vote,125361,68166,56747,0,3,0,0
+1944,Florida,,popular vote,482803,339377,143215,0,8,0,0
+1944,Georgia,,popular vote,328129,268187,56506,0,12,0,0
+1944,Idaho,,popular vote,208321,107399,100137,0,4,0,0
+1944,Illinois,,popular vote,4036061,2079479,1939314,0,28,0,0
+1944,Indiana,,popular vote,1672091,781403,875891,0,0,13,0
+1944,Iowa,,popular vote,1052599,499876,547267,0,0,10,0
+1944,Kansas,,popular vote,733776,287458,442096,0,0,8,0
+1944,Kentucky,,popular vote,867924,472589,392448,0,11,0,0
+1944,Louisiana,,popular vote,349383,281564,67750,0,10,0,0
+1944,Maine,,popular vote,296400,140631,155434,0,0,5,0
+1944,Maryland,,popular vote,608439,315490,292949,0,8,0,0
+1944,Massachusetts,,popular vote,1960665,1035296,921350,0,16,0,0
+1944,Michigan,,popular vote,2205223,1106899,1084423,0,19,0,0
+1944,Minnesota,,popular vote,1125504,589864,527416,0,11,0,0
+1944,Mississippi,,popular vote,180234,168621,11613,0,9,0,0
+1944,Missouri,,popular vote,1571697,807356,761175,0,15,0,0
+1944,Montana,,popular vote,207355,112556,93163,0,4,0,0
+1944,Nebraska,,popular vote,563126,233246,329880,0,0,6,0
+1944,Nevada,,popular vote,54234,29623,24611,0,3,0,0
+1944,New Hampshire,,popular vote,229625,119663,109916,0,4,0,0
+1944,New Jersey,,popular vote,1963761,987874,961335,0,16,0,0
+1944,New Mexico,,popular vote,152225,81389,70688,0,4,0,0
+1944,New York,,popular vote,6316790,3304238,2987647,0,47,0,0
+1944,North Carolina,,popular vote,790554,527399,263155,0,14,0,0
+1944,North Dakota,,popular vote,220182,100144,118535,0,0,4,0
+1944,Ohio,,popular vote,3153056,1570763,1582293,0,0,25,0
+1944,Oklahoma,,popular vote,722636,401549,319424,0,10,0,0
+1944,Oregon,,popular vote,480147,248635,225365,0,6,0,0
+1944,Pennsylvania,,popular vote,3794793,1940479,1835054,0,35,0,0
+1944,Rhode Island,,popular vote,299276,175356,123487,0,4,0,0
+1944,South Carolina,,popular vote,103382,90601,4554,0,8,0,0
+1944,South Dakota,,popular vote,232076,96711,135365,0,0,4,0
+1944,Tennessee,,popular vote,510692,308707,200311,0,12,0,0
+1944,Texas,,popular vote,1150334,821605,191423,0,23,0,0
+1944,Utah,,popular vote,248319,150088,97891,0,4,0,0
+1944,Vermont,,popular vote,125361,53820,71527,0,0,3,0
+1944,Virginia,,popular vote,388485,242276,145243,0,11,0,0
+1944,Washington,,popular vote,856328,486774,361689,0,8,0,0
+1944,West Virginia,,popular vote,715596,392777,322819,0,8,0,0
+1944,Wisconsin,,popular vote,1339152,650413,674532,0,0,12,0
+1944,Wyoming,,popular vote,101340,49419,51921,0,0,3,0
+1948,Alabama,,popular vote,214980,0,40930,171443,0,0,11
+1948,Arizona,,popular vote,177065,95251,77597,0,4,0,0
+1948,Arkansas,,popular vote,242475,149659,50959,40068,9,0,0
+1948,California,,popular vote,4021538,1913134,1895269,1228,25,0,0
+1948,Colorado,,popular vote,515237,267288,239714,0,6,0,0
+1948,Connecticut,,popular vote,883518,423297,437754,0,0,8,0
+1948,Delaware,,popular vote,139073,67813,69588,0,0,3,0
+1948,Florida,,popular vote,577643,281988,194280,89755,8,0,0
+1948,Georgia,,popular vote,418844,254646,76691,85135,12,0,0
+1948,Idaho,,popular vote,214816,107370,101514,0,4,0,0
+1948,Illinois,,popular vote,3984046,1994715,1961103,0,28,0,0
+1948,Indiana,,popular vote,1656212,807831,821079,0,0,13,0
+1948,Iowa,,popular vote,1038264,522380,494018,0,10,0,0
+1948,Kansas,,popular vote,788819,351902,423039,0,0,8,0
+1948,Kentucky,,popular vote,822658,466756,341210,10411,11,0,0
+1948,Louisiana,,popular vote,416336,136344,72657,204290,0,0,10
+1948,Maine,,popular vote,264787,111916,150234,0,0,5,0
+1948,Maryland,,popular vote,596748,286521,294814,2489,0,8,0
+1948,Massachusetts,,popular vote,2107146,1151788,909370,0,16,0,0
+1948,Michigan,,popular vote,2109609,1003448,1038595,0,0,19,0
+1948,Minnesota,,popular vote,1212226,692966,483617,0,11,0,0
+1948,Mississippi,,popular vote,192190,19384,5043,167538,0,0,9
+1948,Missouri,,popular vote,1578628,917315,655039,0,15,0,0
+1948,Montana,,popular vote,224278,119071,96770,0,4,0,0
+1948,Nebraska,,popular vote,488940,224165,264774,0,0,6,0
+1948,Nevada,,popular vote,62117,31291,29357,0,3,0,0
+1948,New Hampshire,,popular vote,231440,107995,121299,7,0,4,0
+1948,New Jersey,,popular vote,1949555,895455,981124,0,0,16,0
+1948,New Mexico,,popular vote,187063,105464,80303,0,4,0,0
+1948,New York,,popular vote,6177337,2780204,2841163,0,0,47,0
+1948,North Carolina,,popular vote,791209,459070,258572,69652,14,0,0
+1948,North Dakota,,popular vote,220716,95812,115139,374,0,4,0
+1948,Ohio,,popular vote,2936071,1452791,1445684,0,25,0,0
+1948,Oklahoma,,popular vote,721599,452782,268817,0,10,0,0
+1948,Oregon,,popular vote,524080,243147,260904,0,0,6,0
+1948,Pennsylvania,,popular vote,3735348,1752426,1902197,0,0,35,0
+1948,Rhode Island,,popular vote,327702,188736,135787,0,4,0,0
+1948,South Carolina,,popular vote,142571,34423,5386,102607,0,0,8
+1948,South Dakota,,popular vote,250105,117653,129651,0,0,4,0
+1948,Tennessee,,popular vote,550283,270402,202914,73815,11,0,1
+1948,Texas,,popular vote,1147245,750700,282240,106909,23,0,0
+1948,Utah,,popular vote,276306,149151,124402,0,4,0,0
+1948,Vermont,,popular vote,123382,45557,75926,0,0,3,0
+1948,Virginia,,popular vote,419256,200786,172070,43393,11,0,0
+1948,Washington,,popular vote,905058,476165,386314,0,8,0,0
+1948,West Virginia,,popular vote,748750,429188,316251,0,8,0,0
+1948,Wisconsin,,popular vote,1276800,647310,590959,0,12,0,0
+1948,Wyoming,,popular vote,101425,52354,47947,0,3,0,0
+1952,Alabama,,popular vote,426120,275075,149231,0,11,0,0
+1952,Arizona,,popular vote,260570,108528,152042,0,0,4,0
+1952,Arkansas,,popular vote,404800,226300,177155,0,8,0,0
+1952,California,,popular vote,5141849,2197548,2897310,0,0,32,0
+1952,Colorado,,popular vote,630103,245504,379782,0,0,6,0
+1952,Connecticut,,popular vote,1096911,481649,611012,0,0,8,0
+1952,Delaware,,popular vote,174025,83315,90059,0,0,3,0
+1952,Florida,,popular vote,989337,444950,544036,0,0,10,0
+1952,Georgia,,popular vote,655785,456823,198961,0,12,0,0
+1952,Idaho,,popular vote,276254,95081,180707,0,0,4,0
+1952,Illinois,,popular vote,4481058,2013920,2457327,0,0,27,0
+1952,Indiana,,popular vote,1955049,801530,1136259,0,0,13,0
+1952,Iowa,,popular vote,1268773,451513,808906,0,0,10,0
+1952,Kansas,,popular vote,896166,273296,616302,0,0,8,0
+1952,Kentucky,,popular vote,993148,495729,495029,0,10,0,0
+1952,Louisiana,,popular vote,651952,345027,306925,0,10,0,0
+1952,Maine,,popular vote,351786,118806,232353,0,0,5,0
+1952,Maryland,,popular vote,902074,395337,499424,0,0,9,0
+1952,Massachusetts,,popular vote,2383398,1083525,1292325,0,0,16,0
+1952,Michigan,,popular vote,2798592,1230657,1551529,0,0,20,0
+1952,Minnesota,,popular vote,1379483,608458,763211,0,0,11,0
+1952,Mississippi,,popular vote,285532,172566,112966,0,8,0,0
+1952,Missouri,,popular vote,1892062,929830,959429,0,0,13,0
+1952,Montana,,popular vote,265037,106213,157394,0,0,4,0
+1952,Nebraska,,popular vote,609660,188057,421603,0,0,6,0
+1952,Nevada,,popular vote,82190,31688,50502,0,0,3,0
+1952,New Hampshire,,popular vote,272950,106663,166287,0,0,4,0
+1952,New Jersey,,popular vote,2418554,1015902,1373613,0,0,16,0
+1952,New Mexico,,popular vote,238608,105661,132170,0,0,4,0
+1952,New York,,popular vote,7128239,3104601,3952813,0,0,45,0
+1952,North Carolina,,popular vote,1210910,652803,558107,0,14,0,0
+1952,North Dakota,,popular vote,270127,76694,191712,0,0,4,0
+1952,Ohio,,popular vote,3700758,1600367,2100391,0,0,25,0
+1952,Oklahoma,,popular vote,948984,430939,518045,0,0,8,0
+1952,Oregon,,popular vote,695059,270579,420815,0,0,6,0
+1952,Pennsylvania,,popular vote,4580969,2146269,2415789,0,0,32,0
+1952,Rhode Island,,popular vote,414498,203293,210935,0,0,4,0
+1952,South Carolina,,popular vote,341087,173004,9793,0,8,0,0
+1952,South Dakota,,popular vote,294283,90426,203857,0,0,4,0
+1952,Tennessee,,popular vote,892553,443710,446147,0,0,11,0
+1952,Texas,,popular vote,2075946,969228,1102878,0,0,24,0
+1952,Utah,,popular vote,329554,135364,194190,0,0,4,0
+1952,Vermont,,popular vote,153557,43355,109717,0,0,3,0
+1952,Virginia,,popular vote,619689,268677,349037,0,0,12,0
+1952,Washington,,popular vote,1102708,492845,599107,0,0,9,0
+1952,West Virginia,,popular vote,873548,453578,419970,0,8,0,0
+1952,Wisconsin,,popular vote,1607370,622175,979744,0,0,12,0
+1952,Wyoming,,popular vote,129253,47934,81049,0,0,3,0
+1956,Alabama,,popular vote,496861,280844,195694,0,10,0,0
+1956,Arizona,,popular vote,290173,112880,176990,0,0,4,0
+1956,Arkansas,,popular vote,406572,213277,186287,0,8,0,0
+1956,California,,popular vote,5466355,2420135,3027668,0,0,32,0
+1956,Colorado,,popular vote,657074,257997,394479,0,0,6,0
+1956,Connecticut,,popular vote,1117121,405079,711837,0,0,8,0
+1956,Delaware,,popular vote,177988,79421,98057,0,0,3,0
+1956,Florida,,popular vote,1125762,480371,643849,0,0,10,0
+1956,Georgia,,popular vote,669655,444688,222778,0,12,0,0
+1956,Idaho,,popular vote,272989,105868,166979,0,0,4,0
+1956,Illinois,,popular vote,4407407,1775682,2623327,0,0,27,0
+1956,Indiana,,popular vote,1974607,783908,1182811,0,0,13,0
+1956,Iowa,,popular vote,1234564,501858,729187,0,0,10,0
+1956,Kansas,,popular vote,866243,296317,566878,0,0,8,0
+1956,Kentucky,,popular vote,1053805,476453,572192,0,0,10,0
+1956,Louisiana,,popular vote,617544,243977,329047,0,0,10,0
+1956,Maine,,popular vote,351706,102468,249238,0,0,5,0
+1956,Maryland,,popular vote,932827,372613,559738,0,0,9,0
+1956,Massachusetts,,popular vote,2348506,948190,1393197,0,0,16,0
+1956,Michigan,,popular vote,3080468,1359898,1713647,0,0,20,0
+1956,Minnesota,,popular vote,1340005,617525,719302,0,0,11,0
+1956,Mississippi,,popular vote,248104,144453,60685,0,8,0,0
+1956,Missouri,,popular vote,1832562,918273,914289,0,13,0,0
+1956,Montana,,popular vote,271171,116238,154933,0,0,4,0
+1956,Nebraska,,popular vote,577137,199029,378108,0,0,6,0
+1956,Nevada,,popular vote,96689,40640,56049,0,0,3,0
+1956,New Hampshire,,popular vote,266994,90364,176519,0,0,4,0
+1956,New Jersey,,popular vote,2484312,850337,1606942,0,0,16,0
+1956,New Mexico,,popular vote,253926,106098,146788,0,0,4,0
+1956,New York,,popular vote,7095971,2747944,4345506,0,0,45,0
+1956,North Carolina,,popular vote,1165592,590530,575062,0,14,0,0
+1956,North Dakota,,popular vote,253991,96742,156766,0,0,4,0
+1956,Ohio,,popular vote,3702265,1439655,2262610,0,0,25,0
+1956,Oklahoma,,popular vote,859350,385581,473769,0,0,8,0
+1956,Oregon,,popular vote,736132,329204,406393,0,0,6,0
+1956,Pennsylvania,,popular vote,4576503,1981769,2585252,0,0,32,0
+1956,Rhode Island,,popular vote,387609,161790,225819,0,0,4,0
+1956,South Carolina,,popular vote,300583,136372,75700,0,8,0,0
+1956,South Dakota,,popular vote,293857,122288,171569,0,0,4,0
+1956,Tennessee,,popular vote,939404,456507,462288,0,0,11,0
+1956,Texas,,popular vote,1955168,859958,1080619,0,0,24,0
+1956,Utah,,popular vote,333995,118364,215631,0,0,4,0
+1956,Vermont,,popular vote,152978,42549,110390,0,0,3,0
+1956,Virginia,,popular vote,697978,267760,386459,0,0,12,0
+1956,Washington,,popular vote,1150889,523002,620430,0,0,9,0
+1956,West Virginia,,popular vote,830831,381534,449297,0,0,8,0
+1956,Wisconsin,,popular vote,1550558,586768,954844,0,0,12,0
+1956,Wyoming,,popular vote,124127,49554,74573,0,0,3,0
+1960,Alabama,,popular vote,570225,324050,237981,0,5,0,0
+1960,Alaska,,popular vote,60762,29809,30953,0,0,3,0
+1960,Arizona,,popular vote,398491,176781,221241,0,0,4,0
+1960,Arkansas,,popular vote,428509,215049,184508,0,8,0,0
+1960,California,,popular vote,6506578,3224099,3259722,0,0,32,0
+1960,Colorado,,popular vote,736236,330629,402242,0,0,6,0
+1960,Connecticut,,popular vote,1222883,657055,565813,0,8,0,0
+1960,Delaware,,popular vote,196683,99590,96373,0,3,0,0
+1960,Florida,,popular vote,1544176,748700,795476,0,0,10,0
+1960,Georgia,,popular vote,733349,458638,274472,0,12,0,0
+1960,Hawaii,,popular vote,184705,92410,92295,0,3,0,0
+1960,Idaho,,popular vote,300450,138853,161597,0,0,4,0
+1960,Illinois,,popular vote,4757409,2377846,2368988,0,27,0,0
+1960,Indiana,,popular vote,2135360,952358,1175120,0,0,13,0
+1960,Iowa,,popular vote,1273810,550565,722381,0,0,10,0
+1960,Kansas,,popular vote,928825,363213,561474,0,0,8,0
+1960,Kentucky,,popular vote,1124462,521855,602607,0,0,10,0
+1960,Louisiana,,popular vote,807891,407339,230980,0,10,0,0
+1960,Maine,,popular vote,421767,181159,240608,0,0,5,0
+1960,Maryland,,popular vote,1055349,565808,489538,0,9,0,0
+1960,Massachusetts,,popular vote,2469480,1487174,976750,0,16,0,0
+1960,Michigan,,popular vote,3318097,1687269,1620428,0,20,0,0
+1960,Minnesota,,popular vote,1541887,779933,757915,0,11,0,0
+1960,Mississippi,,popular vote,298171,108362,73561,0,0,0,0
+1960,Missouri,,popular vote,1934422,972201,962221,0,13,0,0
+1960,Montana,,popular vote,277579,134891,141841,0,0,4,0
+1960,Nebraska,,popular vote,613095,232542,380553,0,0,6,0
+1960,Nevada,,popular vote,107267,54880,52387,0,3,0,0
+1960,New Hampshire,,popular vote,295761,137772,157989,0,0,4,0
+1960,New Jersey,,popular vote,2773111,1385415,1363324,0,16,0,0
+1960,New Mexico,,popular vote,311107,156027,153733,0,4,0,0
+1960,New York,,popular vote,7291079,3830085,3446419,0,45,0,0
+1960,North Carolina,,popular vote,1368556,713136,655420,0,14,0,0
+1960,North Dakota,,popular vote,278431,123963,154310,0,0,4,0
+1960,Ohio,,popular vote,4161859,1944248,2217611,0,0,25,0
+1960,Oklahoma,,popular vote,903150,370111,533039,0,0,7,0
+1960,Oregon,,popular vote,776421,367402,408060,0,0,6,0
+1960,Pennsylvania,,popular vote,5006541,2556282,2439956,0,32,0,0
+1960,Rhode Island,,popular vote,405535,258032,147502,0,4,0,0
+1960,South Carolina,,popular vote,386688,198129,188558,0,8,0,0
+1960,South Dakota,,popular vote,306487,128070,178417,0,0,4,0
+1960,Tennessee,,popular vote,1051792,481453,556577,0,0,11,0
+1960,Texas,,popular vote,2311084,1167567,1121310,0,24,0,0
+1960,Utah,,popular vote,374709,169248,205361,0,0,4,0
+1960,Vermont,,popular vote,167324,69186,98131,0,0,3,0
+1960,Virginia,,popular vote,771449,362327,404521,0,0,12,0
+1960,Washington,,popular vote,1241572,599298,629273,0,0,9,0
+1960,West Virginia,,popular vote,837781,441786,395995,0,8,0,0
+1960,Wisconsin,,popular vote,1729082,830805,895175,0,0,12,0
+1960,Wyoming,,popular vote,140782,63331,77451,0,0,3,0
+1964,Alabama,,popular vote,689818,0,479085,0,0,10,0
+1964,Alaska,,popular vote,67259,44329,22930,0,3,0,0
+1964,Arizona,,popular vote,480770,237753,242535,0,0,5,0
+1964,Arkansas,,popular vote,560426,314197,243264,0,6,0,0
+1964,California,,popular vote,7057586,4171877,2879108,0,40,0,0
+1964,Colorado,,popular vote,776986,476024,296767,0,6,0,0
+1964,Connecticut,,popular vote,1218578,826269,390996,0,8,0,0
+1964,Delaware,,popular vote,201320,122704,78078,0,3,0,0
+1964,District of Columbia,,popular vote,198597,169796,28801,0,3,0,0
+1964,Florida,,popular vote,1854481,948540,905941,0,14,0,0
+1964,Georgia,,popular vote,1139335,522556,616584,0,0,12,0
+1964,Hawaii,,popular vote,207271,163249,44022,0,4,0,0
+1964,Idaho,,popular vote,292477,148920,143557,0,4,0,0
+1964,Illinois,,popular vote,4702841,2796833,1905946,0,26,0,0
+1964,Indiana,,popular vote,2091606,1170848,911118,0,13,0,0
+1964,Iowa,,popular vote,1184539,733030,449148,0,9,0,0
+1964,Kansas,,popular vote,857901,464028,386579,0,7,0,0
+1964,Kentucky,,popular vote,1046105,669659,372977,0,9,0,0
+1964,Louisiana,,popular vote,896293,387068,509225,0,0,10,0
+1964,Maine,,popular vote,380965,262264,118701,0,4,0,0
+1964,Maryland,,popular vote,1116457,730912,385495,0,10,0,0
+1964,Massachusetts,,popular vote,2344798,1786422,549727,0,14,0,0
+1964,Michigan,,popular vote,3203102,2136615,1060152,0,21,0,0
+1964,Minnesota,,popular vote,1554462,991117,559624,0,10,0,0
+1964,Mississippi,,popular vote,409146,52618,356528,0,0,7,0
+1964,Missouri,,popular vote,1817879,1164344,653535,0,12,0,0
+1964,Montana,,popular vote,278628,164246,113032,0,4,0,0
+1964,Nebraska,,popular vote,584154,307307,276847,0,5,0,0
+1964,Nevada,,popular vote,135433,79339,56094,0,3,0,0
+1964,New Hampshire,,popular vote,288093,184064,104029,0,4,0,0
+1964,New Jersey,,popular vote,2847663,1868231,964174,0,17,0,0
+1964,New Mexico,,popular vote,328645,194015,132838,0,4,0,0
+1964,New York,,popular vote,7166275,4913102,2243559,0,43,0,0
+1964,North Carolina,,popular vote,1424983,800139,624844,0,13,0,0
+1964,North Dakota,,popular vote,258389,149784,108207,0,4,0,0
+1964,Ohio,,popular vote,3969196,2498331,1470865,0,26,0,0
+1964,Oklahoma,,popular vote,932499,519834,412665,0,8,0,0
+1964,Oregon,,popular vote,786305,501017,282779,0,6,0,0
+1964,Pennsylvania,,popular vote,4822690,3130954,1673657,0,29,0,0
+1964,Rhode Island,,popular vote,390091,315463,74615,0,4,0,0
+1964,South Carolina,,popular vote,524779,215723,309048,0,0,8,0
+1964,South Dakota,,popular vote,293118,163010,130108,0,4,0,0
+1964,Tennessee,,popular vote,1143946,634947,508965,0,11,0,0
+1964,Texas,,popular vote,2626811,1663185,958566,0,25,0,0
+1964,Utah,,popular vote,401413,219628,181785,0,4,0,0
+1964,Vermont,,popular vote,163089,108127,54942,0,3,0,0
+1964,Virginia,,popular vote,1042267,558038,481334,0,12,0,0
+1964,Washington,,popular vote,1258556,779881,470366,0,9,0,0
+1964,West Virginia,,popular vote,792040,538087,253953,0,7,0,0
+1964,Wisconsin,,popular vote,1691815,1050424,638495,0,12,0,0
+1964,Wyoming,,popular vote,142716,80718,61998,0,3,0,0
+1968,Alabama,,popular vote,1049922,196579,146923,691425,0,0,10
+1968,Alaska,,popular vote,83035,35411,37600,10024,0,3,0
+1968,Arizona,,popular vote,486936,170514,266721,46573,0,5,0
+1968,Arkansas,,popular vote,619969,188228,190759,240982,0,0,6
+1968,California,,popular vote,7251587,3244318,3467664,487270,0,40,0
+1968,Colorado,,popular vote,811199,335174,409345,60813,0,6,0
+1968,Connecticut,,popular vote,1256232,621561,556721,76650,8,0,0
+1968,Delaware,,popular vote,214367,89194,96714,28459,0,3,0
+1968,District of Columbia,,popular vote,170578,139566,31012,0,3,0,0
+1968,Florida,,popular vote,2187805,676794,886804,624207,0,14,0
+1968,Georgia,,popular vote,1250266,334440,380111,535550,0,0,12
+1968,Hawaii,,popular vote,236218,141324,91425,3469,4,0,0
+1968,Idaho,,popular vote,291183,89273,165369,36541,0,4,0
+1968,Illinois,,popular vote,4619749,2039814,2174774,390958,0,26,0
+1968,Indiana,,popular vote,2123597,806659,1067885,243108,0,13,0
+1968,Iowa,,popular vote,1167931,476699,619106,66422,0,9,0
+1968,Kansas,,popular vote,872783,302996,478674,88921,0,7,0
+1968,Kentucky,,popular vote,1055893,397541,462411,193098,0,9,0
+1968,Louisiana,,popular vote,1097450,309615,257535,530300,0,0,10
+1968,Maine,,popular vote,392936,217312,169254,6370,4,0,0
+1968,Maryland,,popular vote,1235039,538310,517995,178734,10,0,0
+1968,Massachusetts,,popular vote,2331752,1469218,766844,87088,14,0,0
+1968,Michigan,,popular vote,3306250,1593082,1370665,331968,21,0,0
+1968,Minnesota,,popular vote,1588506,857738,658643,68931,10,0,0
+1968,Mississippi,,popular vote,654509,150644,88516,415349,0,0,7
+1968,Missouri,,popular vote,1809502,791444,811932,206126,0,12,0
+1968,Montana,,popular vote,274404,114117,138835,20015,0,4,0
+1968,Nebraska,,popular vote,536851,170784,321163,44904,0,5,0
+1968,Nevada,,popular vote,154218,60598,73188,20432,0,3,0
+1968,New Hampshire,,popular vote,297298,130589,154903,11173,0,4,0
+1968,New Jersey,,popular vote,2875395,1264206,1325467,262187,0,17,0
+1968,New Mexico,,popular vote,327350,130081,169692,25737,0,4,0
+1968,New York,,popular vote,6791688,3378470,3007932,358864,43,0,0
+1968,North Carolina,,popular vote,1587493,464113,627192,496188,0,12,1
+1968,North Dakota,,popular vote,247882,94769,138669,14244,0,4,0
+1968,Ohio,,popular vote,3959698,1700586,1791014,467495,0,26,0
+1968,Oklahoma,,popular vote,943086,301658,449697,191731,0,8,0
+1968,Oregon,,popular vote,819622,358866,408433,49683,0,6,0
+1968,Pennsylvania,,popular vote,4747928,2259405,2090017,378582,29,0,0
+1968,Rhode Island,,popular vote,385000,246518,122359,15678,4,0,0
+1968,South Carolina,,popular vote,666978,197486,254062,215430,0,8,0
+1968,South Dakota,,popular vote,281264,118023,149841,13400,0,4,0
+1968,Tennessee,,popular vote,1248617,351233,472592,424792,0,11,0
+1968,Texas,,popular vote,3079216,1266804,1227844,584269,25,0,0
+1968,Utah,,popular vote,422568,156665,238728,26906,0,4,0
+1968,Vermont,,popular vote,161404,70255,85142,5104,0,3,0
+1968,Virginia,,popular vote,1361491,442387,590319,321833,0,12,0
+1968,Washington,,popular vote,1304281,616037,588510,96990,9,0,0
+1968,West Virginia,,popular vote,754206,374091,307555,72560,7,0,0
+1968,Wisconsin,,popular vote,1691538,748804,809997,127835,0,12,0
+1968,Wyoming,,popular vote,127205,45173,70927,11105,0,3,0
+1972,Alabama,,popular vote,1006111,256923,728701,0,0,9,0
+1972,Alaska,,popular vote,95219,32967,55349,0,0,3,0
+1972,Arizona,,popular vote,622926,198540,402812,0,0,6,0
+1972,Arkansas,,popular vote,651320,199892,448541,0,0,6,0
+1972,California,,popular vote,8367862,3475847,4602096,0,0,45,0
+1972,Colorado,,popular vote,953884,329980,597189,0,0,7,0
+1972,Connecticut,,popular vote,1384277,555498,810763,0,0,8,0
+1972,Delaware,,popular vote,235516,92283,140357,0,0,3,0
+1972,District of Columbia,,popular vote,163421,127627,35226,0,3,0,0
+1972,Florida,,popular vote,2583283,718117,1857759,0,0,17,0
+1972,Georgia,,popular vote,1174772,289529,881496,0,0,12,0
+1972,Hawaii,,popular vote,270274,101409,168865,0,0,4,0
+1972,Idaho,,popular vote,310379,80826,199384,0,0,4,0
+1972,Illinois,,popular vote,4723236,1913472,2788179,0,0,26,0
+1972,Indiana,,popular vote,2125529,708568,1405154,0,0,13,0
+1972,Iowa,,popular vote,1225944,496206,706207,0,0,8,0
+1972,Kansas,,popular vote,916095,270287,619812,0,0,7,0
+1972,Kentucky,,popular vote,1067499,371159,676446,0,0,9,0
+1972,Louisiana,,popular vote,1051491,298142,686852,0,0,10,0
+1972,Maine,,popular vote,417042,160584,256458,0,0,4,0
+1972,Maryland,,popular vote,1353812,505781,829305,0,0,10,0
+1972,Massachusetts,,popular vote,2458756,1332540,1112078,0,14,0,0
+1972,Michigan,,popular vote,3489727,1459435,1961721,0,0,21,0
+1972,Minnesota,,popular vote,1741652,802346,898269,0,0,10,0
+1972,Mississippi,,popular vote,645963,126782,505125,0,0,7,0
+1972,Missouri,,popular vote,1855803,697147,1153852,0,0,12,0
+1972,Montana,,popular vote,317603,120197,183976,0,0,4,0
+1972,Nebraska,,popular vote,576289,169991,406298,0,0,5,0
+1972,Nevada,,popular vote,181766,66016,115750,0,0,3,0
+1972,New Hampshire,,popular vote,334055,116435,213724,0,0,4,0
+1972,New Jersey,,popular vote,2997229,1102211,1845502,0,0,17,0
+1972,New Mexico,,popular vote,386241,141084,235606,0,0,4,0
+1972,New York,,popular vote,7165919,2951084,4192778,0,0,41,0
+1972,North Carolina,,popular vote,1518612,438705,1054889,0,0,13,0
+1972,North Dakota,,popular vote,280514,100384,174109,0,0,3,0
+1972,Ohio,,popular vote,4094787,1558889,2441827,0,0,25,0
+1972,Oklahoma,,popular vote,1029900,247147,759025,0,0,8,0
+1972,Oregon,,popular vote,927946,392760,486686,0,0,6,0
+1972,Pennsylvania,,popular vote,4592106,1796951,2714521,0,0,27,0
+1972,Rhode Island,,popular vote,415808,194645,220383,0,0,4,0
+1972,South Carolina,,popular vote,673960,186824,477044,0,0,8,0
+1972,South Dakota,,popular vote,307415,139945,166476,0,0,4,0
+1972,Tennessee,,popular vote,1201182,357293,813147,0,0,10,0
+1972,Texas,,popular vote,3471281,1154289,2298896,0,0,26,0
+1972,Utah,,popular vote,478476,126284,323643,0,0,4,0
+1972,Vermont,,popular vote,186947,68174,117149,0,0,3,0
+1972,Virginia,,popular vote,1457019,438887,988493,0,0,11,0
+1972,Washington,,popular vote,1470847,568334,837135,0,0,9,0
+1972,West Virginia,,popular vote,762399,277435,484964,0,0,6,0
+1972,Wisconsin,,popular vote,1852890,810174,989430,0,0,11,0
+1972,Wyoming,,popular vote,145570,44358,100464,0,0,3,0
+1976,Alabama,,popular vote,1182850,659170,504070,0,9,0,0
+1976,Alaska,,popular vote,123574,44058,71555,0,0,3,0
+1976,Arizona,,popular vote,742719,295602,418642,0,0,6,0
+1976,Arkansas,,popular vote,767535,498604,267903,0,6,0,0
+1976,California,,popular vote,7867117,3742284,3882244,0,0,45,0
+1976,Colorado,,popular vote,1081554,460353,584367,0,0,7,0
+1976,Connecticut,,popular vote,1381526,647895,719261,0,0,8,0
+1976,Delaware,,popular vote,235834,122596,109831,0,3,0,0
+1976,District of Columbia,,popular vote,168830,137818,27873,0,3,0,0
+1976,Florida,,popular vote,3150631,1636000,1469531,0,17,0,0
+1976,Georgia,,popular vote,1467458,979409,483743,0,12,0,0
+1976,Hawaii,,popular vote,291301,147375,140003,0,4,0,0
+1976,Idaho,,popular vote,344071,126549,204151,0,0,4,0
+1976,Illinois,,popular vote,4718914,2271295,2364269,0,0,26,0
+1976,Indiana,,popular vote,2220362,1014714,1183958,0,0,13,0
+1976,Iowa,,popular vote,1279306,619931,632863,0,0,8,0
+1976,Kansas,,popular vote,957845,430421,502752,0,0,7,0
+1976,Kentucky,,popular vote,1167142,615717,531852,0,9,0,0
+1976,Louisiana,,popular vote,1278439,661365,587446,0,10,0,0
+1976,Maine,,popular vote,483216,232279,236320,0,0,4,0
+1976,Maryland,,popular vote,1439897,759612,672661,0,10,0,0
+1976,Massachusetts,,popular vote,2547558,1429475,1030276,0,14,0,0
+1976,Michigan,,popular vote,3653749,1696714,1893742,0,0,21,0
+1976,Minnesota,,popular vote,1949931,1070440,819395,0,10,0,0
+1976,Mississippi,,popular vote,769361,381309,366846,0,7,0,0
+1976,Missouri,,popular vote,1953600,998387,927443,0,12,0,0
+1976,Montana,,popular vote,328734,149259,173703,0,0,4,0
+1976,Nebraska,,popular vote,607668,233692,359705,0,0,5,0
+1976,Nevada,,popular vote,201876,92479,101273,0,0,3,0
+1976,New Hampshire,,popular vote,339618,147635,185935,0,0,4,0
+1976,New Jersey,,popular vote,3014472,1444653,1509688,0,0,17,0
+1976,New Mexico,,popular vote,418409,201148,211419,0,0,4,0
+1976,New York,,popular vote,6534170,3389558,3100791,0,41,0,0
+1976,North Carolina,,popular vote,1678914,927365,741960,0,13,0,0
+1976,North Dakota,,popular vote,297188,136078,153470,0,0,3,0
+1976,Ohio,,popular vote,4111873,2011621,2000505,0,25,0,0
+1976,Oklahoma,,popular vote,1092251,532442,545708,0,0,8,0
+1976,Oregon,,popular vote,1029876,490407,492120,0,0,6,0
+1976,Pennsylvania,,popular vote,4620787,2328677,2205604,0,27,0,0
+1976,Rhode Island,,popular vote,411170,227636,181249,0,4,0,0
+1976,South Carolina,,popular vote,802583,450807,346149,0,8,0,0
+1976,South Dakota,,popular vote,300678,147068,151505,0,0,4,0
+1976,Tennessee,,popular vote,1476345,825879,633969,0,10,0,0
+1976,Texas,,popular vote,4071884,2082319,1953300,0,26,0,0
+1976,Utah,,popular vote,541198,182110,337908,0,0,4,0
+1976,Vermont,,popular vote,187765,80954,102085,0,0,3,0
+1976,Virginia,,popular vote,1697094,813896,836554,0,0,12,0
+1976,Washington,,popular vote,1555534,717323,777732,0,0,8,0
+1976,West Virginia,,popular vote,750964,435914,314760,0,6,0,0
+1976,Wisconsin,,popular vote,2104175,1040232,1004987,0,11,0,0
+1976,Wyoming,,popular vote,156343,62239,92717,0,0,3,0
+1980,Alabama,,popular vote,1341929,636730,654192,16481,0,9,0
+1980,Alaska,,popular vote,158445,41842,86112,11155,0,3,0
+1980,Arizona,,popular vote,873945,246843,529688,76952,0,6,0
+1980,Arkansas,,popular vote,837582,398041,403164,22468,0,6,0
+1980,California,,popular vote,8587063,3083661,4524858,739833,0,45,0
+1980,Colorado,,popular vote,1184415,367973,652264,130633,0,7,0
+1980,Connecticut,,popular vote,1406285,541732,677210,171807,0,8,0
+1980,Delaware,,popular vote,235900,105754,111252,16288,0,3,0
+1980,District of Columbia,,popular vote,175237,131113,23545,16337,3,0,0
+1980,Florida,,popular vote,3686930,1419475,2046951,189692,0,17,0
+1980,Georgia,,popular vote,1596695,890733,654168,36055,12,0,0
+1980,Hawaii,,popular vote,303287,135879,130112,32021,4,0,0
+1980,Idaho,,popular vote,437431,110192,290699,27058,0,4,0
+1980,Illinois,,popular vote,4749721,1981413,2358049,346754,0,26,0
+1980,Indiana,,popular vote,2242033,844197,1255656,111639,0,13,0
+1980,Iowa,,popular vote,1317661,508672,676026,115633,0,8,0
+1980,Kansas,,popular vote,979795,326150,566812,68231,0,7,0
+1980,Kentucky,,popular vote,1294627,616417,635274,31127,0,9,0
+1980,Louisiana,,popular vote,1548591,708453,792853,26345,0,10,0
+1980,Maine,,popular vote,523011,220974,238522,53327,0,4,0
+1980,Maryland,,popular vote,1540496,726161,680606,119537,10,0,0
+1980,Massachusetts,,popular vote,2522890,1053802,1057631,382539,0,14,0
+1980,Michigan,,popular vote,3909725,1661532,1915225,275223,0,21,0
+1980,Minnesota,,popular vote,2051980,954174,873268,174990,10,0,0
+1980,Mississippi,,popular vote,892620,429281,441089,12036,0,7,0
+1980,Missouri,,popular vote,2099824,931182,1074181,77920,0,12,0
+1980,Montana,,popular vote,363952,118032,206814,29281,0,4,0
+1980,Nebraska,,popular vote,640854,166851,419937,44993,0,5,0
+1980,Nevada,,popular vote,247885,66666,155017,17651,0,3,0
+1980,New Hampshire,,popular vote,383990,108864,221705,49693,0,4,0
+1980,New Jersey,,popular vote,2975684,1147364,1546557,234632,0,17,0
+1980,New Mexico,,popular vote,456971,167826,250779,29459,0,4,0
+1980,New York,,popular vote,6201959,2728372,2893831,467801,0,41,0
+1980,North Carolina,,popular vote,1855833,875635,915018,52800,0,13,0
+1980,North Dakota,,popular vote,301545,79189,193695,23640,0,3,0
+1980,Ohio,,popular vote,4283603,1752414,2206545,254472,0,25,0
+1980,Oklahoma,,popular vote,1149708,402026,695570,38284,0,8,0
+1980,Oregon,,popular vote,1181516,456890,571044,112389,0,6,0
+1980,Pennsylvania,,popular vote,4561501,1937540,2261872,292921,0,27,0
+1980,Rhode Island,,popular vote,416072,198342,154793,59819,4,0,0
+1980,South Carolina,,popular vote,894071,430385,441841,14153,0,8,0
+1980,South Dakota,,popular vote,327703,103855,198343,21431,0,4,0
+1980,Tennessee,,popular vote,1617616,783051,787761,35991,0,10,0
+1980,Texas,,popular vote,4541636,1881147,2510705,111613,0,26,0
+1980,Utah,,popular vote,604222,124266,439687,30284,0,4,0
+1980,Vermont,,popular vote,213299,81952,94628,31761,0,3,0
+1980,Virginia,,popular vote,1866032,752174,989609,95418,0,12,0
+1980,Washington,,popular vote,1742394,650193,865244,185073,0,9,0
+1980,West Virginia,,popular vote,737715,367462,334206,31691,6,0,0
+1980,Wisconsin,,popular vote,2273221,981584,1088845,160657,0,11,0
+1980,Wyoming,,popular vote,176713,49427,110700,12072,0,3,0
+1984,Alabama,,popular vote,1441713,551899,872849,0,0,9,0
+1984,Alaska,,popular vote,207605,62007,138377,0,0,3,0
+1984,Arizona,,popular vote,1025897,333854,681416,0,0,7,0
+1984,Arkansas,,popular vote,884406,338646,534774,0,0,6,0
+1984,California,,popular vote,9505423,3922519,5467009,0,0,47,0
+1984,Colorado,,popular vote,1295380,454975,821817,0,0,8,0
+1984,Connecticut,,popular vote,1466900,569597,890877,0,0,8,0
+1984,Delaware,,popular vote,254572,101656,152190,0,0,3,0
+1984,District of Columbia,,popular vote,211288,180408,29009,0,3,0,0
+1984,Florida,,popular vote,4180051,1448816,2730350,0,0,21,0
+1984,Georgia,,popular vote,1776120,706628,1068722,0,0,12,0
+1984,Hawaii,,popular vote,335846,147154,185050,0,0,4,0
+1984,Idaho,,popular vote,411144,108510,297523,0,0,4,0
+1984,Illinois,,popular vote,4819088,2086499,2707103,0,0,24,0
+1984,Indiana,,popular vote,2233069,841481,1377230,0,0,12,0
+1984,Iowa,,popular vote,1319805,605620,703088,0,0,8,0
+1984,Kansas,,popular vote,1021991,333149,677296,0,0,7,0
+1984,Kentucky,,popular vote,1369345,539539,821702,0,0,9,0
+1984,Louisiana,,popular vote,1706822,651586,1037299,0,0,10,0
+1984,Maine,,popular vote,553144,214515,336500,0,0,4,0
+1984,Maryland,,popular vote,1675873,787935,879918,0,0,10,0
+1984,Massachusetts,,popular vote,2559453,1239606,1310936,0,0,13,0
+1984,Michigan,,popular vote,3801658,1529638,2251571,0,0,20,0
+1984,Minnesota,,popular vote,2084449,1036364,1032603,0,10,0,0
+1984,Mississippi,,popular vote,941104,352192,582377,0,0,7,0
+1984,Missouri,,popular vote,2122783,848583,1274188,0,0,11,0
+1984,Montana,,popular vote,384377,146742,232450,0,0,4,0
+1984,Nebraska,,popular vote,652090,187866,460054,0,0,5,0
+1984,Nevada,,popular vote,286667,91655,188770,0,0,4,0
+1984,New Hampshire,,popular vote,389066,120395,267051,0,0,4,0
+1984,New Jersey,,popular vote,3217862,1261323,1933630,0,0,16,0
+1984,New Mexico,,popular vote,514370,201769,307101,0,0,5,0
+1984,New York,,popular vote,6806810,3119609,3664763,0,0,36,0
+1984,North Carolina,,popular vote,2175361,824287,1346481,0,0,13,0
+1984,North Dakota,,popular vote,308971,104429,200336,0,0,3,0
+1984,Ohio,,popular vote,4547619,1825440,2678560,0,0,23,0
+1984,Oklahoma,,popular vote,1255676,385080,861530,0,0,8,0
+1984,Oregon,,popular vote,1226527,536479,685700,0,0,7,0
+1984,Pennsylvania,,popular vote,4844903,2228131,2584323,0,0,25,0
+1984,Rhode Island,,popular vote,410492,197106,212080,0,0,4,0
+1984,South Carolina,,popular vote,968529,344459,615539,0,0,8,0
+1984,South Dakota,,popular vote,317867,116113,200267,0,0,3,0
+1984,Tennessee,,popular vote,1711994,711714,990212,0,0,11,0
+1984,Texas,,popular vote,5397571,1949276,3433428,0,0,29,0
+1984,Utah,,popular vote,629656,155369,469105,0,0,5,0
+1984,Vermont,,popular vote,234561,95730,135865,0,0,3,0
+1984,Virginia,,popular vote,2146635,796250,1337078,0,0,12,0
+1984,Washington,,popular vote,1883910,807352,1051670,0,0,10,0
+1984,West Virginia,,popular vote,735742,328125,405483,0,0,6,0
+1984,Wisconsin,,popular vote,2211689,995740,1198584,0,0,11,0
+1984,Wyoming,,popular vote,188968,53370,133241,0,0,3,0
+1988,Alabama,,popular vote,1378476,549506,815576,0,0,9,0
+1988,Alaska,,popular vote,200116,72584,119251,0,0,3,0
+1988,Arizona,,popular vote,1171873,454029,702541,0,0,7,0
+1988,Arkansas,,popular vote,827738,349237,466578,0,0,6,0
+1988,California,,popular vote,9887065,4702233,5054917,0,0,47,0
+1988,Colorado,,popular vote,1372394,621453,728177,0,0,8,0
+1988,Connecticut,,popular vote,1443394,676584,750241,0,0,8,0
+1988,Delaware,,popular vote,249891,108647,139639,0,0,3,0
+1988,District of Columbia,,popular vote,192877,159407,27590,0,3,0,0
+1988,Florida,,popular vote,4302313,1656701,2618885,0,0,21,0
+1988,Georgia,,popular vote,1809672,714792,1081331,0,0,12,0
+1988,Hawaii,,popular vote,354461,192364,158625,0,4,0,0
+1988,Idaho,,popular vote,408968,147272,253881,0,0,4,0
+1988,Illinois,,popular vote,4559120,2215940,2310939,0,0,24,0
+1988,Indiana,,popular vote,2168621,860643,1297763,0,0,12,0
+1988,Iowa,,popular vote,1225614,670557,545355,0,8,0,0
+1988,Kansas,,popular vote,993044,422636,554049,0,0,7,0
+1988,Kentucky,,popular vote,1322517,580368,734281,0,0,9,0
+1988,Louisiana,,popular vote,1628202,717460,883702,0,0,10,0
+1988,Maine,,popular vote,555035,243569,307131,0,0,4,0
+1988,Maryland,,popular vote,1714358,826304,876167,0,0,10,0
+1988,Massachusetts,,popular vote,2632805,1401415,1194635,0,13,0,0
+1988,Michigan,,popular vote,3669163,1675783,1965486,0,0,20,0
+1988,Minnesota,,popular vote,2096790,1109471,962337,0,10,0,0
+1988,Mississippi,,popular vote,931527,363921,557890,0,0,7,0
+1988,Missouri,,popular vote,2093713,1001619,1084953,0,0,11,0
+1988,Montana,,popular vote,365674,168936,190412,0,0,4,0
+1988,Nebraska,,popular vote,661465,259235,397956,0,0,5,0
+1988,Nevada,,popular vote,350067,132738,206040,0,0,4,0
+1988,New Hampshire,,popular vote,451074,163696,281537,0,0,4,0
+1988,New Jersey,,popular vote,3099553,1320352,1743192,0,0,16,0
+1988,New Mexico,,popular vote,521287,244497,270341,0,0,5,0
+1988,New York,,popular vote,6485683,3347882,3081871,0,36,0,0
+1988,North Carolina,,popular vote,2134370,890167,1237258,0,0,13,0
+1988,North Dakota,,popular vote,297261,127739,166559,0,0,3,0
+1988,Ohio,,popular vote,4393699,1939629,2416549,0,0,23,0
+1988,Oklahoma,,popular vote,1171036,483423,678367,0,0,8,0
+1988,Oregon,,popular vote,1201694,616206,560126,0,7,0,0
+1988,Pennsylvania,,popular vote,4536251,2194944,2300087,0,0,25,0
+1988,Rhode Island,,popular vote,404620,225123,177761,0,4,0,0
+1988,South Carolina,,popular vote,986009,370554,606443,0,0,8,0
+1988,South Dakota,,popular vote,312991,145560,165415,0,0,3,0
+1988,Tennessee,,popular vote,1636250,679794,947233,0,0,11,0
+1988,Texas,,popular vote,5427410,2352748,3036829,0,0,29,0
+1988,Utah,,popular vote,647008,207343,428442,0,0,5,0
+1988,Vermont,,popular vote,243328,115775,124331,0,0,3,0
+1988,Virginia,,popular vote,2191609,859799,1309162,0,0,12,0
+1988,Washington,,popular vote,1865253,933516,903835,0,10,0,0
+1988,West Virginia,,popular vote,653311,341016,310065,0,5,0,0
+1988,Wisconsin,,popular vote,2191608,1126794,1047499,0,11,0,0
+1988,Wyoming,,popular vote,176551,67113,106867,0,0,3,0
+1992,Alabama,,popular vote,1688060,690080,804283,183109,0,9,0
+1992,Alaska,,popular vote,258506,78294,102000,73481,0,3,0
+1992,Arizona,,popular vote,1486975,543050,572086,353741,0,8,0
+1992,Arkansas,,popular vote,950653,505823,337324,99132,6,0,0
+1992,California,,popular vote,11131721,5121325,3630574,2296006,54,0,0
+1992,Colorado,,popular vote,1569180,629681,562850,366010,8,0,0
+1992,Connecticut,,popular vote,1616332,682318,578313,348771,8,0,0
+1992,Delaware,,popular vote,289735,126054,102313,59213,3,0,0
+1992,District of Columbia,,popular vote,227572,192619,20698,9681,3,0,0
+1992,Florida,,popular vote,5314392,2072698,2173310,1053067,0,25,0
+1992,Georgia,,popular vote,2321125,1008966,995252,309657,13,0,0
+1992,Hawaii,,popular vote,372842,179310,136822,53003,4,0,0
+1992,Idaho,,popular vote,482142,137013,202645,130395,0,4,0
+1992,Illinois,,popular vote,5050157,2453350,1734096,840515,22,0,0
+1992,Indiana,,popular vote,2305871,848420,989375,455934,0,12,0
+1992,Iowa,,popular vote,1354607,586353,504891,253468,7,0,0
+1992,Kansas,,popular vote,1157335,390434,449951,312358,0,6,0
+1992,Kentucky,,popular vote,1492900,665104,617178,203944,8,0,0
+1992,Louisiana,,popular vote,1790017,815971,733386,211478,9,0,0
+1992,Maine,,popular vote,679499,263420,206504,206820,4,0,0
+1992,Maryland,,popular vote,1985046,988571,707094,281414,10,0,0
+1992,Massachusetts,,popular vote,2773700,1318662,805049,630731,12,0,0
+1992,Michigan,,popular vote,4274673,1871182,1554940,824813,18,0,0
+1992,Minnesota,,popular vote,2347948,1020997,747841,562506,10,0,0
+1992,Mississippi,,popular vote,981793,400258,487793,85626,0,7,0
+1992,Missouri,,popular vote,2391565,1053873,811159,518741,11,0,0
+1992,Montana,,popular vote,410611,154507,144207,107225,3,0,0
+1992,Nebraska,,popular vote,737546,216864,343678,174104,0,5,0
+1992,Nevada,,popular vote,506318,189148,175828,132580,4,0,0
+1992,New Hampshire,,popular vote,537943,209040,202484,121337,4,0,0
+1992,New Jersey,,popular vote,3343594,1436206,1356865,521829,15,0,0
+1992,New Mexico,,popular vote,569986,261617,212824,91895,5,0,0
+1992,New York,,popular vote,6926925,3444450,2346649,1090721,33,0,0
+1992,North Carolina,,popular vote,2611850,1114042,1134661,357864,0,14,0
+1992,North Dakota,,popular vote,308133,99168,136244,71084,0,3,0
+1992,Ohio,,popular vote,4939967,1984942,1894310,1036426,21,0,0
+1992,Oklahoma,,popular vote,1390359,473066,592929,319878,0,8,0
+1992,Oregon,,popular vote,1462643,621314,475757,354091,7,0,0
+1992,Pennsylvania,,popular vote,4959810,2239164,1791841,902667,23,0,0
+1992,Rhode Island,,popular vote,453477,213299,131601,105045,4,0,0
+1992,South Carolina,,popular vote,1202527,479514,577507,138872,0,8,0
+1992,South Dakota,,popular vote,336254,124888,136718,73295,0,3,0
+1992,Tennessee,,popular vote,1982638,933521,841300,199968,11,0,0
+1992,Texas,,popular vote,6154018,2281815,2496071,1354781,0,32,0
+1992,Utah,,popular vote,743999,183429,322632,203400,0,5,0
+1992,Vermont,,popular vote,289701,133592,88122,65991,3,0,0
+1992,Virginia,,popular vote,2558665,1038650,1150517,348639,0,13,0
+1992,Washington,,popular vote,2288230,993037,731234,541780,11,0,0
+1992,West Virginia,,popular vote,683762,331001,241974,108829,5,0,0
+1992,Wisconsin,,popular vote,2531114,1041066,930855,544479,11,0,0
+1992,Wyoming,,popular vote,200598,68160,79347,51263,0,3,0
+1996,Alabama,,popular vote,1534349,662165,769044,92149,0,9,0
+1996,Alaska,,popular vote,241620,80380,122746,26333,0,3,0
+1996,Arizona,,popular vote,1404405,653288,622073,112072,8,0,0
+1996,Arkansas,,popular vote,884262,475171,325416,69884,6,0,0
+1996,California,,popular vote,10019484,5119835,3828380,697847,54,0,0
+1996,Colorado,,popular vote,1510704,671152,691848,99629,0,8,0
+1996,Connecticut,,popular vote,1392614,735740,483109,139523,8,0,0
+1996,Delaware,,popular vote,270845,140355,99062,28719,3,0,0
+1996,District of Columbia,,popular vote,185726,158220,17339,3611,3,0,0
+1996,Florida,,popular vote,5303794,2546870,2244536,483870,25,0,0
+1996,Georgia,,popular vote,2299071,1053849,1080843,146337,0,13,0
+1996,Hawaii,,popular vote,360120,205012,113943,27358,4,0,0
+1996,Idaho,,popular vote,491719,165443,256595,62518,0,4,0
+1996,Illinois,,popular vote,4311391,2341744,1587021,346408,22,0,0
+1996,Indiana,,popular vote,2135431,887424,1006693,224299,0,12,0
+1996,Iowa,,popular vote,1234075,620258,492644,105159,7,0,0
+1996,Kansas,,popular vote,1074300,387659,583245,92639,0,6,0
+1996,Kentucky,,popular vote,1388708,636614,623283,120396,8,0,0
+1996,Louisiana,,popular vote,1783959,927837,712586,123293,9,0,0
+1996,Maine,,popular vote,605897,312788,186378,85970,4,0,0
+1996,Maryland,,popular vote,1780870,966207,681530,115812,10,0,0
+1996,Massachusetts,,popular vote,2556786,1571763,718107,227217,12,0,0
+1996,Michigan,,popular vote,3848844,1989653,1481212,336670,18,0,0
+1996,Minnesota,,popular vote,2192640,1120438,766476,257704,10,0,0
+1996,Mississippi,,popular vote,893857,394022,439838,52222,0,7,0
+1996,Missouri,,popular vote,2158065,1025935,890016,217188,11,0,0
+1996,Montana,,popular vote,407261,167922,179652,55229,0,3,0
+1996,Nebraska,,popular vote,677415,236761,363467,71278,0,5,0
+1996,Nevada,,popular vote,464279,203974,199244,43986,4,0,0
+1996,New Hampshire,,popular vote,499175,246214,196532,48390,4,0,0
+1996,New Jersey,,popular vote,3075807,1652329,1103078,262134,15,0,0
+1996,New Mexico,,popular vote,556074,273495,232751,32257,5,0,0
+1996,New York,,popular vote,6316129,3756177,1933492,503458,33,0,0
+1996,North Carolina,,popular vote,2515807,1107849,1225938,168059,0,14,0
+1996,North Dakota,,popular vote,266411,106905,125050,32515,0,3,0
+1996,Ohio,,popular vote,4534434,2148222,1859883,483207,21,0,0
+1996,Oklahoma,,popular vote,1206713,488105,582315,130788,0,8,0
+1996,Oregon,,popular vote,1377760,649641,538152,121221,7,0,0
+1996,Pennsylvania,,popular vote,4506118,2215819,1801169,430984,23,0,0
+1996,Rhode Island,,popular vote,390284,233050,104683,43723,4,0,0
+1996,South Carolina,,popular vote,1151689,506283,573458,64386,0,8,0
+1996,South Dakota,,popular vote,323826,139333,150543,31250,0,3,0
+1996,Tennessee,,popular vote,1894105,909146,863530,105918,11,0,0
+1996,Texas,,popular vote,5611644,2459683,2736167,378537,0,32,0
+1996,Utah,,popular vote,665629,221633,361911,66461,0,5,0
+1996,Vermont,,popular vote,258449,137894,80352,31024,3,0,0
+1996,Virginia,,popular vote,2416642,1091060,1138350,159861,0,13,0
+1996,Washington,,popular vote,2253837,1123323,840712,201003,11,0,0
+1996,West Virginia,,popular vote,636459,327812,233946,71639,5,0,0
+1996,Wisconsin,,popular vote,2196169,1071971,845029,227339,11,0,0
+1996,Wyoming,,popular vote,211571,77934,105388,25928,0,3,0
+2000,Alabama,,popular vote,1666272,692611,941173,18323,0,9,0
+2000,Alaska,,popular vote,285560,79004,167398,28747,0,3,0
+2000,Arizona,,popular vote,1532016,685341,781652,45645,0,8,0
+2000,Arkansas,,popular vote,921781,422768,472940,13421,0,6,0
+2000,California,,popular vote,10965856,5861203,4567429,418707,54,0,0
+2000,Colorado,,popular vote,1741368,738227,883748,91434,0,8,0
+2000,Connecticut,,popular vote,1459525,816015,561094,64452,8,0,0
+2000,Delaware,,popular vote,327622,180068,137288,8307,3,0,0
+2000,District of Columbia,,popular vote,201894,171923,18073,10576,2,0,0
+2000,Florida,,popular vote,5963110,2912253,2912790,97488,0,25,0
+2000,Georgia,,popular vote,2596645,1116230,1419720,13273,0,13,0
+2000,Hawaii,,popular vote,367951,205286,137845,21623,4,0,0
+2000,Idaho,,popular vote,501621,138637,336937,12292,0,4,0
+2000,Illinois,,popular vote,4742123,2589026,2019421,103759,22,0,0
+2000,Indiana,,popular vote,2199302,901980,1245836,18531,0,12,0
+2000,Iowa,,popular vote,1315563,638517,634373,29374,7,0,0
+2000,Kansas,,popular vote,1072218,399276,622332,36086,0,6,0
+2000,Kentucky,,popular vote,1544187,638898,872492,23192,0,8,0
+2000,Louisiana,,popular vote,1765656,792344,927871,20473,0,9,0
+2000,Maine,,popular vote,651817,319951,286616,37127,4,0,0
+2000,Maryland,,popular vote,2020480,1140782,813797,53768,10,0,0
+2000,Massachusetts,,popular vote,2702984,1616487,878502,173564,12,0,0
+2000,Michigan,,popular vote,4232711,2170418,1953139,84165,18,0,0
+2000,Minnesota,,popular vote,2438685,1168266,1109659,126696,10,0,0
+2000,Mississippi,,popular vote,994184,404614,572844,8122,0,7,0
+2000,Missouri,,popular vote,2359892,1111138,1189924,38515,0,11,0
+2000,Montana,,popular vote,410997,137126,240178,24437,0,3,0
+2000,Nebraska,,popular vote,697019,231780,433862,24540,0,5,0
+2000,Nevada,,popular vote,608970,279978,301575,15008,0,4,0
+2000,New Hampshire,,popular vote,569081,266348,273559,22198,0,4,0
+2000,New Jersey,,popular vote,3187226,1788850,1284173,94554,15,0,0
+2000,New Mexico,,popular vote,598605,286783,286417,21251,5,0,0
+2000,New York,,popular vote,6821999,4107697,2403374,244030,33,0,0
+2000,North Carolina,,popular vote,2911262,1257692,1631163,0,0,14,0
+2000,North Dakota,,popular vote,288256,95284,174852,9486,0,3,0
+2000,Ohio,,popular vote,4701998,2183628,2350363,117799,0,21,0
+2000,Oklahoma,,popular vote,1234229,474276,744337,0,0,8,0
+2000,Oregon,,popular vote,1533968,720342,713577,77357,7,0,0
+2000,Pennsylvania,,popular vote,4913119,2485967,2281127,103392,23,0,0
+2000,Rhode Island,,popular vote,409047,249508,130555,25052,4,0,0
+2000,South Carolina,,popular vote,1382717,565561,785937,20200,0,8,0
+2000,South Dakota,,popular vote,316269,118804,190700,0,0,3,0
+2000,Tennessee,,popular vote,2076181,981720,1061949,19781,0,11,0
+2000,Texas,,popular vote,6407637,2433746,3799639,137994,0,32,0
+2000,Utah,,popular vote,770754,203053,515096,35850,0,5,0
+2000,Vermont,,popular vote,294308,149022,119775,20374,3,0,0
+2000,Virginia,,popular vote,2739447,1217290,1437490,59398,0,13,0
+2000,Washington,,popular vote,2487433,1247652,1108864,103002,11,0,0
+2000,West Virginia,,popular vote,648124,295497,336475,10680,0,5,0
+2000,Wisconsin,,popular vote,2598607,1242987,1237279,94070,11,0,0
+2000,Wyoming,,popular vote,218351,60481,147947,4625,0,3,0
+2004,Alabama,,popular vote,1883449,693933,1176394,0,0,9,0
+2004,Alaska,,popular vote,312598,111025,190889,0,0,3,0
+2004,Arizona,,popular vote,2012585,893524,1104294,0,0,10,0
+2004,Arkansas,,popular vote,1054945,469953,572898,0,0,6,0
+2004,California,,popular vote,12421852,6745485,5509826,0,55,0,0
+2004,Colorado,,popular vote,2130330,1001732,1101255,0,0,9,0
+2004,Connecticut,,popular vote,1578769,857488,693826,0,7,0,0
+2004,Delaware,,popular vote,375190,200152,171660,0,3,0,0
+2004,District of Columbia,,popular vote,227586,202970,21256,0,3,0,0
+2004,Florida,,popular vote,7609810,3583544,3964522,0,0,27,0
+2004,Georgia,,popular vote,3301875,1366149,1914254,0,0,15,0
+2004,Hawaii,,popular vote,429013,231708,194191,0,4,0,0
+2004,Idaho,,popular vote,598447,181098,409235,0,0,4,0
+2004,Illinois,,popular vote,5274322,2891550,2345946,0,21,0,0
+2004,Indiana,,popular vote,2468002,969011,1479438,0,0,11,0
+2004,Iowa,,popular vote,1506908,741898,751957,0,0,7,0
+2004,Kansas,,popular vote,1187756,434993,736456,0,0,6,0
+2004,Kentucky,,popular vote,1795882,712733,1069439,0,0,8,0
+2004,Louisiana,,popular vote,1943106,820299,1102169,0,0,9,0
+2004,Maine,,popular vote,740752,396842,330201,0,4,0,0
+2004,Maryland,,popular vote,2386678,1334493,1024703,0,10,0,0
+2004,Massachusetts,,popular vote,2912388,1803800,1071109,0,12,0,0
+2004,Michigan,,popular vote,4839252,2479183,2313746,0,17,0,0
+2004,Minnesota,,popular vote,2828387,1445014,1346695,0,9,0,0
+2004,Mississippi,,popular vote,1152145,458094,684981,0,0,6,0
+2004,Missouri,,popular vote,2731364,1259171,1455713,0,0,11,0
+2004,Montana,,popular vote,450445,173710,266063,0,0,3,0
+2004,Nebraska,,popular vote,778186,254328,512814,0,0,5,0
+2004,Nevada,,popular vote,829587,397190,418690,0,0,5,0
+2004,New Hampshire,,popular vote,677738,340511,331237,0,4,0,0
+2004,New Jersey,,popular vote,3611691,1911430,1670003,0,15,0,0
+2004,New Mexico,,popular vote,756304,370942,376930,0,0,5,0
+2004,New York,,popular vote,7391036,4314280,2962567,0,31,0,0
+2004,North Carolina,,popular vote,3501007,1525849,1961166,0,0,15,0
+2004,North Dakota,,popular vote,312833,111052,196651,0,0,3,0
+2004,Ohio,,popular vote,5627908,2741167,2859768,0,0,20,0
+2004,Oklahoma,,popular vote,1463758,503966,959792,0,0,7,0
+2004,Oregon,,popular vote,1836782,943163,866831,0,7,0,0
+2004,Pennsylvania,,popular vote,5769590,2938095,2793847,0,21,0,0
+2004,Rhode Island,,popular vote,437134,259765,169046,0,4,0,0
+2004,South Carolina,,popular vote,1617730,661699,937974,0,0,8,0
+2004,South Dakota,,popular vote,388215,149244,232584,0,0,3,0
+2004,Tennessee,,popular vote,2437319,1036477,1384375,0,0,11,0
+2004,Texas,,popular vote,7410765,2832704,4526917,0,0,34,0
+2004,Utah,,popular vote,927844,241199,663742,0,0,5,0
+2004,Vermont,,popular vote,312309,184067,121180,0,3,0,0
+2004,Virginia,,popular vote,3198367,1454742,1716959,0,0,13,0
+2004,Washington,,popular vote,2859084,1510201,1304894,0,11,0,0
+2004,West Virginia,,popular vote,755887,326541,423778,0,0,5,0
+2004,Wisconsin,,popular vote,2997007,1489504,1478120,0,10,0,0
+2004,Wyoming,,popular vote,243428,70776,167629,0,0,3,0
+2008,Alabama,,popular vote,2099819,813479,1266546,0,0,9,0
+2008,Alaska,,popular vote,326197,123594,193841,0,0,3,0
+2008,Arizona,,popular vote,2293475,1034707,1230111,0,0,10,0
+2008,Arkansas,,popular vote,1086617,422310,638017,0,0,6,0
+2008,California,,popular vote,13561900,8274473,5011781,0,55,0,0
+2008,Colorado,,popular vote,2401361,1288576,1073589,0,9,0,0
+2008,Connecticut,,popular vote,1646792,997772,629428,0,7,0,0
+2008,Delaware,,popular vote,412412,255459,152374,0,3,0,0
+2008,District of Columbia,,popular vote,265853,245800,17367,0,3,0,0
+2008,Florida,,popular vote,8390744,4282074,4045624,0,27,0,0
+2008,Georgia,,popular vote,3924440,1844137,2048744,0,0,15,0
+2008,Hawaii,,popular vote,453568,325871,120566,0,4,0,0
+2008,Idaho,,popular vote,655032,236440,403012,0,0,4,0
+2008,Illinois,,popular vote,5523051,3419673,2031527,0,21,0,0
+2008,Indiana,,popular vote,2751054,1374039,1345648,0,11,0,0
+2008,Iowa,,popular vote,1543662,828940,682379,0,7,0,0
+2008,Kansas,,popular vote,1235872,514765,699655,0,0,6,0
+2008,Kentucky,,popular vote,1826508,751985,1048462,0,0,8,0
+2008,Louisiana,,popular vote,1960761,782989,1148275,0,0,9,0
+2008,Maine,,popular vote,731163,421923,295273,0,4,0,0
+2008,Maryland,,popular vote,2631596,1629467,959862,0,10,0,0
+2008,Massachusetts,,popular vote,3080985,1904097,1108854,0,12,0,0
+2008,Michigan,,popular vote,5001766,2872579,2048639,0,17,0,0
+2008,Minnesota,,popular vote,2910369,1573354,1275409,0,10,0,0
+2008,Mississippi,,popular vote,1289865,554662,724597,0,0,6,0
+2008,Missouri,,popular vote,2925205,1441911,1445814,0,0,11,0
+2008,Montana,,popular vote,490109,231667,242763,0,0,3,0
+2008,Nebraska,,popular vote,801281,333319,452979,0,1,4,0
+2008,Nevada,,popular vote,967848,533736,412827,0,5,0,0
+2008,New Hampshire,,popular vote,707611,384826,316534,0,4,0,0
+2008,New Jersey,,popular vote,3868237,2215422,1613207,0,15,0,0
+2008,New Mexico,,popular vote,830158,472422,346832,0,5,0,0
+2008,New York,,popular vote,7591233,4769700,2742298,0,31,0,0
+2008,North Carolina,,popular vote,4310789,2142651,2128474,0,15,0,0
+2008,North Dakota,,popular vote,316621,141278,168601,0,0,3,0
+2008,Ohio,,popular vote,5698260,2933388,2674491,0,20,0,0
+2008,Oklahoma,,popular vote,1462661,502496,960165,0,0,7,0
+2008,Oregon,,popular vote,1827864,1037291,738475,0,7,0,0
+2008,Pennsylvania,,popular vote,6034745,3276363,2655885,0,21,0,0
+2008,Rhode Island,,popular vote,469767,296571,165391,0,4,0,0
+2008,South Carolina,,popular vote,1920969,862449,1034896,0,0,8,0
+2008,South Dakota,,popular vote,381975,170924,203054,0,0,3,0
+2008,Tennessee,,popular vote,2599749,1087437,1479178,0,0,11,0
+2008,Texas,,popular vote,8077795,3528633,4479328,0,0,34,0
+2008,Utah,,popular vote,952370,327670,596030,0,0,5,0
+2008,Vermont,,popular vote,325046,219262,98974,0,3,0,0
+2008,Virginia,,popular vote,3723260,1959532,1725005,0,13,0,0
+2008,Washington,,popular vote,3036878,1750848,1229216,0,11,0,0
+2008,West Virginia,,popular vote,713362,303857,397466,0,0,5,0
+2008,Wisconsin,,popular vote,2983417,1677211,1262393,0,10,0,0
+2008,Wyoming,,popular vote,256035,82868,164958,0,0,3,0
+2012,Alabama,,popular vote,2074338,795696,1255925,0,0,9,0
+2012,Alaska,,popular vote,300495,122640,164676,0,0,3,0
+2012,Arizona,,popular vote,2299254,1025232,1233654,0,0,11,0
+2012,Arkansas,,popular vote,1069468,394409,647744,0,0,6,0
+2012,California,,popular vote,13038547,7854285,4839958,0,55,0,0
+2012,Colorado,,popular vote,2569520,1323101,1185243,0,9,0,0
+2012,Connecticut,,popular vote,1558960,905083,634892,0,7,0,0
+2012,Delaware,,popular vote,413921,242584,165484,0,3,0,0
+2012,District of Columbia,,popular vote,293764,267070,21381,0,3,0,0
+2012,Florida,,popular vote,8474179,4237756,4163447,0,29,0,0
+2012,Georgia,,popular vote,3900050,1773827,2078688,0,0,16,0
+2012,Hawaii,,popular vote,434697,306658,121015,0,4,0,0
+2012,Idaho,,popular vote,652274,212787,420911,0,0,4,0
+2012,Illinois,,popular vote,5242014,3019512,2135216,0,20,0,0
+2012,Indiana,,popular vote,2624534,1152887,1420543,0,0,11,0
+2012,Iowa,,popular vote,1582180,822544,730617,0,6,0,0
+2012,Kansas,,popular vote,1159971,440726,692634,0,0,6,0
+2012,Kentucky,,popular vote,1797212,679370,1087190,0,0,8,0
+2012,Louisiana,,popular vote,1994065,809141,1152262,0,0,8,0
+2012,Maine,,popular vote,713180,401306,292276,0,4,0,0
+2012,Maryland,,popular vote,2707327,1677844,971869,0,10,0,0
+2012,Massachusetts,,popular vote,3167767,1921290,1188314,0,11,0,0
+2012,Michigan,,popular vote,4730961,2564569,2115256,0,16,0,0
+2012,Minnesota,,popular vote,2936561,1546167,1320225,0,10,0,0
+2012,Mississippi,,popular vote,1285584,562949,710746,0,0,6,0
+2012,Missouri,,popular vote,2757323,1223796,1482440,0,0,10,0
+2012,Montana,,popular vote,484048,201839,267928,0,0,3,0
+2012,Nebraska,,popular vote,794379,302081,475064,0,0,5,0
+2012,Nevada,,popular vote,1014918,531373,463567,0,6,0,0
+2012,New Hampshire,,popular vote,710972,369561,329918,0,4,0,0
+2012,New Jersey,,popular vote,3638499,2122786,1478088,0,14,0,0
+2012,New Mexico,,popular vote,783758,415335,335788,0,5,0,0
+2012,New York,,popular vote,7061925,4471871,2485432,0,29,0,0
+2012,North Carolina,,popular vote,4505372,2178391,2270395,0,0,15,0
+2012,North Dakota,,popular vote,322932,124966,188320,0,0,3,0
+2012,Ohio,,popular vote,5580822,2827621,2661407,0,18,0,0
+2012,Oklahoma,,popular vote,1334872,443547,891325,0,0,7,0
+2012,Oregon,,popular vote,1789270,970488,754175,0,7,0,0
+2012,Pennsylvania,,popular vote,5753670,2990274,2680434,0,20,0,0
+2012,Rhode Island,,popular vote,446049,279677,157204,0,4,0,0
+2012,South Carolina,,popular vote,1964118,865941,1071645,0,0,9,0
+2012,South Dakota,,popular vote,363815,145039,210610,0,0,3,0
+2012,Tennessee,,popular vote,2458577,960709,1462330,0,0,11,0
+2012,Texas,,popular vote,7993851,3308124,4569843,0,0,38,0
+2012,Utah,,popular vote,1017440,251813,740600,0,0,6,0
+2012,Vermont,,popular vote,299290,199239,92698,0,3,0,0
+2012,Virginia,,popular vote,3854490,1971820,1822522,0,13,0,0
+2012,Washington,,popular vote,3125516,1755396,1290670,0,12,0,0
+2012,West Virginia,,popular vote,670438,238269,417655,0,0,5,0
+2012,Wisconsin,,popular vote,3071434,1620985,1410966,0,10,0,0
+2012,Wyoming,,popular vote,249061,69286,170962,0,0,3,0
+2016,Alabama,,popular vote,2123372,729547,1318255,44467,0,9,0
+2016,Alaska,,popular vote,318608,116454,163387,18725,0,3,0
+2016,Arizona,,popular vote,2573165,1161167,1252401,106327,0,11,0
+2016,Arkansas,,popular vote,1130635,380494,684872,29829,0,6,0
+2016,California,,popular vote,14181595,8753788,4483810,478500,55,0,0
+2016,Colorado,,popular vote,2780220,1338870,1202484,144121,9,0,0
+2016,Connecticut,,popular vote,1644920,897572,673215,48676,7,0,0
+2016,Delaware,,popular vote,441590,235603,185127,14757,3,0,0
+2016,District of Columbia,,popular vote,311268,282830,12723,4906,3,0,0
+2016,Florida,,popular vote,9420039,4504975,4617886,207043,0,29,0
+2016,Georgia,,popular vote,4092373,1877963,2089104,125306,0,16,0
+2016,Hawaii,,popular vote,428937,266891,128847,15954,4,0,0
+2016,Idaho,,popular vote,690255,189765,409055,28331,0,4,0
+2016,Illinois,,popular vote,5536424,3090729,2146015,209596,20,0,0
+2016,Indiana,,popular vote,2734958,1033126,1557286,133993,0,11,0
+2016,Iowa,,popular vote,1566031,653669,800983,59186,0,6,0
+2016,Kansas,,popular vote,1184402,427005,671018,55406,0,6,0
+2016,Kentucky,,popular vote,1924149,628854,1202971,53752,0,8,0
+2016,Louisiana,,popular vote,2029032,780154,1178638,37978,0,8,0
+2016,Maine,,popular vote,747927,357735,335593,38105,3,1,0
+2016,Maine,CD-1,popular vote,394329,212774,154384,18592,1,0,0
+2016,Maine,CD-2,popular vote,353416,144817,181177,19510,0,1,0
+2016,Maryland,,popular vote,2781446,1677928,943169,79605,10,0,0
+2016,Massachusetts,,popular vote,3325046,1995196,1090893,138018,11,0,0
+2016,Michigan,,popular vote,4799284,2268839,2279543,172136,0,16,0
+2016,Minnesota,,popular vote,2944813,1367716,1322951,112972,10,0,0
+2016,Mississippi,,popular vote,1209357,485131,700714,14435,0,6,0
+2016,Missouri,,popular vote,2808605,1071068,1594511,97359,0,10,0
+2016,Montana,,popular vote,494526,177709,279240,28037,0,3,0
+2016,Nebraska,,popular vote,844227,284494,495961,38946,0,5,0
+2016,Nebraska,CD-1,popular vote,282338,100126,158626,14031,0,1,0
+2016,Nebraska,CD-2,popular vote,291680,131030,137564,13245,0,1,0
+2016,Nebraska,CD-3,popular vote,270109,53290,199657,11657,0,1,0
+2016,Nevada,,popular vote,1125385,539260,512058,37384,6,0,0
+2016,New Hampshire,,popular vote,744296,348526,345790,30777,4,0,0
+2016,New Jersey,,popular vote,3874046,2148278,1601933,72477,14,0,0
+2016,New Mexico,,popular vote,798318,385234,319666,74541,5,0,0
+2016,New York,,popular vote,7622328,4491191,2790073,174951,29,0,0
+2016,North Carolina,,popular vote,4741558,2189313,2362628,130127,0,15,0
+2016,North Dakota,,popular vote,344360,93758,216794,21434,0,3,0
+2016,Ohio,,popular vote,5496487,2394164,2841005,174498,0,18,0
+2016,Oklahoma,,popular vote,1452992,420375,949136,83481,0,7,0
+2016,Oregon,,popular vote,2001336,1002106,782403,94231,7,0,0
+2016,Pennsylvania,,popular vote,6115402,2926441,2970733,146715,0,20,0
+2016,Rhode Island,,popular vote,464144,252525,180543,14746,4,0,0
+2016,South Carolina,,popular vote,2103027,855373,1155389,49204,0,9,0
+2016,South Dakota,,popular vote,370047,117442,227701,20845,0,3,0
+2016,Tennessee,,popular vote,2508027,870695,1522925,70397,0,11,0
+2016,Texas,,popular vote,8969226,3877868,4685047,283492,0,38,0
+2016,Utah,,popular vote,1131430,310676,515231,39608,0,6,0
+2016,Vermont,,popular vote,315067,178573,95369,10078,3,0,0
+2016,Virginia,,popular vote,3982752,1981473,1769443,118274,13,0,0
+2016,Washington,,popular vote,3209214,1742718,1221747,160879,12,0,0
+2016,West Virginia,,popular vote,713051,188794,489371,23004,0,5,0
+2016,Wisconsin,,popular vote,2976150,1382536,1405284,106674,0,10,0
+2016,Wyoming,,popular vote,255849,55973,174419,13287,0,3,0
+2020,Alabama,,popular vote,2323282,849624,1441170,32488,0,9,0
+2020,Alaska,,popular vote,359530,153778,189951,15801,0,3,0
+2020,Arizona,,popular vote,3387326,1672143,1661686,53497,11,0,0
+2020,Arkansas,,popular vote,1219069,423932,760647,34490,0,6,0
+2020,California,,popular vote,17500881,11110250,6006429,384202,55,0,0
+2020,Colorado,,popular vote,3256952,1804352,1364607,87993,9,0,0
+2020,Connecticut,,popular vote,1824280,1080680,715291,28309,7,0,0
+2020,Delaware,,popular vote,504010,296268,200603,7139,3,0,0
+2020,District of Columbia,,popular vote,344356,317323,18586,8447,3,0,0
+2020,Florida,,popular vote,11067456,5297045,5668731,101680,0,29,0
+2020,Georgia,,popular vote,4997716,2473633,2461854,62229,16,0,0
+2020,Hawaii,,popular vote,574469,366130,196864,11475,4,0,0
+2020,Idaho,,popular vote,868014,287021,554119,26874,0,4,0
+2020,Illinois,,popular vote,6033744,3471915,2446891,114938,20,0,0
+2020,Indiana,,popular vote,3033121,1242416,1729519,61186,0,11,0
+2020,Iowa,,popular vote,1690871,759061,897672,34138,0,6,0
+2020,Kansas,,popular vote,1372303,570323,771406,30574,0,6,0
+2020,Kentucky,,popular vote,2136768,772474,1326646,37648,0,8,0
+2020,Louisiana,,popular vote,2148062,856034,1255776,36252,0,8,0
+2020,Maine,,popular vote,819461,435072,360737,23652,3,1,0
+2020,Maine,CD-1,popular vote,443112,266376,164045,12691,1,0,0
+2020,Maine,CD-2,popular vote,376349,168696,196692,10961,0,1,0
+2020,Maryland,,popular vote,3037030,1985023,976414,75593,10,0,0
+2020,Massachusetts,,popular vote,3631403,2382202,1167202,81999,11,0,0
+2020,Michigan,,popular vote,5539301,2804040,2649852,85409,16,0,0
+2020,Minnesota,,popular vote,3277171,1717077,1484065,76029,10,0,0
+2020,Mississippi,,popular vote,1313759,539398,756764,17597,0,6,0
+2020,Missouri,,popular vote,3025962,1253014,1718736,54212,0,10,0
+2020,Montana,,popular vote,603640,244786,343602,15252,0,3,0
+2020,Nebraska,,popular vote,951712,374583,556846,20283,1,4,0
+2020,Nebraska,CD-1,popular vote,321886,132261,180290,9335,0,1,0
+2020,Nebraska,CD-2,popular vote,339666,176468,154377,8821,1,0,0
+2020,Nebraska,CD-3,popular vote,294831,65854,222179,6798,0,1,0
+2020,Nevada,,popular vote,1405376,703486,669890,32000,6,0,0
+2020,New Hampshire,,popular vote,806205,424937,365660,15608,4,0,0
+2020,New Jersey,,popular vote,4549353,2608335,1883274,57744,14,0,0
+2020,New Mexico,,popular vote,923965,501614,401894,20457,5,0,0
+2020,New York,,popular vote,8594826,5230985,3244798,119043,29,0,0
+2020,North Carolina,,popular vote,5524804,2684292,2758775,81737,0,15,0
+2020,North Dakota,,popular vote,361819,114902,235595,11322,0,3,0
+2020,Ohio,,popular vote,5922202,2679165,3154834,88203,0,18,0
+2020,Oklahoma,,popular vote,1560699,503890,1020280,36529,0,7,0
+2020,Oregon,,popular vote,2374321,1340383,958448,75490,7,0,0
+2020,Pennsylvania,,popular vote,6915283,3458229,3377674,79380,20,0,0
+2020,Rhode Island,,popular vote,517757,307486,199922,10349,4,0,0
+2020,South Carolina,,popular vote,2513329,1091541,1385103,36685,0,9,0
+2020,South Dakota,,popular vote,422609,150471,261043,11095,0,3,0
+2020,Tennessee,,popular vote,3053851,1143711,1852475,57665,0,11,0
+2020,Texas,,popular vote,11315056,5259126,5890347,165583,0,38,0
+2020,Utah,,popular vote,1488289,560282,865140,62867,0,6,0
+2020,Vermont,,popular vote,367428,242820,112704,11904,3,0,0
+2020,Virginia,,popular vote,4460524,2413568,1962430,84526,13,0,0
+2020,Washington,,popular vote,4087631,2369612,1584651,133368,12,0,0
+2020,West Virginia,,popular vote,794652,235984,545382,13286,0,5,0
+2020,Wisconsin,,popular vote,3298041,1630866,1610184,56991,10,0,0
+2020,Wyoming,,popular vote,276765,73491,193559,9715,0,3,0
+2024,Alabama,,popular vote,2265090,772412,1462616,30062,0,9,0
+2024,Alaska,,popular vote,338177,140026,184458,13693,0,3,0
+2024,Arizona,,popular vote,3390161,1582860,1770242,37059,0,11,0
+2024,Arkansas,,popular vote,1182676,396905,759241,26530,0,6,0
+2024,California,,popular vote,15865475,9276179,6081697,507599,54,0,0
+2024,Colorado,,popular vote,3192745,1728159,1377441,87145,10,0,0
+2024,Connecticut,,popular vote,1759010,992053,736918,30039,7,0,0
+2024,Delaware,,popular vote,511697,289758,214351,7588,3,0,0
+2024,District of Columbia,,popular vote,325869,294185,21076,10608,3,0,0
+2024,Florida,,popular vote,10893752,4683038,6110125,100589,0,30,0
+2024,Georgia,,popular vote,5250047,2548017,2663117,38913,0,16,0
+2024,Hawaii,,popular vote,516701,313044,193661,9996,4,0,0
+2024,Idaho,,popular vote,904812,274972,605246,24594,0,4,0
+2024,Illinois,,popular vote,5633310,3062863,2449079,121368,19,0,0
+2024,Indiana,,popular vote,2936677,1163603,1720347,52727,0,11,0
+2024,Iowa,,popular vote,1663506,707278,927019,29209,0,6,0
+2024,Kansas,,popular vote,1327591,544853,758802,23936,0,6,0
+2024,Kentucky,,popular vote,2074530,704043,1337494,32993,0,8,0
+2024,Louisiana,,popular vote,2006975,766870,1208505,31600,0,8,0
+2024,Maine,,popular vote,830794,435652,377977,17165,3,1,0
+2024,Maine,CD-1,popular vote,433356,258863,165214,9279,1,0,0
+2024,Maine,CD-2,popular vote,397438,176789,212763,7886,0,1,0
+2024,Maryland,,popular vote,3038334,1902577,1035550,100207,10,0,0
+2024,Massachusetts,,popular vote,3473668,2126518,1251303,95847,11,0,0
+2024,Michigan,,popular vote,5664186,2736533,2816636,111017,0,15,0
+2024,Minnesota,,popular vote,3253920,1656979,1519032,77909,10,0,0
+2024,Mississippi,,popular vote,1228008,466668,747744,13596,0,6,0
+2024,Missouri,,popular vote,2995327,1200599,1751986,42742,0,10,0
+2024,Montana,,popular vote,602963,231906,352079,18978,0,4,0
+2024,Nebraska,,popular vote,947159,369995,564816,12348,1,4,0
+2024,Nebraska,CD-1,popular vote,318304,136153,177666,4485,0,1,0
+2024,Nebraska,CD-2,popular vote,316690,163541,148905,4244,1,0,0
+2024,Nebraska,CD-3,popular vote,312165,70301,238245,3619,0,1,0
+2024,Nevada,,popular vote,1484840,705197,751205,28438,0,6,0
+2024,New Hampshire,,popular vote,826189,418488,395523,12178,4,0,0
+2024,New Jersey,,popular vote,4272725,2220713,1968215,83797,14,0,0
+2024,New Mexico,,popular vote,923403,478802,423391,21210,5,0,0
+2024,New York,,popular vote,8262495,4619195,3578899,64401,28,0,0
+2024,North Carolina,,popular vote,5699141,2715375,2898423,85343,0,16,0
+2024,North Dakota,,popular vote,368155,112327,246505,9323,0,3,0
+2024,Ohio,,popular vote,5767788,2533699,3180116,53973,0,17,0
+2024,Oklahoma,,popular vote,1566173,499599,1036213,30361,0,7,0
+2024,Oregon,,popular vote,2244493,1240600,919480,84413,8,0,0
+2024,Pennsylvania,,popular vote,7034206,3423042,3543308,67856,0,19,0
+2024,Rhode Island,,popular vote,513386,285156,214406,13824,4,0,0
+2024,South Carolina,,popular vote,2548140,1028452,1483747,35941,0,9,0
+2024,South Dakota,,popular vote,428922,146859,272081,9982,0,3,0
+2024,Tennessee,,popular vote,3063942,1056265,1966865,40812,0,11,0
+2024,Texas,,popular vote,11388674,4835250,6393597,159827,0,40,0
+2024,Utah,,popular vote,1488494,562566,883818,42110,0,6,0
+2024,Vermont,,popular vote,369422,235791,119395,14236,3,0,0
+2024,Virginia,,popular vote,4505941,2335395,2075085,95461,13,0,0
+2024,Washington,,popular vote,3924243,2245849,1530923,147471,12,0,0
+2024,West Virginia,,popular vote,762390,214309,533556,14525,0,4,0
+2024,Wisconsin,,popular vote,3415787,1668229,1697626,49932,0,10,0
+2024,Wyoming,,popular vote,269048,69527,192633,6888,0,3,0

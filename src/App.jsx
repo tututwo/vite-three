@@ -1,6 +1,7 @@
 import { Component, lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { buildSeries, countFlips, defaultSettings, heightModes, marginLabel, paletteNames, palettes, rankCounties, shiftLabel, years } from './electionData.js';
+import { buildSeries, countFlips, defaultSettings, heightModes, lastCountyYear, marginLabel, modes, paletteNames, palettes, rankCounties, shiftLabel, years } from './electionData.js';
+import { otherFill, RoadToMajority, StreakEndings, TurnTimeline, useElectoral, VictoryPanel } from './Electoral.jsx';
 
 import CountySearch from './CountySearch.jsx';
 import CountyDetails from './CountyDetails.jsx';
@@ -8,6 +9,14 @@ import { parseViewState, serializeViewState } from './viewState.js';
 import { downloadCard } from './exportCard.js';
 
 const ElectionScene = lazy(() => import('./ElectionScene.jsx'));
+const modeLabels = { territory: 'Territory', result: 'Margin', shift: 'Shift', loyalty: 'Loyalty' };
+const mapTitles = { territory: 'territory', result: 'election results', shift: 'election shift', loyalty: 'loyalty' };
+const mapDescriptions = {
+  territory: 'Who led each county, laid flat: the land each party held. Deeper colour is a wider lead.',
+  result: 'The Democratic–Republican lead, county by county.',
+  loyalty: 'Height is how many elections in a row a county had the same leader. A county that changes sides drops to one level.',
+};
+const heightKeys = { territory: 'Flat · colour depth: vote-share gap', shift: 'Height: absolute shift (pp) · nonlinear', loyalty: 'Height: elections in a row with the same leader, up to 39' };
 const camera = { position: [-60, -660, 520], up: [0, 0, 1], fov: 30, near: 10, far: 6000 };
 // Multisampling below 2x pixel ratio only: at 2x the pixels are small enough, and the samples
 // would add to every frame on exactly the laptops that run hot.
@@ -49,7 +58,7 @@ export function FlipCount({ flips, fills, previousYear }) {
   if (previousYear === undefined) {
     return <p className="flip-stat">The first election in this series. Choose a later year to compare.</p>;
   }
-  if (!flips.compared) return <p className="flip-stat">No comparable county returns for this election and {previousYear}.</p>;
+  if (!flips.compared) return <p className="flip-stat">{previousYear >= lastCountyYear ? `County returns end in ${lastCountyYear}; this election has state results only.` : `No comparable county returns for this election and ${previousYear}.`}</p>;
   const total = flips.toDemocratic + flips.toRepublican;
   const share = total / flips.compared;
   return (
@@ -71,16 +80,19 @@ export function CountyRanking({ elections, yearIndex, fills, mode = 'result', fl
   const [showAll, setShowAll] = useState(false);
   const ranked = useMemo(() => elections ? rankCounties(elections.counties, yearIndex, mode, flippedOnly && yearIndex > 0) : [], [elections, yearIndex, mode, flippedOnly]);
   const shift = mode === 'shift';
+  const loyalty = mode === 'loyalty';
+  const party = { D: 'Democratic', R: 'Republican', O: 'Third parties' };
   const ceiling = Math.max(10, Math.ceil((ranked[0]?.value ?? 0) / 10) * 10);
   return <section className="county-ranking" aria-labelledby="ranking-title">
     <div className="ranking-heading">
       <p className="section-kicker">County ranking · {years[yearIndex]}</p>
-      <h2 id="ranking-title">{shift ? 'Largest shifts' : 'Largest leads'}</h2>
-      <p className="ranking-description">{shift ? 'Change in D/R margin since the previous election.' : 'D/R vote margin as a share of all votes.'}</p>
+      <h2 id="ranking-title">{loyalty ? (flippedOnly && yearIndex ? 'Streaks that ended' : 'Longest streaks') : shift ? 'Largest shifts' : 'Largest leads'}</h2>
+      <p className="ranking-description">{loyalty ? 'Elections in a row with the same leader, third parties included.' : shift ? 'Change in D/R margin since the previous election.' : 'D/R vote margin as a share of all votes.'}</p>
     </div>
     <label className="checkbox-control ranking-filter"><input type="checkbox" checked={flippedOnly && yearIndex > 0} disabled={!yearIndex}
-      onChange={(event) => onFilterChange(event.target.checked)} />Flipped counties only</label>
+      onChange={(event) => onFilterChange(event.target.checked)} />{loyalty ? 'Streaks that ended only' : 'Flipped counties only'}</label>
     {!yearIndex && <p className="ranking-note">Flip filtering starts in 1872. Result shows all available counties.</p>}
+    {years[yearIndex] > lastCountyYear && <p className="ranking-note">County returns end in {lastCountyYear}.</p>}
     {!elections ? <p className="ranking-empty" role="status">Loading county returns…</p>
       : shift && !yearIndex ? <p className="ranking-empty">No previous election comparison. Choose 1872 or later.</p>
         : !ranked.length ? <p className="ranking-empty">{flippedOnly ? 'No counties changed their D/R lead in this comparison.' : 'No valid county returns for this view.'}</p>
@@ -88,7 +100,21 @@ export function CountyRanking({ elections, yearIndex, fills, mode = 'result', fl
             <ol key={`${yearIndex}-${mode}-${flippedOnly}`} id="county-rankings" className={`county-bars${showAll ? ' expanded' : ''}`} tabIndex={showAll ? 0 : undefined}>
               {(showAll ? ranked : ranked.slice(0, 5)).map((county, index) => {
                 const location = elections.countyNames?.[county.fips] ?? { name: county.fips, state: '' };
-                const value = shift ? county.shift : county.margin;
+                const value = loyalty ? (county.leader === 'R' ? -1 : county.leader === 'O' ? 0 : 1) : shift ? county.shift : county.margin;
+                if (loyalty) {
+                  const ended = flippedOnly && yearIndex > 0;
+                  const span = ended ? `${county.start}–${years[yearIndex - 1]}` : `since ${county.start}`;
+                  return <li key={county.fips}>
+                    <button className="county-choice" aria-pressed={selectedFips === county.fips} onClick={() => onSelect(county.fips)}>
+                      <span className="county-rank" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+                      <span className="county-row-content">
+                        <span className="county-label"><span className="county-name">{location.name}</span><strong>{county.length}<small> elections</small></strong></span>
+                        <span className="county-comparison"><span>{location.state}</span><span>{party[county.leader]} {span}{ended ? ` → ${county.next === 'tie' ? 'tie' : party[county.next]}` : ''}</span></span>
+                        <span className="county-bar-track" aria-hidden="true"><span style={{ width: `${county.length / (years.indexOf(lastCountyYear) + 1) * 100}%`, background: county.leader === 'O' ? otherFill : fills[county.leader === 'R' ? 1 : 0] }} /></span>
+                      </span>
+                    </button>
+                  </li>;
+                }
                 return <li key={county.fips}>
                   <button className="county-choice" aria-pressed={selectedFips === county.fips} onClick={() => onSelect(county.fips)}>
                     <span className="county-rank" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
@@ -106,7 +132,7 @@ export function CountyRanking({ elections, yearIndex, fills, mode = 'result', fl
             <button type="button" className="ranking-expand" aria-expanded={showAll} aria-controls="county-rankings" onClick={() => { setShowAll(!showAll); onInteract(); }}>
               {showAll ? 'Show top 5' : `View all ${ranked.length.toLocaleString()} ${flippedOnly && yearIndex > 0 ? 'flipped ' : ''}counties`}<span aria-hidden="true">{showAll ? '−' : '+'}</span>
             </button>
-            <p className="ranking-note">{shift ? 'pp = percentage points. ' : ''}Ranked by absolute {shift ? 'shift' : 'margin'}. Filtering affects this list only.</p>
+            <p className="ranking-note">{loyalty ? 'Ranked by streak length. A missing return or a tie ends a streak. ' : `${shift ? 'pp = percentage points. ' : ''}Ranked by absolute ${shift ? 'shift' : 'margin'}. `}Filtering affects this list only.</p>
           </>}
   </section>;
 }
@@ -122,6 +148,8 @@ export default function App() {
   const [loadError, setLoadError] = useState('');
   const [controlsOpen, setControlsOpen] = useState(false);
   const [sceneReady, setSceneReady] = useState(false);
+  const stageRef = useRef(null);
+  const [fullscreen, setFullscreen] = useState(false);
   const [focusRequest, setFocusRequest] = useState({ fips: view.county, id: 0 });
   const [exporting, setExporting] = useState(false);
   const exportBusy = useRef(false);
@@ -129,6 +157,8 @@ export default function App() {
   const [feedback, setFeedback] = useState('');
   const [manualLink, setManualLink] = useState('');
   const yearIndex = years.indexOf(view.year);
+  const electoral = useElectoral(elections, yearIndex);
+  const stateOnly = view.year > lastCountyYear;
   const palette = palettes[view.palette];
   const nominees = elections?.nominees[yearIndex];
   const snap = (year) => Object.assign(timeline.current, { time: years.indexOf(year), year, transition: null });
@@ -148,6 +178,25 @@ export default function App() {
   const sliderProps = { settings, onChange: updateSetting };
   const selectCounty = (fips) => { changeView({ county: fips }); setFocusRequest((current) => ({ fips, id: current.id + 1 })); };
   const focus = (fips) => { pause(); setFocusRequest((current) => ({ fips, id: current.id + 1 })); };
+  // The browser's own fullscreen where it exists; where it does not (iPhone Safari), the stage still
+  // covers the window as a fixed layer, and Escape or the button leaves it.
+  const toggleFullscreen = () => {
+    if (fullscreen) {
+      if (document.fullscreenElement) document.exitFullscreen();
+      setFullscreen(false);
+    } else {
+      setFullscreen(true);
+      stageRef.current?.requestFullscreen?.().catch(() => {});
+    }
+  };
+  useEffect(() => {
+    if (!fullscreen) return;
+    const left = () => { if (!document.fullscreenElement) setFullscreen(false); };
+    const escape = (event) => { if (event.key === 'Escape' && !document.fullscreenElement) setFullscreen(false); };
+    document.addEventListener('fullscreenchange', left);
+    document.addEventListener('keydown', escape);
+    return () => { document.removeEventListener('fullscreenchange', left); document.removeEventListener('keydown', escape); };
+  }, [fullscreen]);
   const playbackYear = (year) => {
     const next = { ...viewRef.current, year };
     viewRef.current = next; setView(next);
@@ -156,14 +205,14 @@ export default function App() {
 
   useEffect(() => {
     const controller = new AbortController();
-    Promise.all(['elections.json', 'county-names.json'].map(async (name) => {
+    Promise.all(['elections.json', 'county-names.json', 'electoral.json'].map(async (name) => {
       const response = await fetch(`${import.meta.env.BASE_URL}${name}`, { signal: controller.signal });
       if (!response.ok) throw new Error(`Could not load ${name} (${response.status}).`);
       return response.json();
-    })).then(([data, countyNames]) => {
+    })).then(([data, countyNames, electoral]) => {
       if (controller.signal.aborted) return;
       const series = buildSeries(data);
-      setElections({ ...data, countyNames, series, flips: countFlips(series) });
+      setElections({ ...data, countyNames, electoral, series, flips: countFlips(series) });
       const restored = parseViewState(window.location.href, countyNames);
       viewRef.current = restored; setView(restored); snap(restored.year);
       setFocusRequest((current) => ({ fips: restored.county, id: current.id + 1 }));
@@ -214,12 +263,28 @@ export default function App() {
     finally { exportBusy.current = false; setExporting(false); }
   };
 
+  const playbackControls = <div className="playback-controls">
+    <button className="step-button" aria-label="Previous election" disabled={!elections || !yearIndex} onClick={() => changeView({ year: years[yearIndex - 1] })}>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m10 4-4 4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+    </button>
+    <button className="play-button" disabled={!elections || !sceneReady} aria-label={settings.playing ? 'Pause animation' : 'Play animation'} onClick={() => {
+      if (settings.playing) pause();
+      else { snap(viewRef.current.year); updateSetting('playing', true); }
+    }}>{settings.playing ? 'Pause' : 'Play'}</button>
+    <button className="step-button" aria-label="Next election" disabled={!elections || yearIndex === years.length - 1} onClick={() => changeView({ year: years[yearIndex + 1] })}>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m6 4 4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+    </button>
+  </div>;
+  const modeSwitch = <div className="mode-switch" role="group" aria-label="Map mode">
+    {modes.map((mode) => <button key={mode} aria-pressed={view.mode === mode} onClick={() => changeView({ mode })}>{modeLabels[mode]}</button>)}
+  </div>;
+
   return <main aria-busy={exporting}>
     <fieldset className="application" disabled={exporting}>
       <header className="map-header">
         <div className="map-intro">
           <h1>The county vote</h1>
-          <p className="map-kicker">U.S. presidential elections · 1868–2020</p>
+          <p className="map-kicker">U.S. presidential elections · 1868–2024 · county returns to 2020</p>
         </div>
         <div className="share-actions"><button onClick={copyLink} disabled={!elections}>Copy link</button><button onClick={exportPng} disabled={!sceneReady || exporting}>{exporting ? 'Preparing…' : 'Download PNG'}</button></div>
       </header>
@@ -234,30 +299,19 @@ export default function App() {
                 {years.map((year, index) => <option key={year} value={index}>{year}</option>)}
               </select>
             </label>
-            <div className="playback-controls">
-              <button className="step-button" aria-label="Previous election" disabled={!elections || !yearIndex} onClick={() => changeView({ year: years[yearIndex - 1] })}>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m10 4-4 4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-              </button>
-              <button className="play-button" disabled={!elections || !sceneReady} aria-label={settings.playing ? 'Pause animation' : 'Play animation'} onClick={() => {
-                if (settings.playing) pause();
-                else { snap(viewRef.current.year); updateSetting('playing', true); }
-              }}>{settings.playing ? 'Pause' : 'Play'}</button>
-              <button className="step-button" aria-label="Next election" disabled={!elections || yearIndex === years.length - 1} onClick={() => changeView({ year: years[yearIndex + 1] })}>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m6 4 4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-              </button>
-            </div>
+            {playbackControls}
           </div>
-          <div className="mode-switch" role="group" aria-label="Map mode">
-            {['result', 'shift'].map((mode) => <button key={mode} aria-pressed={view.mode === mode} onClick={() => changeView({ mode })}>{mode === 'result' ? 'Result' : 'Shift'}</button>)}
-          </div>
+          {modeSwitch}
         </section>
         <CountySearch countyNames={elections?.countyNames} onSelect={selectCounty} disabled={!elections} />
       </div>
+      <TurnTimeline electoral={elections?.electoral} yearIndex={yearIndex} palette={palette} disabled={!elections} onSelect={(year) => changeView({ year })} />
       <div className="election-explorer">
         <section className="map-panel" aria-labelledby="map-title">
           <div className="map-panel-header">
-            <div><h2 id="map-title">{view.year} election {view.mode === 'shift' ? 'shift' : 'results'}</h2>
-              <p>{view.mode === 'shift' ? (yearIndex ? `Movement in the D/R margin since ${years[yearIndex - 1]}.` : 'The first election in this series.') : 'The Democratic–Republican lead, county by county.'}</p>
+            <div><h2 id="map-title">{view.year} {mapTitles[view.mode]}</h2>
+              <p>{stateOnly ? `County returns end in ${lastCountyYear}; ${view.year} has state results only.`
+                : view.mode === 'shift' ? (yearIndex ? `Movement in the D/R margin since ${years[yearIndex - 1]}.` : 'The first election in this series.') : mapDescriptions[view.mode]}</p>
             </div>
           <aside className="controls" aria-label="Map controls" onKeyDown={(event) => { if (event.key === 'Escape') { setControlsOpen(false); event.currentTarget.querySelector('summary').focus(); } }}>
             <details className="controls-panel" open={controlsOpen}
@@ -307,7 +361,12 @@ export default function App() {
             </details>
           </aside>
           </div>
-          <div className="map-stage" role="group" aria-label="County map">
+          <div className={`map-stage${fullscreen ? ' is-fullscreen' : ''}`} ref={stageRef} role="group" aria-label="County map">
+          {fullscreen && <div className="fullscreen-bar">
+            <p><strong>{view.year}</strong> {mapTitles[view.mode]}<span>{nominees?.join(' vs ')}</span></p>
+            {playbackControls}
+            {modeSwitch}
+          </div>}
           <SceneErrorBoundary onError={() => setSceneReady(false)}>
             <Canvas flat shadows="percentage" camera={camera} gl={renderer} dpr={[1.5, 2]}
               frameloop={settings.playing || settings.breath > 0 ? 'always' : 'demand'}
@@ -319,33 +378,38 @@ export default function App() {
             {!elections && !loadError && <div className="scene-status" role="status">Loading county map…</div>}
           </SceneErrorBoundary>
           {view.mode === 'shift' && !yearIndex && <p className="map-empty">1868 · No previous election comparison in this series.</p>}
-          <div className="map-view-actions"><button onClick={() => focus(null)} disabled={!sceneReady}>National view</button>{view.county && <button onClick={() => focus(view.county)} disabled={!sceneReady}>Focus county</button>}</div>
+          {stateOnly && <p className="map-empty">{view.year} · State results only. County returns in this series end in {lastCountyYear}; the counts beside the map use official state results.</p>}
+          <div className="map-view-actions"><button onClick={() => focus(null)} disabled={!sceneReady}>National view</button>{view.county && <button onClick={() => focus(view.county)} disabled={!sceneReady}>Focus county</button>}
+            <button onClick={toggleFullscreen}>{fullscreen ? 'Exit full screen' : 'Full screen'}</button></div>
 
           </div>
           <div className="map-caption">
             <div className="party-legend" role="group" aria-label={`${view.mode === 'shift' ? 'Shift direction' : 'Party lead'} in ${view.year}`}>
               {['Democratic', 'Republican'].map((party, index) => <div key={party}>
-                <span className="party-name"><i className="party-swatch" style={{ background: palette.fills[index] }} aria-hidden="true" />{view.mode === 'shift' ? `Toward ${index ? 'Republicans' : 'Democrats'}` : `${party} lead`}</span>
+                <span className="party-name"><i className="party-swatch" style={{ background: palette.fills[index] }} aria-hidden="true" />{view.mode === 'shift' ? `Toward ${index ? 'Republicans' : 'Democrats'}` : view.mode === 'loyalty' ? `${party} streak` : `${party} lead`}</span>
                 <span className="candidate-name">{nominees?.[index] ?? 'Loading candidate…'}</span>
               </div>)}
             </div>
             <div className="map-scale-note">
-              <p className="height-key">{view.mode === 'shift' ? 'Height: absolute shift (pp)' : `Height: ${view.height === 'margin %' ? 'vote-share gap' : 'vote-count gap'}`} · nonlinear</p>
-              <p className="neutral-legend"><span><i className="party-swatch neutral-swatch" aria-hidden="true" />{view.mode === 'shift' ? 'No change' : 'Tie'}</span><span><i className="party-swatch missing-swatch" aria-hidden="true" />No data</span>{view.county && <span><i className="party-swatch selected-swatch" aria-hidden="true" />Selected county</span>}</p>
+              <p className="height-key">{heightKeys[view.mode] ?? `Height: ${view.height === 'margin %' ? 'vote-share gap' : 'vote-count gap'} · nonlinear`}</p>
+              <p className="neutral-legend">{['territory', 'loyalty'].includes(view.mode) && <span><i className="party-swatch neutral-swatch" aria-hidden="true" />Third parties led</span>}<span><i className="party-swatch neutral-swatch" aria-hidden="true" />{view.mode === 'shift' ? 'No change' : 'Tie'}</span><span><i className="party-swatch missing-swatch" aria-hidden="true" />No data</span>{view.county && <span><i className="party-swatch selected-swatch" aria-hidden="true" />Selected county</span>}</p>
             </div>
             <p className="map-interaction-hint">Drag to pan · Scroll to zoom · Right-drag to orbit</p>
           </div>
+          <RoadToMajority electoral={electoral} palette={palette} />
         </section>
         <aside className="county-sidebar" aria-label="County data">
           {view.county && elections && <CountyDetails elections={elections} fips={view.county} yearIndex={yearIndex} palette={palette}
             onFocus={() => focus(view.county)} onNational={() => focus(null)} onClose={() => {
               changeView({ county: null }); document.querySelector('[role="combobox"][aria-autocomplete]')?.focus();
             }} />}
+          <VictoryPanel electoral={electoral} palette={palette} />
           <section className="national-overview" aria-labelledby="national-title">
             <h2 id="national-title">Nationwide <span>{yearIndex ? `${years[yearIndex - 1]}–${view.year}` : view.year}</span></h2>
             <FlipCount flips={elections?.flips[yearIndex]} fills={palette.fills} previousYear={years[yearIndex - 1]} />
+            <StreakEndings elections={elections} yearIndex={yearIndex} onSelect={selectCounty} />
           </section>
-          <CountyRanking elections={elections} yearIndex={yearIndex} fills={palette.fills} mode={view.mode} flippedOnly={view.flippedOnly}
+          <CountyRanking elections={elections} yearIndex={yearIndex} fills={palette.fills} mode={view.mode === 'territory' ? 'result' : view.mode} flippedOnly={view.flippedOnly}
             onFilterChange={(flippedOnly) => changeView({ flippedOnly })} onSelect={selectCounty} selectedFips={view.county} onInteract={pause} />
         </aside>
       </div>
@@ -355,12 +419,14 @@ export default function App() {
           <p>Margin = 100 × (Democratic votes − Republican votes) / all votes. Shift = current margin − previous margin, in percentage points (pp). Positive shifts move toward Democrats; negative shifts toward Republicans. Map heights are nonlinear; rankings and county details use unscaled values.</p>
           <p>A flip is a strict change in the D/R lead between two valid adjacent elections; ties are not flips. Nationwide statistics use all comparable counties and do not change when a county or list filter is selected. County counts do not represent voter counts or individual voters changing parties.</p>
           <p>Modern county names and U.S. Census 2017 boundaries are used. Historical returns for renamed or merged counties are combined into their successors. Missing records stay missing; Alaska district returns are unavailable, and Hawaii has no returns before 1960.</p>
-          <p>Only the Democratic–Republican lead is shown. Actual third-party winners are not shown. Coverage ends in 2020; 2024 is not included.</p>
+          <p>Territory colours each county by who led: Democrats, Republicans, or third parties when their votes together beat both parties (the returns keep third parties as one sum, so no single third-party candidate is named for a county). Margin and Shift show only the Democratic–Republican lead. Loyalty raises each county by how many elections in a row it had the same leader; a missing return, a tie or any change of leader, third parties included, ends a streak.</p>
+          <p>Victory conditions: counties led and their land area (Census 2020 Gazetteer, the 48 contiguous states and DC) come from county returns. States won, popular vote and electors come from official state results (The American Presidency Project, UC Santa Barbara), including third-party electors, split states, faithless electors and electors chosen by legislatures (Florida 1868, Colorado 1876). The tipping point is the state, or Maine or Nebraska district, that gave the winner a majority of electors, counting from the winner’s widest leads. Wasted votes are every vote for a state’s losers plus the winner’s votes beyond one more than the runner-up, statewide. People per elector divides each state’s resident population at the census that set its electors by its electors.</p>
+          <p>County returns end in 2020. 2024 is shown with state results only.</p>
           <p>Returns: Amlani & Algara, Harvard Dataverse. Geography: U.S. Census Bureau / us-atlas. Basemap: Natural Earth. The existing source data and aggregation are retained.</p>
           <p>Use search or ranking buttons to select a county; direct selection of 3D county geometry is not available. Links restore the data view and a county focus, not arbitrary camera angles or lighting. PNG cards fit the captured map pixels proportionally into a 1600 × 1000 layout.</p>
         </details>
-        <span>D/R lead only · Third-party winners not shown</span>
-        <span>Sources: Amlani & Algara · U.S. Census Bureau · Natural Earth</span>
+        <span>County returns 1868–2020 · State results 1868–2024</span>
+        <span>Sources: Amlani & Algara · The American Presidency Project · U.S. Census Bureau · Natural Earth</span>
       </footer>
     </fieldset>
   </main>;

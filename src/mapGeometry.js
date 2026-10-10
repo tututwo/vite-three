@@ -22,7 +22,10 @@ const heightPars = /* glsl */ `
   uniform float heightExponent;
   uniform float heightMode;
   uniform float selectedRow;
+  uniform float flatten;
+  uniform float markOther;
   varying float vHeight;
+  varying float vColorHeight;
   varying float vFloor;
   varying float vParty;
   varying float vVoted;
@@ -44,20 +47,25 @@ const heightPars = /* glsl */ `
     float phase = texelFetch(series, ivec2(ELECTIONS, row), 0).y;
     float breathing = 1.0 + breath * sin(seconds * 1.6 + phase);
     return minHeight + maxHeight * pow(abs(signedOf(values)), heightExponent) * breathing;
-  }`;
+  }
+  // Territory lays the columns down (flatten 1) but keeps colouring each roof by the height it had.
+  float shownHeight(float raised) { return mix(raised, minHeight, flatten); }`;
 const heightMain = /* glsl */ `
   int row = int(county + 0.5);
   vec4 values = valuesAt(row);
-  transformed.z *= heightAt(row, values);`;
+  float raised = heightAt(row, values);
+  vColorHeight = transformed.z * raised;
+  transformed.z *= shownHeight(raised);`;
 const varyingsMain = /* glsl */ `
   vHeight = transformed.z;
   vParty = float(signedOf(values) < 0.0);
   vVoted = values.z;
-  vNeutral = float(signedOf(values) == 0.0);
+  // values.w: everyone else's votes together beat both parties. Grey where the view is about who led.
+  vNeutral = float(signedOf(values) == 0.0 || markOther * values.w > 0.5);
   vSelected = float(abs(county - selectedRow) < 0.5);
   vWall = 1.0 - abs(objectNormal.z);
   int across = int(neighbor + 0.5);
-  vFloor = neighbor < 0.0 ? 0.0 : heightAt(across, valuesAt(across));`;
+  vFloor = neighbor < 0.0 ? 0.0 : shownHeight(heightAt(across, valuesAt(across)));`;
 const raiseCounties = (vertexShader, main) => vertexShader
   .replace('#include <common>', `#include <common>\n${heightPars}`)
   .replace('#include <begin_vertex>', `#include <begin_vertex>\n${heightMain}\n${main}`);
@@ -86,18 +94,20 @@ export function createCountyMap(svgData, settings, series) {
   if (origin) center.set(...origin, 0);
   const width = bounds.max.x - bounds.min.x || 1;
 
-  // One row per county: [margin %, margin votes, voted] per election, then [delay, phase].
+  // One row per county: [margin %, margin votes, voted, third parties led] per election, then [delay, phase].
+  // The shift and loyalty textures put their one value in both of the first two channels.
   const columns = years.length + 1;
   const seriesData = new Float32Array(columns * counties.length * 4);
   const shiftData = new Float32Array(seriesData.length);
+  const loyaltyData = new Float32Array(seriesData.length);
   const countyMetadata = new Map();
   const centroid = new THREE.Vector3();
   counties.forEach((county, row) => {
     for (let election = 0; election < years.length; election++) {
-      const values = [...heightModes, 'voted'].map((key) => county.series[key]?.[election] ?? 0);
-      seriesData.set(values, (row * columns + election) * 4);
-      const shift = county.series.shift?.[election] ?? 0;
-      shiftData.set([shift, shift, county.series.compared?.[election] ?? 0, 0], (row * columns + election) * 4);
+      const at = (key) => county.series[key]?.[election] ?? 0;
+      seriesData.set([...heightModes, 'voted', 'otherLed'].map(at), (row * columns + election) * 4);
+      shiftData.set([at('shift'), at('shift'), at('compared'), 0], (row * columns + election) * 4);
+      loyaltyData.set([at('loyalty'), at('loyalty'), at('voted'), at('otherLed')], (row * columns + election) * 4);
     }
     county.geometry.boundingBox.getCenter(centroid);
     const box = county.geometry.boundingBox;
@@ -113,13 +123,13 @@ export function createCountyMap(svgData, settings, series) {
     const east = (centroid.x - bounds.min.x) / width;
     const jitter = ((Number(county.fips) * 2654435761) >>> 0) / 4294967296;
     const animation = [0.75 * (1 - east) + 0.25 * jitter, centroid.x * 0.03 + centroid.y * 0.02];
-    seriesData.set(animation, (row * columns + years.length) * 4);
-    shiftData.set(animation, (row * columns + years.length) * 4);
+    for (const data of [seriesData, shiftData, loyaltyData]) data.set(animation, (row * columns + years.length) * 4);
   });
-  const seriesTexture = new THREE.DataTexture(seriesData, columns, counties.length, THREE.RGBAFormat, THREE.FloatType);
-  seriesTexture.needsUpdate = true;
-  const shiftTexture = new THREE.DataTexture(shiftData, columns, counties.length, THREE.RGBAFormat, THREE.FloatType);
-  shiftTexture.needsUpdate = true;
+  const textures = Object.fromEntries([['series', seriesData], ['shift', shiftData], ['loyalty', loyaltyData]].map(([name, data]) => {
+    const texture = new THREE.DataTexture(data, columns, counties.length, THREE.RGBAFormat, THREE.FloatType);
+    texture.needsUpdate = true;
+    return [name, texture];
+  }));
   let activeData = seriesData;
   // One texel per county: what was on screen when the current seek began.
   const heldData = new Float32Array(counties.length * 4);
@@ -163,12 +173,14 @@ export function createCountyMap(svgData, settings, series) {
   rampTexture.minFilter = rampTexture.magFilter = THREE.LinearFilter;
 
   const uniforms = {
-    series: { value: seriesTexture },
+    series: { value: textures.series },
     held: { value: heldTexture },
     ramp: { value: rampTexture },
     noDataColor: { value: new THREE.Color(groundColor) },
     neutralColor: { value: new THREE.Color('#969eaa') },
     selectedRow: { value: -1 },
+    flatten: { value: 0 },
+    markOther: { value: 0 },
     occlusion: { value: 1 },
     ...Object.fromEntries(['fromElection', 'toElection', 'progress', 'seconds', 'stagger', 'breath', 'maxHeight', 'minHeight', 'heightExponent', 'heightMode', 'colorGamma']
       .map((name) => [name, { value: 0 }])),
@@ -188,13 +200,14 @@ export function createCountyMap(svgData, settings, series) {
   }
 
   const material = new THREE.MeshStandardMaterial({ roughness: 0.9 });
-  material.customProgramCacheKey = () => 'county-altitude-ramp-v3';
+  material.customProgramCacheKey = () => 'county-altitude-ramp-v4';
   material.onBeforeCompile = (shader) => {
     Object.assign(shader.uniforms, uniforms);
     shader.vertexShader = raiseCounties(shader.vertexShader, varyingsMain);
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', /* glsl */ `#include <common>
         varying float vHeight;
+        varying float vColorHeight;
         varying float vFloor;
         varying float vParty;
         varying float vVoted;
@@ -209,7 +222,7 @@ export function createCountyMap(svgData, settings, series) {
         uniform float occlusion;`)
       .replace('#include <color_fragment>', /* glsl */ `
         // Colour is altitude: party picks the ramp, and a county fades in as it starts voting.
-        float rampU = pow(clamp(vHeight / maxHeight, 0.0, 1.0), colorGamma);
+        float rampU = pow(clamp(vColorHeight / maxHeight, 0.0, 1.0), colorGamma);
         vec3 rampColor = texture2D(ramp, vec2(rampU, mix(0.25, 0.75, vParty))).rgb;
         diffuseColor.rgb = mix(noDataColor, mix(rampColor, neutralColor, vNeutral), vVoted);
         diffuseColor.rgb = mix(diffuseColor.rgb, vec3(1.0, 0.67, 0.08), vSelected * 0.85);`)
@@ -223,7 +236,7 @@ export function createCountyMap(svgData, settings, series) {
   };
   // Shadows are rendered with this, so they follow the same heights.
   const depthMaterial = new THREE.MeshDepthMaterial();
-  depthMaterial.customProgramCacheKey = () => 'county-height-depth-v1';
+  depthMaterial.customProgramCacheKey = () => 'county-height-depth-v2';
   depthMaterial.onBeforeCompile = (shader) => {
     Object.assign(shader.uniforms, uniforms);
     shader.vertexShader = raiseCounties(shader.vertexShader, '');
@@ -251,7 +264,7 @@ export function createCountyMap(svgData, settings, series) {
       const delay = activeData[(row * columns + years.length) * 4];
       const t = Math.min(Math.max((progress - delay * stagger) / (1 - stagger), 0), 1);
       const eased = t * t * (3 - 2 * t);
-      for (let channel = 0; channel < 3; channel++) {
+      for (let channel = 0; channel < 4; channel++) {
         const before = from < 0 ? heldData[row * 4 + channel] : activeData[(row * columns + from) * 4 + channel];
         const after = activeData[(row * columns + to) * 4 + channel];
         heldData[row * 4 + channel] = before + (after - before) * eased;
@@ -260,10 +273,12 @@ export function createCountyMap(svgData, settings, series) {
     heldTexture.needsUpdate = true;
   }
 
+  // Territory and result share the series texture; territory is drawn flat (see ElectionScene).
   function setMode(mode) {
-    const shift = mode === 'shift';
-    activeData = shift ? shiftData : seriesData;
-    uniforms.series.value = shift ? shiftTexture : seriesTexture;
+    const name = mode === 'shift' || mode === 'loyalty' ? mode : 'series';
+    uniforms.series.value = textures[name];
+    activeData = textures[name].image.data;
+    uniforms.markOther.value = Number(mode === 'territory' || mode === 'loyalty');
   }
 
   function select(fips) {
@@ -276,7 +291,8 @@ export function createCountyMap(svgData, settings, series) {
     for (const name of ['stagger', 'breath', 'maxHeight', 'minHeight', 'heightExponent', 'colorGamma']) {
       uniforms[name].value = currentSettings[name];
     }
-    uniforms.heightMode.value = currentSettings.mode === 'shift' ? 0 : heightModes.indexOf(currentSettings.height);
+    // Only Margin (result) offers the vote-count height; the other modes read the first channel.
+    uniforms.heightMode.value = ['territory', 'shift', 'loyalty'].includes(currentSettings.mode) ? 0 : heightModes.indexOf(currentSettings.height);
     if (currentSettings.reducedMotion) uniforms.breath.value = 0;
     uniforms.occlusion.value = currentSettings.ambientOcclusion ?? 1;
     if (currentSettings.palette !== appliedPalette) applyPalette(currentSettings.palette);
@@ -300,8 +316,7 @@ export function createCountyMap(svgData, settings, series) {
       material.dispose();
       depthMaterial.dispose();
       rampTexture.dispose();
-      seriesTexture.dispose();
-      shiftTexture.dispose();
+      for (const texture of Object.values(textures)) texture.dispose();
       heldTexture.dispose();
     },
   };
