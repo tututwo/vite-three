@@ -5,12 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Presidential Margins, 1868–2020 — Gordon Tu</title>
     <meta name="description" content="Each county's Democratic–Republican margin in 39 presidential elections since 1868, raised so wider gaps stand taller. Play or scrub the years to watch counties flip; drag to pan and orbit." />
-    <link rel="canonical" href="https://gordontu.com/data-visualization/presidential-margins-1868-2020/live/" />
+    <link rel="canonical" href="https://gordontu.com/data-visualization/presidential-margins-1868-2020" />
+    <link rel="icon" href="/favicon.png?v=3" sizes="32x32" />
+    <link rel="icon" href="/favicon.svg?v=3" type="image/svg+xml" />
     <meta property="og:title" content="Presidential Margins, 1868–2020 — Gordon Tu" />
     <meta property="og:image" content="https://gordontu.com/projects-optimized/Charts/election-3d/election-3d-cover.webp" />
+    <style>
+      /* The way back to this piece's Project page on gordontu.com, small and quiet in a corner the piece leaves free */
+      .gt-home { position: absolute; z-index: 10; margin: 0; display: flex; flex-direction: row-reverse; gap: 4px 12px; font-size: 12px; line-height: 16px; white-space: nowrap; bottom: 20px; right: 24px; color: rgb(0 0 0 / 56%); }
+      .gt-home a { color: inherit; text-decoration: none; }
+      .gt-home a:hover { color: #000; text-decoration: underline; text-underline-offset: 3px; }
+      /* on a phone the controls take the bottom edge: above the title instead */
+      @media (max-width: 760px) { .gt-home { bottom: auto; top: 4px; right: auto; left: 16px; } }
+    </style>
+    <script>
+      !function(t,e){var o,n,p,r;e.__SV||(window.posthog && window.posthog.__loaded)||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}p||((p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",p.onerror=function(){p=null},(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r));var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],Object.defineProperty(u,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e}}),Object.defineProperty(u.people,"toString",{configurable:!0,enumerable:!0,writable:!0,value:function(){return u.toString(1)+".people (stub)"}}),o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagResult isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+      // PostHog, the same project as gordontu.com: one live_piece_viewed per visit and nothing else
+      // (no autocapture, pageviews or recordings). Local dev on localhost stays out of the stats.
+      if (!['localhost', '127.0.0.1'].includes(location.hostname)) {
+        posthog.init('phc_rCGhPFpCwFs2rPSFossL3msUodSWeSRZPzLDGuuniBzJ', {
+          api_host: 'https://us.i.posthog.com',
+          defaults: '2026-05-30',
+          autocapture: false,
+          capture_pageview: false,
+          capture_pageleave: false,
+          capture_dead_clicks: false,
+          capture_heatmaps: false,
+          capture_performance: false,
+          disable_session_recording: true
+        });
+        posthog.capture('live_piece_viewed', { slug: 'presidential-margins-1868-2020' });
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <div class="gt-home"><a href="https://gordontu.com/data-visualization/presidential-margins-1868-2020">Gordon Tu ↗</a></div>
   </body>
 </html>
