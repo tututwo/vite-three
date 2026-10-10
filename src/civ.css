@@ -1,0 +1,29 @@
+/* Civ skin for the map stage: dark slate panels with a gold hairline, Cinzel for names and numbers. */
+.map-stage.is-civ { background: #4d7d8a; --civ-panel: rgb(17 26 35 / 92%); --civ-gold: #d9b86c; --civ-bright: #f3d27a; --civ-ink: #f1e9d8; --civ-muted: #c9c1b1; }
+.civ-turn, .civ-banner, .hex-label { font-family: 'Cinzel', Georgia, serif; letter-spacing: 0.04em; }
+
+.civ-turn { position: absolute; top: 16px; left: 16px; z-index: 2; display: flex; align-items: baseline; gap: 12px; padding: 8px 14px; border: 1px solid #b8955a; border-radius: 6px; background: var(--civ-panel); box-shadow: 0 6px 20px rgb(0 0 0 / 30%); color: var(--civ-ink); font-size: 12px; pointer-events: none; }
+.civ-turn span { color: var(--civ-muted); }
+.civ-turn b { color: var(--civ-ink); font-variant-numeric: tabular-nums; }
+.civ-turn strong { color: var(--civ-bright); font-size: 18px; font-variant-numeric: tabular-nums; }
+.civ-turn em { font-style: normal; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; letter-spacing: 0; color: var(--civ-muted); }
+
+.is-civ .map-view-actions button { border: 1px solid #b8955a; background: var(--civ-panel); color: var(--civ-ink); }
+.is-civ .map-view-actions button:hover { background: rgb(30 44 56 / 95%); }
+.is-civ .map-empty { border: 1px solid #b8955a; background: var(--civ-panel); color: var(--civ-ink); }
+
+/* City banners: votes in a dark box, the name on the leading party's colour, a staff down to the county. */
+.civ-banner { position: relative; display: flex; height: 26px; transform: translate(-50%, calc(-100% - 14px)); border: 1px solid #b8955a; border-radius: 4px; overflow: visible; box-shadow: 0 5px 12px rgb(0 0 0 / 40%); white-space: nowrap; font-size: 12px; font-weight: 700; }
+.civ-banner::after { content: ''; position: absolute; left: 50%; top: 100%; width: 1.5px; height: 14px; background: #b8955a; }
+.civ-banner-votes { display: flex; align-items: center; padding: 0 7px; border-radius: 3px 0 0 3px; background: #111a23; color: #f1e9d8; font-variant-numeric: tabular-nums; }
+.civ-banner-name { display: flex; align-items: center; gap: 5px; padding: 0 9px; border-radius: 0 3px 3px 0; color: #fff; }
+.civ-banner-D .civ-banner-name { background: #6550b5; }
+.civ-banner-R .civ-banner-name { background: #c83c12; }
+.civ-banner-O .civ-banner-name { background: #5d6570; }
+.civ-banner.is-captured { border-color: var(--civ-bright, #f3d27a); box-shadow: 0 5px 12px rgb(0 0 0 / 40%), 0 0 12px rgb(243 210 122 / 55%); }
+
+/* Elector board labels: the state and its electors, the tipping point in gold. */
+.hex-label { display: flex; align-items: baseline; gap: 4px; padding: 2px 6px; border-radius: 3px; background: rgb(17 26 35 / 78%); color: #f1e9d8; font-size: 10px; font-weight: 700; white-space: nowrap; pointer-events: none; }
+.hex-label b { color: #d9b86c; font-variant-numeric: tabular-nums; }
+.hex-label em { font-style: normal; color: #f3d27a; }
+.hex-label.is-tipping { border: 1px solid #f3d27a; box-shadow: 0 0 10px rgb(243 210 122 / 60%); font-size: 11px; }

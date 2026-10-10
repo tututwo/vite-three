@@ -2,6 +2,8 @@ import { Component, lazy, Suspense, useEffect, useMemo, useRef, useState } from 
 import { Canvas } from '@react-three/fiber';
 import { buildSeries, countFlips, defaultSettings, heightModes, lastCountyYear, marginLabel, modes, paletteNames, palettes, rankCounties, shiftLabel, years } from './electionData.js';
 import { otherFill, RoadToMajority, StreakEndings, TurnTimeline, useElectoral, VictoryPanel } from './Electoral.jsx';
+import DebugPanel from './DebugPanel.jsx';
+import './civ.css';
 
 import CountySearch from './CountySearch.jsx';
 import CountyDetails from './CountyDetails.jsx';
@@ -9,14 +11,15 @@ import { parseViewState, serializeViewState } from './viewState.js';
 import { downloadCard } from './exportCard.js';
 
 const ElectionScene = lazy(() => import('./ElectionScene.jsx'));
-const modeLabels = { territory: 'Territory', result: 'Margin', shift: 'Shift', loyalty: 'Loyalty' };
-const mapTitles = { territory: 'territory', result: 'election results', shift: 'election shift', loyalty: 'loyalty' };
+const modeLabels = { territory: 'Territory', result: 'Margin', shift: 'Shift', loyalty: 'Loyalty', electors: 'Electors' };
+const mapTitles = { territory: 'territory', result: 'election results', shift: 'election shift', loyalty: 'loyalty', electors: 'Electoral College' };
 const mapDescriptions = {
   territory: 'Who led each county, laid flat: the land each party held. Deeper colour is a wider lead.',
   result: 'The Democratic–Republican lead, county by county.',
   loyalty: 'Height is how many elections in a row a county had the same leader. A county that changes sides drops to one level.',
+  electors: 'One hex per elector, in the state that cast it. Height is the state’s winning lead; gold rings the tipping-point state.',
 };
-const heightKeys = { territory: 'Flat · colour depth: vote-share gap', shift: 'Height: absolute shift (pp) · nonlinear', loyalty: 'Height: elections in a row with the same leader, up to 39' };
+const heightKeys = { electors: '1 hex = 1 elector · Height: state lead · nonlinear', territory: 'Flat · colour depth: vote-share gap', shift: 'Height: absolute shift (pp) · nonlinear', loyalty: 'Height: elections in a row with the same leader, up to 39' };
 const camera = { position: [-60, -660, 520], up: [0, 0, 1], fov: 30, near: 10, far: 6000 };
 // Multisampling below 2x pixel ratio only: at 2x the pixels are small enough, and the samples
 // would add to every frame on exactly the laptops that run hot.
@@ -26,7 +29,15 @@ const initialSettings = {
   fill: 1.2, front: 1, key: 2.4,
   keyX: -380, keyY: 260, keyZ: 620, shadowSoftness: 10,
   ambientOcclusion: 1, depthOfField: false, vignette: true,
+  // Civ skin (tune live with ?debug, then paste the copied values here).
+  skin: 'civ', oceanColor: '#5f8f9c', landColor: '#cbbf9a', inkColor: '#2f4a55',
+  hexSize: 8.7, hexWidth: 0.018, gridOcean: 0.16, hexOnLand: 0.1,
+  borders: 1, borderWidth: 1.4, borderCore: 0.42, borderGlow: 0.4, borderHighlight: 0.35, borderColumns: 0, flipFade: 0.0002,
+  fogColor: '#e6dcc3', fogInk: '#b9aa86', fogHatch: 3.5, fogLine: 0.2, fogClouds: 0.35, fogScale: 0.02, fogSpeed: 0.5,
+  boardCompact: 0.55, boardGap: 0.03, boardHeight: 24, boardBase: 1.5, hexBorder: 0.16, boardLabels: true, boardLabelMin: 5,
+  bannerCount: 8, bannerSpacing: 70,
 };
+const debugging = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('debug');
 
 class SceneErrorBoundary extends Component {
   state = { error: null };
@@ -280,6 +291,7 @@ export default function App() {
   </div>;
 
   return <main aria-busy={exporting}>
+    {debugging && <DebugPanel settings={settings} onChange={updateSetting} />}
     <fieldset className="application" disabled={exporting}>
       <header className="map-header">
         <div className="map-intro">
@@ -310,7 +322,7 @@ export default function App() {
         <section className="map-panel" aria-labelledby="map-title">
           <div className="map-panel-header">
             <div><h2 id="map-title">{view.year} {mapTitles[view.mode]}</h2>
-              <p>{stateOnly ? `County returns end in ${lastCountyYear}; ${view.year} has state results only.`
+              <p>{stateOnly && view.mode !== 'electors' ? `County returns end in ${lastCountyYear}; ${view.year} has state results only.`
                 : view.mode === 'shift' ? (yearIndex ? `Movement in the D/R margin since ${years[yearIndex - 1]}.` : 'The first election in this series.') : mapDescriptions[view.mode]}</p>
             </div>
           <aside className="controls" aria-label="Map controls" onKeyDown={(event) => { if (event.key === 'Escape') { setControlsOpen(false); event.currentTarget.querySelector('summary').focus(); } }}>
@@ -361,7 +373,8 @@ export default function App() {
             </details>
           </aside>
           </div>
-          <div className={`map-stage${fullscreen ? ' is-fullscreen' : ''}`} ref={stageRef} role="group" aria-label="County map">
+          <div className={`map-stage${fullscreen ? ' is-fullscreen' : ''}${settings.skin === 'civ' ? ' is-civ' : ''}`} ref={stageRef} role="group" aria-label="County map">
+          {settings.skin === 'civ' && !fullscreen && <p className="civ-turn" aria-hidden="true"><span>Turn <b>{yearIndex + 1}</b> / {years.length}</span><strong>{view.year}</strong>{nominees && <em>{nominees.join(' vs ')}</em>}</p>}
           {fullscreen && <div className="fullscreen-bar">
             <p><strong>{view.year}</strong> {mapTitles[view.mode]}<span>{nominees?.join(' vs ')}</span></p>
             {playbackControls}
@@ -378,7 +391,7 @@ export default function App() {
             {!elections && !loadError && <div className="scene-status" role="status">Loading county map…</div>}
           </SceneErrorBoundary>
           {view.mode === 'shift' && !yearIndex && <p className="map-empty">1868 · No previous election comparison in this series.</p>}
-          {stateOnly && <p className="map-empty">{view.year} · State results only. County returns in this series end in {lastCountyYear}; the counts beside the map use official state results.</p>}
+          {stateOnly && view.mode !== 'electors' && <p className="map-empty">{view.year} · State results only. County returns in this series end in {lastCountyYear}; the counts beside the map use official state results.</p>}
           <div className="map-view-actions"><button onClick={() => focus(null)} disabled={!sceneReady}>National view</button>{view.county && <button onClick={() => focus(view.county)} disabled={!sceneReady}>Focus county</button>}
             <button onClick={toggleFullscreen}>{fullscreen ? 'Exit full screen' : 'Full screen'}</button></div>
 
@@ -386,13 +399,13 @@ export default function App() {
           <div className="map-caption">
             <div className="party-legend" role="group" aria-label={`${view.mode === 'shift' ? 'Shift direction' : 'Party lead'} in ${view.year}`}>
               {['Democratic', 'Republican'].map((party, index) => <div key={party}>
-                <span className="party-name"><i className="party-swatch" style={{ background: palette.fills[index] }} aria-hidden="true" />{view.mode === 'shift' ? `Toward ${index ? 'Republicans' : 'Democrats'}` : view.mode === 'loyalty' ? `${party} streak` : `${party} lead`}</span>
+                <span className="party-name"><i className="party-swatch" style={{ background: palette.fills[index] }} aria-hidden="true" />{view.mode === 'shift' ? `Toward ${index ? 'Republicans' : 'Democrats'}` : view.mode === 'loyalty' ? `${party} streak` : view.mode === 'electors' ? `${party} electors` : `${party} lead`}</span>
                 <span className="candidate-name">{nominees?.[index] ?? 'Loading candidate…'}</span>
               </div>)}
             </div>
             <div className="map-scale-note">
               <p className="height-key">{heightKeys[view.mode] ?? `Height: ${view.height === 'margin %' ? 'vote-share gap' : 'vote-count gap'} · nonlinear`}</p>
-              <p className="neutral-legend">{['territory', 'loyalty'].includes(view.mode) && <span><i className="party-swatch neutral-swatch" aria-hidden="true" />Third parties led</span>}<span><i className="party-swatch neutral-swatch" aria-hidden="true" />{view.mode === 'shift' ? 'No change' : 'Tie'}</span><span><i className="party-swatch missing-swatch" aria-hidden="true" />No data</span>{view.county && <span><i className="party-swatch selected-swatch" aria-hidden="true" />Selected county</span>}</p>
+              <p className="neutral-legend">{view.mode === 'electors' ? <span><i className="party-swatch neutral-swatch" aria-hidden="true" />Third party, or an elector who broke the state’s pledge</span> : <>{['territory', 'loyalty'].includes(view.mode) && <span><i className="party-swatch neutral-swatch" aria-hidden="true" />Third parties led</span>}<span><i className="party-swatch neutral-swatch" aria-hidden="true" />{view.mode === 'shift' ? 'No change' : 'Tie'}</span><span><i className="party-swatch missing-swatch" aria-hidden="true" />No data</span>{view.county && <span><i className="party-swatch selected-swatch" aria-hidden="true" />Selected county</span>}</>}</p>
             </div>
             <p className="map-interaction-hint">Drag to pan · Scroll to zoom · Right-drag to orbit</p>
           </div>
@@ -409,7 +422,7 @@ export default function App() {
             <FlipCount flips={elections?.flips[yearIndex]} fills={palette.fills} previousYear={years[yearIndex - 1]} />
             <StreakEndings elections={elections} yearIndex={yearIndex} onSelect={selectCounty} />
           </section>
-          <CountyRanking elections={elections} yearIndex={yearIndex} fills={palette.fills} mode={view.mode === 'territory' ? 'result' : view.mode} flippedOnly={view.flippedOnly}
+          <CountyRanking elections={elections} yearIndex={yearIndex} fills={palette.fills} mode={['territory', 'electors'].includes(view.mode) ? 'result' : view.mode} flippedOnly={view.flippedOnly}
             onFilterChange={(flippedOnly) => changeView({ flippedOnly })} onSelect={selectCounty} selectedFips={view.county} onInteract={pause} />
         </aside>
       </div>

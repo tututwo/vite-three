@@ -1,13 +1,15 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useFrame, useLoader, useThree } from '@react-three/fiber';
 import { MapControls } from '@react-three/drei/core/MapControls.js';
-import { MathUtils, SRGBColorSpace, TextureLoader, Vector3 } from 'three';
+import { Html } from '@react-three/drei/web/Html.js';
+import { Color, MathUtils, SRGBColorSpace, TextureLoader, Vector3 } from 'three';
 import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
 import { gsap } from 'gsap';
 import {
-  basemapBounds, defaultSettings, groundColor, years,
+  basemapBounds, countyMetrics, defaultSettings, groundColor, palettes, years,
 } from './electionData.js';
-import { createCountyMap } from './mapGeometry.js';
+import { civGlsl, createCountyMap } from './mapGeometry.js';
+import HexBoard from './HexBoard.jsx';
 import PostProcessing from './PostProcessing.jsx';
 
 const ease = gsap.parseEase('sine.inOut');
@@ -19,12 +21,43 @@ const [basemapX, basemapY, basemapWidth, basemapHeight] = basemapBounds;
 const floorSize = 8000;
 // The basemap is painted into the floor's own material, fading to the floor colour through its
 // transparent edges, so the floor is one opaque plane shaded once instead of two stacked ones.
-function paintBasemap(shader) {
-  shader.fragmentShader = shader.fragmentShader.replace('#include <map_fragment>', /* glsl */ `
-    vec4 basemapColor = texture2D(map, vMapUv);
-    diffuseColor.rgb = mix(diffuseColor.rgb, basemapColor.rgb, basemapColor.a);`);
-}
-const floorProgramKey = () => 'floor-basemap-v1';
+// The Civ skin repaints it: the basemap's blue-grey sea becomes ocean, its warm land becomes
+// parchment, labels and coasts become ink, and the board's hex grid is drawn over the water.
+const floorUniforms = () => ({
+  civ: { value: 0 },
+  hexSize: { value: 8 }, hexWidth: { value: 0.02 }, gridOcean: { value: 0.16 },
+  ...Object.fromEntries(['oceanColor', 'landColor', 'inkColor'].map((name) => [name, { value: new Color() }])),
+});
+const paintFloor = (uniforms) => (shader) => {
+  Object.assign(shader.uniforms, uniforms);
+  shader.vertexShader = shader.vertexShader
+    .replace('#include <common>', '#include <common>\nvarying vec2 vFloorXY;')
+    .replace('#include <begin_vertex>', '#include <begin_vertex>\nvFloorXY = position.xy;');
+  shader.fragmentShader = shader.fragmentShader
+    .replace('#include <common>', /* glsl */ `#include <common>
+      varying vec2 vFloorXY;
+      uniform float civ;
+      uniform float hexSize;
+      uniform float hexWidth;
+      uniform float gridOcean;
+      uniform vec3 oceanColor;
+      uniform vec3 landColor;
+      uniform vec3 inkColor;
+      ${civGlsl}`)
+    .replace('#include <map_fragment>', /* glsl */ `
+      vec4 basemapColor = texture2D(map, vMapUv);
+      vec3 editorial = mix(diffuseColor.rgb, basemapColor.rgb, basemapColor.a);
+      // The basemap's sea (#edf1f2) is bluer than its land (#f2f0eb); labels and coastlines are dark.
+      float sea = smoothstep(-0.012, 0.02, basemapColor.b - basemapColor.r);
+      float ink = 1.0 - smoothstep(0.3, 0.75, dot(basemapColor.rgb, vec3(0.2126, 0.7152, 0.0722)));
+      vec3 painted = mix(mix(landColor, oceanColor, sea), inkColor, ink * 0.75);
+      vec3 civColor = mix(oceanColor, painted, basemapColor.a);
+      float water = mix(1.0, sea, basemapColor.a) * (1.0 - ink);
+      civColor = mix(civColor, vec3(1.0), hexLine(vFloorXY, hexSize, hexWidth) * gridOcean * water);
+      diffuseColor.rgb = mix(editorial, civColor, civ);`);
+};
+const floorProgramKey = () => 'floor-basemap-civ-v1';
+const civTarget = (settings) => Number(settings.skin === 'civ');
 
 function stopInertia(control, camera) {
   const position = camera.position.clone();
@@ -54,9 +87,22 @@ export default function ElectionScene({ settings, timeline, onYearChange, electi
   const size = useThree((state) => state.size);
   const gl = useThree((state) => state.gl);
   const invalidate = useThree((state) => state.invalidate);
+  const floor = useMemo(floorUniforms, []);
+  const paint = useMemo(() => paintFloor(floor), [floor]);
+  const background = useRef(null);
+  const backgrounds = useMemo(() => ({ ground: new Color(groundColor), ocean: new Color() }), []);
+  const yearIndex = years.indexOf(settings.year);
 
   // On demand (paused, no breathing), a new setting or a seek still needs a frame to show it.
   useEffect(() => invalidate());
+
+  useLayoutEffect(() => {
+    floor.hexSize.value = settings.hexSize;
+    floor.hexWidth.value = settings.hexWidth;
+    floor.gridOcean.value = settings.gridOcean;
+    for (const name of ['oceanColor', 'landColor', 'inkColor']) floor[name].value.set(settings[name]);
+    backgrounds.ocean.set(settings.oceanColor);
+  }, [floor, backgrounds, settings.hexSize, settings.hexWidth, settings.gridOcean, settings.oceanColor, settings.landColor, settings.inkColor]);
 
   useEffect(() => {
     const lost = () => {
@@ -104,6 +150,34 @@ export default function ElectionScene({ settings, timeline, onYearChange, electi
     map.select(selectedFips);
     invalidate();
   }, [map, selectedFips, invalidate]);
+
+  // The elector board replaces the counties; the counties come back as they were when it leaves.
+  const electors = settings.mode === 'electors';
+  useLayoutEffect(() => {
+    if (!map) return;
+    map.mesh.visible = !electors;
+    invalidate();
+  }, [map, electors, invalidate]);
+
+  // Each state's centre (county centres weighted by their extent) seeds its cluster on the elector board,
+  // and the mainland's width converts the layout's hand nudges from Albers pixels to world units.
+  const states = elections.electoral?.states;
+  const board = useMemo(() => {
+    if (!map || !states) return null;
+    const codeOf = Object.fromEntries(Object.entries(states).map(([code, { fips }]) => [fips, code]));
+    const sums = {};
+    let west = Infinity, east = -Infinity;
+    for (const [fips, { center, bounds }] of map.counties) {
+      const code = codeOf[fips.slice(0, 2)];
+      if (!code) continue;
+      const weight = Math.max((bounds.max.x - bounds.min.x) * (bounds.max.y - bounds.min.y), 1e-3);
+      const sum = sums[code] ??= [0, 0, 0];
+      sum[0] += center.x * weight; sum[1] += center.y * weight; sum[2] += weight;
+      if (code !== 'AK' && code !== 'HI') { west = Math.min(west, bounds.min.x); east = Math.max(east, bounds.max.x); }
+    }
+    return { centers: Object.fromEntries(Object.entries(sums).map(([code, [x, y, weight]]) => [code, [x / weight, y / weight]])), scale: (east - west) / 905 };
+  }, [map, states]);
+  const election = elections.electoral?.elections[yearIndex];
 
   // Changing modes or pausing lands on a real election, never a mixture of metrics.
   useLayoutEffect(() => {
@@ -235,12 +309,22 @@ export default function ElectionScene({ settings, timeline, onYearChange, electi
     map.update(state.seconds, request ? { ...settings, breath: 0 } : settings);
     // Territory is the flat strategic view: the columns settle onto the floor, and rise again when leaving it.
     const flatten = map.uniforms.flatten;
-    const flat = Number(settings.mode === 'territory');
+    const flat = Number(settings.mode === 'territory' || settings.mode === 'electors');
     if (flatten.value !== flat) {
       flatten.value = settings.reducedMotion || request ? flat : MathUtils.damp(flatten.value, flat, 4, step);
       if (Math.abs(flatten.value - flat) < 0.002) flatten.value = flat;
       else invalidate();
     }
+    // The Civ skin fades in and out over the floor, the background and the counties together.
+    const civ = floor.civ;
+    const skin = civTarget(settings);
+    if (civ.value !== skin) {
+      civ.value = settings.reducedMotion || request ? skin : MathUtils.damp(civ.value, skin, 3, step);
+      if (Math.abs(civ.value - skin) < 0.002) civ.value = skin;
+      else invalidate();
+    }
+    map.uniforms.civ.value = civ.value;
+    background.current?.copy(backgrounds.ground).lerp(backgrounds.ocean, civ.value);
   }, -0.5);
 
   function captureFrame(canvas) {
@@ -265,15 +349,19 @@ export default function ElectionScene({ settings, timeline, onYearChange, electi
 
   return (
     <>
-      <color attach="background" args={[groundColor]} />
+      <color ref={background} attach="background" args={[groundColor]} />
       {map ? <group position={map.position} scale={[1, -1, 1]}>
         <primitive object={map.mesh} />
+        <primitive object={map.borders} />
       </group> : null}
+      {electors && board && election && <HexBoard election={election} centers={board.centers} scale={board.scale} settings={settings} palette={palettes[settings.palette]} />}
+      {map && settings.skin === 'civ' && settings.mode === 'territory' && settings.bannerCount > 0
+        && <CountyBanners elections={elections} counties={map.counties} yearIndex={yearIndex} count={settings.bannerCount} spacing={settings.bannerSpacing} />}
       {/* Drawn after the counties, so depth testing skips the floor under them on GPUs without hidden-surface removal. */}
       <mesh receiveShadow renderOrder={1}>
         <planeGeometry args={[floorSize, floorSize]} />
         <meshStandardMaterial color={groundColor} map={basemap} roughness={1}
-          onBeforeCompile={paintBasemap} customProgramCacheKey={floorProgramKey} />
+          onBeforeCompile={paint} customProgramCacheKey={floorProgramKey} />
       </mesh>
       <hemisphereLight color="#dfe6ff" groundColor="#3a3440" intensity={settings.fill} position={[0, 0, 1]} />
       <directionalLight color="#e6ecff" intensity={settings.front} position={[-200, -600, 300]} />
@@ -291,4 +379,30 @@ export default function ElectionScene({ settings, timeline, onYearChange, electi
         onRenderError={(error) => { if (!capture.current) throw error; capture.current.finish(error); }} />
     </>
   );
+}
+
+const compact = (n) => n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : n >= 1e3 ? `${Math.round(n / 1e3)}K` : String(n);
+const flag = <svg width="11" height="11" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 15V1.5h1.5V2h9l-2 3.5 2 3.5h-9v6z" fill="currentColor" /></svg>;
+
+// Civ city banners over the counties that cast the most votes this election: votes, name, and a flag
+// where the county changed hands. Screen-aligned like Civ's, so they stay legible at any angle.
+// Neighbours closer than `spacing` world units give way to the bigger county, so banners never stack.
+function CountyBanners({ elections, counties, yearIndex, count, spacing }) {
+  const banners = useMemo(() => Object.entries(elections.counties)
+    .map(([fips, county]) => ({ fips, ...countyMetrics(county, yearIndex) }))
+    .filter(({ fips, total, leader }) => total && leader && counties.has(fips))
+    .sort((a, b) => b.total - a.total)
+    .reduce((kept, county) => kept.length < count && kept.every(({ fips }) => counties.get(fips).center.distanceTo(counties.get(county.fips).center) >= spacing)
+      ? [...kept, county] : kept, [])
+    .map((county) => {
+      const before = yearIndex ? countyMetrics(elections.counties[county.fips], yearIndex - 1).leader : null;
+      return { ...county, name: elections.countyNames?.[county.fips]?.name ?? county.fips, center: counties.get(county.fips).center,
+        captured: Boolean(before && before !== 'tie' && county.leader !== 'tie' && before !== county.leader) };
+    }), [elections, counties, yearIndex, count, spacing]);
+  return banners.map(({ fips, name, total, leader, captured, center }) => <Html key={fips} position={[center.x, center.y, 1.5]} zIndexRange={[30, 0]} pointerEvents="none">
+    <div className={`civ-banner civ-banner-${leader}${captured ? ' is-captured' : ''}`}>
+      <span className="civ-banner-votes">{compact(total)}</span>
+      <span className="civ-banner-name">{name}{captured && flag}</span>
+    </div>
+  </Html>);
 }

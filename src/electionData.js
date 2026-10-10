@@ -5,7 +5,7 @@ import { interpolateRgbBasis } from 'd3';
 export const years = Array.from({ length: 40 }, (_, index) => 1868 + index * 4);
 export const lastCountyYear = 2020;
 const countyElections = years.indexOf(lastCountyYear) + 1;
-export const modes = ['territory', 'result', 'shift', 'loyalty'];
+export const modes = ['territory', 'result', 'shift', 'loyalty', 'electors'];
 export const heightModes = ['margin %', 'margin votes'];
 export const flatHeights = new Array(years.length).fill(0);
 export const groundColor = '#faf8f5';

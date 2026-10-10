@@ -3,6 +3,11 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { rgb } from 'd3';
 import { groundColor, heightModes, palettes, years } from './electionData.js';
 
+// Civ-skin settings that pass straight into uniforms of the same name (App.jsx has the defaults).
+const civNumbers = ['fogHatch', 'fogLine', 'fogClouds', 'fogScale', 'fogSpeed', 'hexSize', 'hexWidth', 'hexOnLand',
+  'borderWidth', 'borderCore', 'borderGlow', 'borderHighlight', 'flipFade'];
+const civColors = ['fogColor', 'fogInk'];
+
 // The animation runs on the GPU: each county's row in the `series` texture holds its values per
 // election (then its wave delay and breathing phase), and the vertex shader eases between two states.
 const heightPars = /* glsl */ `
@@ -32,6 +37,7 @@ const heightPars = /* glsl */ `
   varying float vWall;
   varying float vNeutral;
   varying float vSelected;
+  varying vec2 vWorldXY;
   // A county's values part way from one state to the next: from an election, or (fromElection < 0)
   // from the state held when a seek began. Each county waits delay * stagger of the transition,
   // so the change sweeps across the map. hold() mirrors this in JS; change the two together.
@@ -58,6 +64,7 @@ const heightMain = /* glsl */ `
   transformed.z *= shownHeight(raised);`;
 const varyingsMain = /* glsl */ `
   vHeight = transformed.z;
+  vWorldXY = (modelMatrix * vec4(transformed, 1.0)).xy;
   vParty = float(signedOf(values) < 0.0);
   vVoted = values.z;
   // values.w: everyone else's votes together beat both parties. Grey where the view is about who led.
@@ -69,6 +76,138 @@ const varyingsMain = /* glsl */ `
 const raiseCounties = (vertexShader, main) => vertexShader
   .replace('#include <common>', `#include <common>\n${heightPars}`)
   .replace('#include <begin_vertex>', `#include <begin_vertex>\n${heightMain}\n${main}`);
+
+// Civ skin, shared by the floor and the counties: a pointy-top hex grid in world units (the elector
+// board snaps to the same lattice), and value noise for the clouds drifting over unvoted land.
+export const civGlsl = /* glsl */ `
+  float hexLine(vec2 world, float size, float width) {
+    vec2 p = world / (1.7320508 * size);
+    const vec2 r = vec2(1.0, 1.7320508);
+    vec2 h = r * 0.5;
+    vec2 a = mod(p, r) - h;
+    vec2 b = mod(p - h, r) - h;
+    vec2 g = dot(a, a) < dot(b, b) ? a : b;
+    vec2 q = abs(g);
+    float edge = 0.5 - max(q.x, dot(q, vec2(0.5, 0.8660254)));
+    float aa = fwidth(edge);
+    return 1.0 - smoothstep(width, width + aa * 1.5, edge);
+  }
+  float civHash(vec2 p) {
+    vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+    p3 += dot(p3, p3.yzx + 33.33);
+    return fract((p3.x + p3.y) * p3.z);
+  }
+  float civNoise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    vec2 u = f * f * (3.0 - 2.0 * f);
+    return mix(mix(civHash(i), civHash(i + vec2(1.0, 0.0)), u.x), mix(civHash(i + vec2(0.0, 1.0)), civHash(i + vec2(1.0, 1.0)), u.x), u.y);
+  }
+  float civClouds(vec2 p) {
+    float value = 0.0;
+    float amplitude = 0.5;
+    for (int octave = 0; octave < 4; octave++) {
+      value += amplitude * civNoise(p);
+      p = p * 2.03 + 17.0;
+      amplitude *= 0.5;
+    }
+    return value;
+  }`;
+
+// Civ borders. Every county edge carries a ribbon that lies on the county's roof and reaches inward;
+// the vertex shader opens it only where the county across has a different leader (or none), and
+// narrows it as either side nears a tie, so a border slides away through a flip instead of popping.
+const borderPars = /* glsl */ `
+  attribute vec2 inward;
+  attribute float across;
+  uniform float borderWidth;
+  uniform float borderLift;
+  uniform float flipFade;
+  varying float vAcross;
+  varying float vBorderParty;
+  varying float vStrength;
+  // 0 no lead or no return, 1 Democratic, 2 Republican, 3 third parties (where the view marks them).
+  float partyOf(vec4 values) {
+    if (values.z < 0.5) return 0.0;
+    if (markOther * values.w > 0.5) return 3.0;
+    float lead = signedOf(values);
+    return lead > 0.0 ? 1.0 : (lead < 0.0 ? 2.0 : 0.0);
+  }`;
+const borderMain = /* glsl */ `
+  int row = int(county + 0.5);
+  vec4 values = valuesAt(row);
+  float party = partyOf(values);
+  float strength = 0.0;
+  if (party > 0.5) {
+    if (neighbor < 0.0) strength = 1.0;
+    else {
+      vec4 across4 = valuesAt(int(neighbor + 0.5));
+      float otherParty = partyOf(across4);
+      if (otherParty != party) {
+        float closest = otherParty > 0.5 ? min(abs(signedOf(values)), abs(signedOf(across4))) : abs(signedOf(values));
+        strength = party > 2.5 || otherParty > 2.5 ? 1.0 : smoothstep(0.0, flipFade, closest);
+      }
+    }
+  }
+  vStrength = strength;
+  vBorderParty = party;
+  vAcross = across;
+  transformed.xy += inward * across * borderWidth * strength;
+  transformed.z = shownHeight(heightAt(row, values)) + borderLift;`;
+
+// One ribbon per wall quad. ExtrudeGeometry builds a contour's walls in order, each quad's first two
+// vertices are its edge's ends, and consecutive quads share an end, so the inner corners can be mitred.
+function buildBorders(counties, walls, wallsByEdge) {
+  const positions = [], inward = [], across = [], rows = [], neighbors = [], indices = [];
+  counties.forEach(({ geometry }, row) => {
+    const { position, normal } = geometry.attributes;
+    const quads = walls[row];
+    const emit = (contour) => {
+      // Walls face outward, so inward is the flipped wall normal.
+      const normals = contour.map(([start]) => {
+        const x = -normal.getX(start), y = -normal.getY(start), length = Math.hypot(x, y) || 1;
+        return [x / length, y / length];
+      });
+      const mitre = (a, b) => {
+        const x = a[0] + b[0], y = a[1] + b[1], length = Math.hypot(x, y);
+        if (length < 1e-6) return a;
+        const scale = 1 / Math.max((x * a[0] + y * a[1]) / length, 0.4) / length;
+        return [x * scale, y * scale];
+      };
+      contour.forEach(([start, edge], index) => {
+        const previous = normals[(index + contour.length - 1) % contour.length];
+        const next = normals[(index + 1) % contour.length];
+        const ends = [mitre(previous, normals[index]), mitre(normals[index], next)];
+        const neighbor = wallsByEdge.get(edge).find((other) => other !== row) ?? -1;
+        const base = positions.length / 3;
+        for (const inner of [0, 1]) {
+          for (const end of [0, 1]) {
+            positions.push(position.getX(start + end), position.getY(start + end), 0);
+            inward.push(...(inner ? ends[end] : [0, 0]));
+            across.push(inner);
+            rows.push(row);
+            neighbors.push(neighbor);
+          }
+        }
+        indices.push(base, base + 1, base + 2, base + 1, base + 3, base + 2);
+      });
+    };
+    let first = 0;
+    quads.forEach(([start], index) => {
+      const next = quads[index + 1];
+      const closes = !next || position.getX(next[0]) !== position.getX(start + 1) || position.getY(next[0]) !== position.getY(start + 1);
+      if (closes) { emit(quads.slice(first, index + 1)); first = index + 1; }
+    });
+  });
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setAttribute('inward', new THREE.Float32BufferAttribute(inward, 2));
+  geometry.setAttribute('across', new THREE.Float32BufferAttribute(across, 1));
+  geometry.setAttribute('county', new THREE.Float32BufferAttribute(rows, 1));
+  geometry.setAttribute('neighbor', new THREE.Float32BufferAttribute(neighbors, 1));
+  geometry.setIndex(indices);
+  return geometry;
+}
 
 export function createCountyMap(svgData, settings, series) {
   const origin = svgData.xml?.getAttribute('data-origin')?.trim().split(/\s+/).map(Number);
@@ -164,6 +303,7 @@ export function createCountyMap(svgData, settings, series) {
     county.geometry.setAttribute('neighbor', new THREE.Float32BufferAttribute(neighbor, 1));
     return county.geometry;
   }));
+  const borderGeometry = buildBorders(counties, walls, wallsByEdge);
   for (const county of counties) county.geometry.dispose();
 
   const rampWidth = 256;
@@ -184,7 +324,12 @@ export function createCountyMap(svgData, settings, series) {
     occlusion: { value: 1 },
     ...Object.fromEntries(['fromElection', 'toElection', 'progress', 'seconds', 'stagger', 'breath', 'maxHeight', 'minHeight', 'heightExponent', 'heightMode', 'colorGamma']
       .map((name) => [name, { value: 0 }])),
+    // Civ skin: civ fades the whole skin in and out (ElectionScene eases it), the rest are its knobs.
+    civ: { value: 0 },
+    ...Object.fromEntries([...civNumbers, 'borderOpacity', 'borderLift'].map((name) => [name, { value: 0 }])),
+    ...Object.fromEntries([...civColors, 'borderD', 'borderR', 'borderO'].map((name) => [name, { value: new THREE.Color() }])),
   };
+  uniforms.borderLift.value = 0.06;
   // A palette is only texels, so switching it never recompiles the shader.
   let appliedPalette = null;
   function applyPalette(name) {
@@ -196,11 +341,14 @@ export function createCountyMap(svgData, settings, series) {
       }
     });
     rampTexture.needsUpdate = true;
+    uniforms.borderD.value.set(palette.accents[0]);
+    uniforms.borderR.value.set(palette.accents[1]);
+    uniforms.borderO.value.set('#5d6570');
     appliedPalette = name;
   }
 
   const material = new THREE.MeshStandardMaterial({ roughness: 0.9 });
-  material.customProgramCacheKey = () => 'county-altitude-ramp-v4';
+  material.customProgramCacheKey = () => 'county-altitude-ramp-v5';
   material.onBeforeCompile = (shader) => {
     Object.assign(shader.uniforms, uniforms);
     shader.vertexShader = raiseCounties(shader.vertexShader, varyingsMain);
@@ -214,17 +362,44 @@ export function createCountyMap(svgData, settings, series) {
         varying float vWall;
         varying float vNeutral;
         varying float vSelected;
+        varying vec2 vWorldXY;
         uniform sampler2D ramp;
         uniform float maxHeight;
         uniform float colorGamma;
         uniform vec3 noDataColor;
         uniform vec3 neutralColor;
-        uniform float occlusion;`)
+        uniform float occlusion;
+        uniform float seconds;
+        uniform float civ;
+        uniform vec3 fogColor;
+        uniform vec3 fogInk;
+        uniform float fogHatch;
+        uniform float fogLine;
+        uniform float fogClouds;
+        uniform float fogScale;
+        uniform float fogSpeed;
+        uniform float hexSize;
+        uniform float hexWidth;
+        uniform float hexOnLand;
+        ${civGlsl}`)
       .replace('#include <color_fragment>', /* glsl */ `
         // Colour is altitude: party picks the ramp, and a county fades in as it starts voting.
         float rampU = pow(clamp(vColorHeight / maxHeight, 0.0, 1.0), colorGamma);
         vec3 rampColor = texture2D(ramp, vec2(rampU, mix(0.25, 0.75, vParty))).rgb;
-        diffuseColor.rgb = mix(noDataColor, mix(rampColor, neutralColor, vNeutral), vVoted);
+        // Civ: land without returns lies under the fog of war, hatched parchment with drifting cloud.
+        // The hatch derivative is taken before the branch, where every pixel of the quad runs it.
+        float hatch = (vWorldXY.x + vWorldXY.y) / fogHatch;
+        float hatchEdge = fwidth(hatch);
+        vec3 unvoted = noDataColor;
+        if (civ > 0.001 && vVoted < 0.999) {
+          float stripe = abs(fract(hatch) - 0.5);
+          float line = smoothstep(0.5 - fogLine * 0.5 - hatchEdge, 0.5 - fogLine * 0.5, stripe);
+          float drift = seconds * fogSpeed;
+          float cloud = smoothstep(0.42, 0.78, civClouds(vWorldXY * fogScale + vec2(drift * 0.11, drift * 0.04)));
+          vec3 fog = mix(mix(fogColor, fogInk, line), vec3(0.97, 0.95, 0.9), cloud * fogClouds);
+          unvoted = mix(noDataColor, fog, civ);
+        }
+        diffuseColor.rgb = mix(unvoted, mix(rampColor, neutralColor, vNeutral), vVoted);
         diffuseColor.rgb = mix(diffuseColor.rgb, vec3(1.0, 0.67, 0.08), vSelected * 0.85);`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
         totalEmissiveRadiance += vSelected * vec3(0.16, 0.09, 0.01);`)
@@ -232,7 +407,9 @@ export function createCountyMap(svgData, settings, series) {
         // Ambient occlusion without a screen pass: a wall darkens where it rises out of its
         // neighbour's roof, or out of the floor at a coast, which is where the columns meet.
         // Depth 0.3 over 4 units is the closest fit to the GTAO pass this replaced.
-        gl_FragColor.rgb *= 1.0 - occlusion * 0.3 * vWall * (1.0 - smoothstep(0.0, 4.0, vHeight - vFloor));`);
+        gl_FragColor.rgb *= 1.0 - occlusion * 0.3 * vWall * (1.0 - smoothstep(0.0, 4.0, vHeight - vFloor));
+        // Civ: the board's hex grid, faint over the land, on roofs only.
+        gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(1.0), hexLine(vWorldXY, hexSize, hexWidth) * hexOnLand * civ * (1.0 - vWall));`);
   };
   // Shadows are rendered with this, so they follow the same heights.
   const depthMaterial = new THREE.MeshDepthMaterial();
@@ -248,6 +425,38 @@ export function createCountyMap(svgData, settings, series) {
   mesh.castShadow = mesh.receiveShadow = true;
   // The heights live in the shader, so the geometry's own bounds would clip growing columns.
   mesh.frustumCulled = false;
+
+  // Unlit, like a painted map border: a white seam at the edge, the party colour, then a fading wash.
+  const borderMaterial = new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, side: THREE.DoubleSide });
+  borderMaterial.customProgramCacheKey = () => 'county-civ-border-v1';
+  borderMaterial.onBeforeCompile = (shader) => {
+    Object.assign(shader.uniforms, uniforms);
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', `#include <common>\n${heightPars}\n${borderPars}`)
+      .replace('#include <begin_vertex>', `#include <begin_vertex>\n${borderMain}`);
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', /* glsl */ `#include <common>
+        varying float vAcross;
+        varying float vBorderParty;
+        varying float vStrength;
+        uniform vec3 borderD;
+        uniform vec3 borderR;
+        uniform vec3 borderO;
+        uniform float borderCore;
+        uniform float borderGlow;
+        uniform float borderHighlight;
+        uniform float borderOpacity;`)
+      .replace('#include <color_fragment>', /* glsl */ `#include <color_fragment>
+        vec3 partyColor = vBorderParty < 1.5 ? borderD : (vBorderParty < 2.5 ? borderR : borderO);
+        float core = 1.0 - smoothstep(borderCore - 0.08, borderCore, vAcross);
+        float seam = 1.0 - smoothstep(0.0, 0.14, vAcross);
+        diffuseColor.rgb = mix(partyColor, vec3(1.0), seam * borderHighlight);
+        diffuseColor.a = max(core, borderGlow * (1.0 - vAcross)) * borderOpacity * step(0.001, vStrength);`);
+  };
+  const borders = new THREE.Mesh(borderGeometry, borderMaterial);
+  borders.name = 'civ-borders';
+  borders.frustumCulled = false;
+  borders.renderOrder = 2;
 
   // Shows `progress` (0-1) of the way from election `from` (or, when negative, the held state) to `to`.
   function show(from, to, progress) {
@@ -296,12 +505,23 @@ export function createCountyMap(svgData, settings, series) {
     if (currentSettings.reducedMotion) uniforms.breath.value = 0;
     uniforms.occlusion.value = currentSettings.ambientOcclusion ?? 1;
     if (currentSettings.palette !== appliedPalette) applyPalette(currentSettings.palette);
+    for (const name of civNumbers) if (Number.isFinite(currentSettings[name])) uniforms[name].value = currentSettings[name];
+    for (const name of civColors) if (currentSettings[name] && currentSettings[name] !== appliedColors[name]) {
+      uniforms[name].value.set(currentSettings[name]);
+      appliedColors[name] = currentSettings[name];
+    }
+    // Borders belong to the flat map; in the column modes they show only as far as borderColumns asks.
+    uniforms.borderOpacity.value = uniforms.civ.value * (currentSettings.borders ?? 0)
+      * (uniforms.flatten.value + (1 - uniforms.flatten.value) * (currentSettings.borderColumns ?? 0));
+    borders.visible = mesh.visible && uniforms.borderOpacity.value > 0.001;
   }
+  const appliedColors = {};
   show(0, 1, 0);
   update(0, settings);
 
   return {
     mesh,
+    borders,
     // The scene's enclosing group flips the SVG's downward Y axis.
     position: [-center.x, center.y, 0],
     uniforms,
@@ -315,6 +535,8 @@ export function createCountyMap(svgData, settings, series) {
       geometry.dispose();
       material.dispose();
       depthMaterial.dispose();
+      borderGeometry.dispose();
+      borderMaterial.dispose();
       rampTexture.dispose();
       for (const texture of Object.values(textures)) texture.dispose();
       heldTexture.dispose();
