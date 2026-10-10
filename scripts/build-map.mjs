@@ -11,6 +11,21 @@ if (!(percent > 0 && percent <= 100)) throw new Error(`percent must be in (0, 10
 const scale = 0.669;
 
 const source = readFileSync(new URL('../node_modules/us-atlas/counties-albers-10m.json', import.meta.url), 'utf8');
+const atlas = JSON.parse(source);
+const states = Object.fromEntries(atlas.objects.states.geometries.map(({ id, properties }) => [id, properties.name]));
+// Atlas short names omit independent-city status, which duplicates nearby county labels.
+const countyNames = Object.fromEntries(atlas.objects.counties.geometries.map(({ id, properties }) => [
+  id, {
+    name: (id.startsWith('51') && Number(id.slice(2)) >= 500) || ['24510', '29510'].includes(id)
+      ? `${properties.name} city` : properties.name,
+    state: states[id.slice(0, 2)],
+  },
+]).sort(([a], [b]) => a.localeCompare(b)));
+assert.ok(Object.values(countyNames).every(({ name, state }) => name && state), 'every county has a name and state');
+assert.equal(countyNames['51600'].name, 'Fairfax city');
+assert.equal(countyNames['51059'].name, 'Fairfax');
+const elections = JSON.parse(readFileSync(new URL('../public/elections.json', import.meta.url), 'utf8'));
+assert.deepEqual(Object.keys(elections.counties).filter((fips) => !countyNames[fips]), [], 'every election county has a name');
 // Simplifying the shared topology keeps neighbours watertight; Douglas-Peucker keeps the corners
 // that make the shapes read as faceted, and keep-shapes stops small counties from vanishing.
 const output = await mapshaper.applyCommands(
@@ -64,4 +79,6 @@ writeFileSync(
   // Preserve the original composite map's center so moving the insets does not move the camera.
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox.join(' ')}" data-origin="315.105 206.925">\n${paths.join('\n')}\n</svg>\n`,
 );
+writeFileSync(new URL('../public/county-names.json', import.meta.url), `${JSON.stringify(countyNames)}\n`);
 console.log(`${counties.length} counties, simplify dp ${percent}% -> public/counties.svg`);
+console.log(`${Object.keys(countyNames).length} county names -> public/county-names.json`);

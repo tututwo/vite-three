@@ -26,7 +26,7 @@ const vignetteShader = {
     }`,
 };
 
-export default function PostProcessing({ settings, counties }) {
+export default function PostProcessing({ settings, counties, onRendered, onRenderError }) {
   const gl = useThree((state) => state.gl);
   const scene = useThree((state) => state.scene);
   const camera = useThree((state) => state.camera);
@@ -76,11 +76,18 @@ export default function PostProcessing({ settings, counties }) {
   useFrame((_, delta) => {
     const effects = depthOfField.current;
     vignette.current.material.uniforms.encoding.value = effects ? 1 : 1 / 2.2;
-    if (!effects) return gl.render(scene, camera);
-    if (controls) {
-      effects.bokeh.uniforms.focus.value = camera.position.distanceTo(controls.target);
+    try {
+      if (effects) {
+        if (controls) effects.bokeh.uniforms.focus.value = camera.position.distanceTo(controls.target);
+        effects.composer.render(delta);
+      } else {
+        gl.render(scene, camera);
+      }
+      onRendered?.(gl.domElement);
+    } catch (error) {
+      if (onRenderError) onRenderError(error);
+      else throw error;
     }
-    effects.composer.render(delta);
   }, 1);
 
   return (

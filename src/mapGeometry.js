@@ -21,11 +21,14 @@ const heightPars = /* glsl */ `
   uniform float minHeight;
   uniform float heightExponent;
   uniform float heightMode;
+  uniform float selectedRow;
   varying float vHeight;
   varying float vFloor;
   varying float vParty;
   varying float vVoted;
   varying float vWall;
+  varying float vNeutral;
+  varying float vSelected;
   // A county's values part way from one state to the next: from an election, or (fromElection < 0)
   // from the state held when a seek began. Each county waits delay * stagger of the transition,
   // so the change sweeps across the map. hold() mirrors this in JS; change the two together.
@@ -50,6 +53,8 @@ const varyingsMain = /* glsl */ `
   vHeight = transformed.z;
   vParty = float(signedOf(values) < 0.0);
   vVoted = values.z;
+  vNeutral = float(signedOf(values) == 0.0);
+  vSelected = float(abs(county - selectedRow) < 0.5);
   vWall = 1.0 - abs(objectNormal.z);
   int across = int(neighbor + 0.5);
   vFloor = neighbor < 0.0 ? 0.0 : heightAt(across, valuesAt(across));`;
@@ -84,19 +89,38 @@ export function createCountyMap(svgData, settings, series) {
   // One row per county: [margin %, margin votes, voted] per election, then [delay, phase].
   const columns = years.length + 1;
   const seriesData = new Float32Array(columns * counties.length * 4);
+  const shiftData = new Float32Array(seriesData.length);
+  const countyMetadata = new Map();
   const centroid = new THREE.Vector3();
   counties.forEach((county, row) => {
     for (let election = 0; election < years.length; election++) {
       const values = [...heightModes, 'voted'].map((key) => county.series[key]?.[election] ?? 0);
       seriesData.set(values, (row * columns + election) * 4);
+      const shift = county.series.shift?.[election] ?? 0;
+      shiftData.set([shift, shift, county.series.compared?.[election] ?? 0, 0], (row * columns + election) * 4);
     }
     county.geometry.boundingBox.getCenter(centroid);
+    const box = county.geometry.boundingBox;
+    // World coordinates include the group translation and SVG Y flip, including Alaska/Hawaii.
+    countyMetadata.set(county.fips, {
+      row,
+      center: new THREE.Vector3(centroid.x - center.x, center.y - centroid.y, 0),
+      bounds: new THREE.Box3(
+        new THREE.Vector3(box.min.x - center.x, center.y - box.max.y, 0),
+        new THREE.Vector3(box.max.x - center.x, center.y - box.min.y, 1),
+      ),
+    });
     const east = (centroid.x - bounds.min.x) / width;
     const jitter = ((Number(county.fips) * 2654435761) >>> 0) / 4294967296;
-    seriesData.set([0.75 * (1 - east) + 0.25 * jitter, centroid.x * 0.03 + centroid.y * 0.02], (row * columns + years.length) * 4);
+    const animation = [0.75 * (1 - east) + 0.25 * jitter, centroid.x * 0.03 + centroid.y * 0.02];
+    seriesData.set(animation, (row * columns + years.length) * 4);
+    shiftData.set(animation, (row * columns + years.length) * 4);
   });
   const seriesTexture = new THREE.DataTexture(seriesData, columns, counties.length, THREE.RGBAFormat, THREE.FloatType);
   seriesTexture.needsUpdate = true;
+  const shiftTexture = new THREE.DataTexture(shiftData, columns, counties.length, THREE.RGBAFormat, THREE.FloatType);
+  shiftTexture.needsUpdate = true;
+  let activeData = seriesData;
   // One texel per county: what was on screen when the current seek began.
   const heldData = new Float32Array(counties.length * 4);
   const heldTexture = new THREE.DataTexture(heldData, 1, counties.length, THREE.RGBAFormat, THREE.FloatType);
@@ -143,6 +167,8 @@ export function createCountyMap(svgData, settings, series) {
     held: { value: heldTexture },
     ramp: { value: rampTexture },
     noDataColor: { value: new THREE.Color(groundColor) },
+    neutralColor: { value: new THREE.Color('#969eaa') },
+    selectedRow: { value: -1 },
     occlusion: { value: 1 },
     ...Object.fromEntries(['fromElection', 'toElection', 'progress', 'seconds', 'stagger', 'breath', 'maxHeight', 'minHeight', 'heightExponent', 'heightMode', 'colorGamma']
       .map((name) => [name, { value: 0 }])),
@@ -162,7 +188,7 @@ export function createCountyMap(svgData, settings, series) {
   }
 
   const material = new THREE.MeshStandardMaterial({ roughness: 0.9 });
-  material.customProgramCacheKey = () => 'county-altitude-ramp-v2';
+  material.customProgramCacheKey = () => 'county-altitude-ramp-v3';
   material.onBeforeCompile = (shader) => {
     Object.assign(shader.uniforms, uniforms);
     shader.vertexShader = raiseCounties(shader.vertexShader, varyingsMain);
@@ -173,16 +199,22 @@ export function createCountyMap(svgData, settings, series) {
         varying float vParty;
         varying float vVoted;
         varying float vWall;
+        varying float vNeutral;
+        varying float vSelected;
         uniform sampler2D ramp;
         uniform float maxHeight;
         uniform float colorGamma;
         uniform vec3 noDataColor;
+        uniform vec3 neutralColor;
         uniform float occlusion;`)
       .replace('#include <color_fragment>', /* glsl */ `
         // Colour is altitude: party picks the ramp, and a county fades in as it starts voting.
         float rampU = pow(clamp(vHeight / maxHeight, 0.0, 1.0), colorGamma);
         vec3 rampColor = texture2D(ramp, vec2(rampU, mix(0.25, 0.75, vParty))).rgb;
-        diffuseColor.rgb = mix(noDataColor, rampColor, vVoted);`)
+        diffuseColor.rgb = mix(noDataColor, mix(rampColor, neutralColor, vNeutral), vVoted);
+        diffuseColor.rgb = mix(diffuseColor.rgb, vec3(1.0, 0.67, 0.08), vSelected * 0.85);`)
+      .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+        totalEmissiveRadiance += vSelected * vec3(0.16, 0.09, 0.01);`)
       .replace('#include <opaque_fragment>', /* glsl */ `#include <opaque_fragment>
         // Ambient occlusion without a screen pass: a wall darkens where it rises out of its
         // neighbour's roof, or out of the floor at a coast, which is where the columns meet.
@@ -216,24 +248,36 @@ export function createCountyMap(svgData, settings, series) {
   function hold() {
     const [from, to, progress, stagger] = ['fromElection', 'toElection', 'progress', 'stagger'].map((name) => uniforms[name].value);
     for (let row = 0; row < counties.length; row++) {
-      const delay = seriesData[(row * columns + years.length) * 4];
+      const delay = activeData[(row * columns + years.length) * 4];
       const t = Math.min(Math.max((progress - delay * stagger) / (1 - stagger), 0), 1);
       const eased = t * t * (3 - 2 * t);
       for (let channel = 0; channel < 3; channel++) {
-        const before = from < 0 ? heldData[row * 4 + channel] : seriesData[(row * columns + from) * 4 + channel];
-        const after = seriesData[(row * columns + to) * 4 + channel];
+        const before = from < 0 ? heldData[row * 4 + channel] : activeData[(row * columns + from) * 4 + channel];
+        const after = activeData[(row * columns + to) * 4 + channel];
         heldData[row * 4 + channel] = before + (after - before) * eased;
       }
     }
     heldTexture.needsUpdate = true;
   }
 
+  function setMode(mode) {
+    const shift = mode === 'shift';
+    activeData = shift ? shiftData : seriesData;
+    uniforms.series.value = shift ? shiftTexture : seriesTexture;
+  }
+
+  function select(fips) {
+    uniforms.selectedRow.value = countyMetadata.get(fips)?.row ?? -1;
+  }
+
   function update(seconds, currentSettings) {
+    setMode(currentSettings.mode);
     uniforms.seconds.value = seconds;
     for (const name of ['stagger', 'breath', 'maxHeight', 'minHeight', 'heightExponent', 'colorGamma']) {
       uniforms[name].value = currentSettings[name];
     }
-    uniforms.heightMode.value = heightModes.indexOf(currentSettings.height);
+    uniforms.heightMode.value = currentSettings.mode === 'shift' ? 0 : heightModes.indexOf(currentSettings.height);
+    if (currentSettings.reducedMotion) uniforms.breath.value = 0;
     uniforms.occlusion.value = currentSettings.ambientOcclusion ?? 1;
     if (currentSettings.palette !== appliedPalette) applyPalette(currentSettings.palette);
   }
@@ -245,6 +289,9 @@ export function createCountyMap(svgData, settings, series) {
     // The scene's enclosing group flips the SVG's downward Y axis.
     position: [-center.x, center.y, 0],
     uniforms,
+    counties: countyMetadata,
+    select,
+    setMode,
     show,
     hold,
     update,
@@ -254,6 +301,7 @@ export function createCountyMap(svgData, settings, series) {
       depthMaterial.dispose();
       rampTexture.dispose();
       seriesTexture.dispose();
+      shiftTexture.dispose();
       heldTexture.dispose();
     },
   };

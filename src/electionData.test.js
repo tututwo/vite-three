@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { ShapePath } from 'three';
 import {
-  basemapBounds, buildSeries, countFlips, defaultSettings, electionAt, flatHeights, heightModes, paletteNames, years,
+  basemapBounds, buildSeries, countFlips, defaultSettings, electionAt, flatHeights, heightModes, paletteNames, rankFlippedCounties, years,
 } from './electionData.js';
 import { createCountyMap } from './mapGeometry.js';
 
@@ -18,30 +18,78 @@ const fixtureSeries = () => buildSeries({
   },
 });
 
-test('header distinguishes loading, the first election, zero flips and a single flip', async () => {
+test('header distinguishes loading, first election, missing comparisons and actual flip counts', async () => {
   const { createServer } = await import('vite');
   const { createElement } = await import('react');
   const { renderToStaticMarkup } = await import('react-dom/server');
   const server = await createServer({ server: { middlewareMode: true, hmr: false }, logLevel: 'silent' });
   try {
-    const { FlipCount } = await server.ssrLoadModule('/src/App.jsx');
+    const { FlipCount, CountyRanking } = await server.ssrLoadModule('/src/App.jsx');
     const render = (flips, previousYear) => renderToStaticMarkup(createElement(FlipCount, {
-      flips, previousYear, accents: ['#4b2bbf', '#e0491b'], fills: ['#9a86e0', '#f39367'],
+      flips, previousYear, fills: ['#9a86e0', '#f39367'],
     })).replace(/<[^>]*>/g, '');
     assert.equal(render(undefined, 2016), '', 'loading does not invent a zero');
     assert.match(render({ toDemocratic: 0, toRepublican: 0, compared: 0 }, undefined), /first election/);
-    assert.doesNotMatch(render({ toDemocratic: 0, toRepublican: 0, compared: 0 }, undefined), /since/);
+    assert.doesNotMatch(render({ toDemocratic: 0, toRepublican: 0, compared: 0 }, undefined), /changed lead/);
     for (const [democratic, republican, expected] of [[64, 15, '79.0%'], [0, 0, '0.0%'], [1, 0, '1.0%']]) {
       const text = render({ toDemocratic: democratic, toRepublican: republican, compared: 100 }, 2016);
-      assert.ok(text.includes(`${expected}of counties flipped since 2016`), text);
-      assert.ok(text.includes(`${democratic + republican} of 100 counties`), text);
+      assert.ok(text.includes(`Share of counties${expected}`), text);
+      assert.ok(text.includes(`Counties flipped${democratic + republican}`), text);
+      assert.ok(text.includes('Of 100 counties with returns in both elections.'), text);
       assert.ok(text.includes(`${democratic} to Democrats`));
       assert.ok(text.includes(`${republican} to Republicans`));
     }
-    assert.ok(render({ toDemocratic: 0, toRepublican: 0, compared: 0 }, 2016).includes('0.0%'), 'no comparable counties is not NaN');
+    const missing = render({ toDemocratic: 0, toRepublican: 0, compared: 0 }, 2016);
+    assert.equal(missing, 'No comparable county returns for this election and 2016.');
+    assert.doesNotMatch(missing, /%|NaN/, 'missing comparisons are not reported as zero flips');
+    const in1896 = countFlips(buildSeries(JSON.parse(asset('elections.json'))))[years.indexOf(1896)];
+    assert.deepEqual(in1896, { toDemocratic: 362, toRepublican: 322, compared: 2652 });
+    const text1896 = render(in1896, 1892);
+    assert.match(text1896, /Counties flipped684Share of counties25\.8%/);
+    assert.match(text1896, /Of 2,652 counties with returns in both elections\./);
+
+    const renderRanking = (data, yearIndex) => renderToStaticMarkup(createElement(CountyRanking, {
+      elections: data, yearIndex, fills: ['#9a86e0', '#f39367'], onInteract: () => {},
+    })).replace(/<[^>]*>/g, '');
+    const data = { ...JSON.parse(asset('elections.json')), countyNames: JSON.parse(asset('county-names.json')) };
+    const ranking = renderRanking(data, years.indexOf(2020));
+    assert.match(ranking, /Kenedy, Texas40\.0 pp/);
+    assert.match(ranking, /D \+8\.1% → R \+32\.0%194 votes/);
+    assert.match(ranking, /Show all 79 flipped counties/);
+    assert.match(ranking, /pp = percentage points/);
+    assert.match(renderRanking(null, 1), /Loading county returns/);
+    assert.match(renderRanking(data, 0), /Choose 1872 or later/);
+    assert.match(renderRanking({ counties: { '01001': { diff: [10, 20], total: [100, 100] } } }, 1), /No counties changed/);
   } finally {
     await server.close();
   }
+});
+
+test('county rankings distinguish margin shifts from current margins using unscaled valid returns', () => {
+  const counties = {
+    '01005': { diff: [1, -95], total: [100, 100] },
+    '01003': { diff: [-95, 5], total: [100, 100] },
+    '01001': { diff: [-95, 5], total: [100, 100] },
+    '01007': { diff: [null, -20], total: [100, 100] },
+    '01009': { diff: [20, null], total: [100, 100] },
+    '01011': { diff: [0, -20], total: [100, 100] },
+    '01013': { diff: [20, 0], total: [100, 100] },
+    '01015': { diff: [20, 10], total: [100, 100] },
+    '01017': { diff: [Infinity, -20], total: [100, 100] },
+    '01019': { diff: [20, NaN], total: [100, 100] },
+    '01021': { diff: [20, -20], total: [0, 100] },
+    '01023': { diff: [20, -20], total: [100, -1] },
+    '01025': { diff: [20, -20], total: [100, Infinity] },
+  };
+  const swing = rankFlippedCounties(counties, 1);
+  assert.deepEqual(swing.map(({ fips }) => fips), ['01001', '01003', '01005'], 'ties use FIPS, not insertion order; non-flips and invalid returns are excluded');
+  assert.deepEqual(swing[0], { fips: '01001', previousMargin: -95, margin: 5, swing: 100, total: 100, value: 100 });
+  const margin = rankFlippedCounties(counties, 1, 'margin');
+  assert.deepEqual(margin.map(({ fips }) => fips), ['01005', '01001', '01003']);
+  assert.equal(margin[0].margin, -95, 'margins above 90% must not inherit the map height clamp');
+  assert.equal(margin[0].value, 95);
+  assert.deepEqual(rankFlippedCounties(counties, 0), [], 'first election has no comparison');
+  assert.deepEqual(rankFlippedCounties(counties, years.length), []);
 });
 
 test('signed series and flips', () => {
@@ -81,6 +129,28 @@ test('bundled returns, county shapes and basemap agree', () => {
   const in1964 = flips[years.indexOf(1964)];
   assert.ok(in1964.toDemocratic > 1000 && in1964.toRepublican > 50, 'LBJ landslide, while the Deep South leaves');
   assert.ok(in1964.compared > 3000 && in1964.compared >= in1964.toDemocratic + in1964.toRepublican, 'the share has a base');
+
+  const names = JSON.parse(asset('county-names.json'));
+  for (const fips of Object.keys(bundled)) {
+    assert.ok(names[fips]?.name && names[fips]?.state, `county ${fips} needs a name and state`);
+  }
+  for (const [index, flip] of flips.entries()) {
+    assert.equal(rankFlippedCounties(data.counties, index).length, flip.toDemocratic + flip.toRepublican,
+      `ranked counties must agree with the flip total in ${years[index]}`);
+  }
+  for (const [year, count, swingFips, swingValue, marginFips, marginValue] of [
+    [1940, 715, '48477', 96.24901548188978, '38051', 83.31584470094438],
+    [2020, 79, '48261', 40.023279015630195, '48261', 31.95876288659794],
+  ]) {
+    const index = years.indexOf(year);
+    const swing = rankFlippedCounties(data.counties, index);
+    const margin = rankFlippedCounties(data.counties, index, 'margin');
+    assert.equal(swing.length, count);
+    assert.equal(swing[0].fips, swingFips);
+    assert.ok(Math.abs(swing[0].value - swingValue) < 1e-10);
+    assert.equal(margin[0].fips, marginFips);
+    assert.ok(Math.abs(margin[0].value - marginValue) < 1e-10);
+  }
 
   const shapes = new Set([...asset('counties.svg').matchAll(/id="(\d{5})"/g)].map((match) => match[1]));
   assert.ok(shapes.size > 3000);

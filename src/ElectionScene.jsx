@@ -1,19 +1,19 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useFrame, useLoader, useThree } from '@react-three/fiber';
 import { MapControls } from '@react-three/drei/core/MapControls.js';
-import { CanvasTexture, FileLoader, MathUtils, SRGBColorSpace, TextureLoader } from 'three';
+import { MathUtils, SRGBColorSpace, TextureLoader, Vector3 } from 'three';
 import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
 import { gsap } from 'gsap';
 import {
-  basemapBounds, buildSeries, countFlips, defaultSettings, electionAt, groundColor, palettes, years,
+  basemapBounds, defaultSettings, groundColor, years,
 } from './electionData.js';
 import { createCountyMap } from './mapGeometry.js';
 import PostProcessing from './PostProcessing.jsx';
 
 const ease = gsap.parseEase('sine.inOut');
 const target = [0, -20, 0];
+const nationalPosition = [-60, -660, 520];
 const mapUrl = `${import.meta.env.BASE_URL}counties.svg`;
-const electionsUrl = `${import.meta.env.BASE_URL}elections.json`;
 const basemapUrl = `${import.meta.env.BASE_URL}basemap.svg`;
 const [basemapX, basemapY, basemapWidth, basemapHeight] = basemapBounds;
 const floorSize = 8000;
@@ -25,88 +25,48 @@ function paintBasemap(shader) {
     diffuseColor.rgb = mix(diffuseColor.rgb, basemapColor.rgb, basemapColor.a);`);
 }
 const floorProgramKey = () => 'floor-basemap-v1';
-const asJson = (loader) => loader.setResponseType('json');
+
+function stopInertia(control, camera) {
+  const position = camera.position.clone();
+  const lookAt = control.target.clone();
+  const damping = control.enableDamping;
+  control.enableDamping = false;
+  control.update();
+  camera.position.copy(position);
+  control.target.copy(lookAt);
+  control.update();
+  control.enableDamping = damping;
+}
 // Start all asset downloads together instead of letting suspending hooks serialize them.
 useLoader.preload(SVGLoader, mapUrl);
-useLoader.preload(FileLoader, electionsUrl, asJson);
 useLoader.preload(TextureLoader, basemapUrl);
 
-function Caption({ timeline, nominees, palette }) {
-  const material = useRef(null);
-  const caption = useRef(null);
-  const gl = useThree((state) => state.gl);
-  useLayoutEffect(() => {
-    const canvas = Object.assign(document.createElement('canvas'), { width: 1024, height: 400 });
-    const texture = new CanvasTexture(canvas);
-    texture.colorSpace = SRGBColorSpace;
-    texture.anisotropy = Math.min(8, gl.capabilities.getMaxAnisotropy());
-    material.current.map = texture;
-    material.current.needsUpdate = true;
-    caption.current = { canvas, texture, year: null, palette: null };
-    return () => {
-      caption.current = null;
-      texture.dispose();
-    };
-  }, [gl]);
-
-  useFrame(() => {
-    const current = caption.current;
-    if (!current) return;
-    const election = electionAt(timeline.current.time);
-    const year = years[election];
-    if (current.year === year && current.palette === palette) return;
-    current.year = year;
-    current.palette = palette;
-    const { ramps } = palettes[palette];
-    const ctx = current.canvas.getContext('2d');
-    ctx.clearRect(0, 0, 1024, 400);
-    ctx.fillStyle = '#202e45';
-    ctx.textAlign = 'center';
-    ctx.font = '600 72px system-ui, sans-serif';
-    ctx.fillText('Presidential margin', 512, 70);
-    ctx.font = '700 170px system-ui, sans-serif';
-    ctx.fillText(year, 512, 222);
-    for (let x = 0; x < 640; x++) {
-      ctx.fillStyle = ramps[x < 320 ? 0 : 1](Math.abs(x - 320) / 320);
-      ctx.fillRect(192 + x, 246, 1, 28);
-    }
-    ctx.fillStyle = '#202e45';
-    ctx.font = '500 40px system-ui, sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText('Democratic', 192, 318);
-    ctx.textAlign = 'right';
-    ctx.fillText('Republican', 832, 318);
-    // Few people remember who ran in 1884; the names sit under their party's end of the ramp.
-    ctx.fillStyle = '#747b8e';
-    ctx.font = '400 32px system-ui, sans-serif';
-    ctx.fillText(nominees[election][1], 832, 362);
-    ctx.textAlign = 'left';
-    ctx.fillText(nominees[election][0], 192, 362);
-    current.texture.needsUpdate = true;
-  });
-
-  return (
-    <mesh position={[150, -245, 0.2]}>
-      <planeGeometry args={[240, 94]} />
-      <meshBasicMaterial ref={material} transparent depthWrite={false} />
-    </mesh>
-  );
-}
-
-export default function ElectionScene({ settings, timeline, onYearChange, onReady }) {
+export default function ElectionScene({ settings, timeline, onYearChange, elections, selectedFips, focusRequest, onReady, captureRef }) {
   const svg = useLoader(SVGLoader, mapUrl);
-  const elections = useLoader(FileLoader, electionsUrl, asJson);
   const basemap = useLoader(TextureLoader, basemapUrl);
-  const series = useMemo(() => buildSeries(elections), [elections]);
-  const flips = useMemo(() => countFlips(series), [series]);
+  const series = elections.series;
   const [map, setMap] = useState(null);
+  const [contextError, setContextError] = useState(null);
+  const controls = useRef(null);
+  const focus = useRef(null);
+  const capture = useRef(null);
   const camera = useThree((state) => state.camera);
   const size = useThree((state) => state.size);
   const gl = useThree((state) => state.gl);
   const invalidate = useThree((state) => state.invalidate);
 
   // On demand (paused, no breathing), a new setting or a seek still needs a frame to show it.
-  useEffect(() => invalidate(), [invalidate, settings]);
+  useEffect(() => invalidate());
+
+  useEffect(() => {
+    const lost = () => {
+      const error = new Error('The map graphics context was lost. Reload the map to continue.');
+      capture.current?.finish(error);
+      setContextError(error);
+    };
+    gl.domElement.addEventListener('webglcontextlost', lost);
+    return () => gl.domElement.removeEventListener('webglcontextlost', lost);
+  }, [gl]);
 
   useLayoutEffect(() => {
     basemap.colorSpace = SRGBColorSpace;
@@ -130,10 +90,30 @@ export default function ElectionScene({ settings, timeline, onYearChange, onRead
     return () => resource.dispose();
   }, [svg, series]);
 
-  // Ready means the map exists; the flip counts ride along because only the scene has the returns.
   useEffect(() => {
-    if (map) onReady(flips);
-  }, [map, onReady, flips]);
+    if (!map) return;
+    onReady(true);
+    return () => onReady(false);
+  }, [map, onReady]);
+
+  useLayoutEffect(() => {
+    if (!map) return;
+    map.select(selectedFips);
+    invalidate();
+  }, [map, selectedFips, invalidate]);
+
+  // Changing modes or pausing lands on a real election, never a mixture of metrics.
+  useLayoutEffect(() => {
+    if (!map) return;
+    const state = timeline.current;
+    const index = state.transition?.to ?? Math.max(0, years.indexOf(state.year));
+    state.time = index;
+    state.year = years[index];
+    state.transition = null;
+    map.setMode(settings.mode);
+    map.show(index, index, 0);
+    invalidate();
+  }, [map, settings.mode, settings.playing, timeline, invalidate]);
 
   useLayoutEffect(() => {
     camera.fov = MathUtils.radToDeg(2 * Math.atan(
@@ -142,15 +122,88 @@ export default function ElectionScene({ settings, timeline, onYearChange, onRead
     camera.updateProjectionMatrix();
   }, [camera, size.width, size.height]);
 
+  useLayoutEffect(() => {
+    if (!map || !focusRequest || !controls.current) return;
+    const county = focusRequest.fips ? map.counties.get(focusRequest.fips) : null;
+    if (focusRequest.fips && !county) return;
+    const control = controls.current;
+    stopInertia(control, camera);
+    const toTarget = county ? county.center.clone() : new Vector3(...target);
+    const toPosition = new Vector3(...nationalPosition);
+    if (county) {
+      const extent = county.bounds.getSize(new Vector3());
+      const span = Math.max(extent.x / camera.aspect, extent.y, 45);
+      const distance = MathUtils.clamp(span / (2 * Math.tan(MathUtils.degToRad(camera.fov / 2))) * 1.8, 160, 1800);
+      toTarget.z = 12;
+      toPosition.copy(camera.position).sub(control.target).normalize().multiplyScalar(distance).add(toTarget);
+    }
+    focus.current = {
+      fromPosition: camera.position.clone(), fromTarget: control.target.clone(),
+      toPosition, toTarget, elapsed: 0,
+    };
+    invalidate();
+  }, [map, focusRequest, camera, invalidate]);
+
+  useLayoutEffect(() => {
+    if (!captureRef || !map) return;
+    captureRef.current = () => new Promise((resolve, reject) => {
+      if (capture.current) return reject(new Error('A map capture is already in progress.'));
+      if (gl.getContext().isContextLost()) return reject(new Error('The map graphics context is unavailable.'));
+      const control = controls.current;
+      const enabled = control.enabled;
+      const damping = control.enableDamping;
+      const request = {
+        ready: false,
+        finish(error, canvas) {
+          if (capture.current !== request) return;
+          clearTimeout(request.timeout);
+          capture.current = null;
+          control.enabled = enabled;
+          control.enableDamping = damping;
+          invalidate();
+          if (error) reject(error);
+          else resolve(canvas);
+        },
+      };
+      capture.current = request;
+      control.enabled = false;
+      request.timeout = setTimeout(() => request.finish(new Error('The map did not finish rendering. Please try again.')), 10000);
+      invalidate();
+    });
+    return () => {
+      captureRef.current = null;
+      capture.current?.finish(new Error('The map closed before capture completed.'));
+    };
+  }, [captureRef, map, gl, invalidate]);
+
   useFrame((_, delta) => {
     if (!map) return;
     const state = timeline.current;
     const step = Math.min(delta, 0.1);
-    state.seconds += step;
+    const request = capture.current;
+    const control = controls.current;
+    const movement = focus.current;
+    if (movement) {
+      movement.elapsed += step;
+      const progress = settings.reducedMotion || request ? 1 : Math.min(movement.elapsed / 0.8, 1);
+      camera.position.lerpVectors(movement.fromPosition, movement.toPosition, ease(progress));
+      control.target.lerpVectors(movement.fromTarget, movement.toTarget, ease(progress));
+      control.update();
+      if (progress === 1) focus.current = null;
+      else invalidate();
+    }
+    if (request && !request.ready) {
+      // Flush controls' inertia without changing the captured camera pose.
+      stopInertia(control, camera);
+      control.enableDamping = false;
+      state.time = state.transition?.to ?? Math.max(0, years.indexOf(state.year));
+      state.year = years[state.time];
+      state.transition = null;
+      request.ready = true;
+    }
+    if (!request && !settings.reducedMotion) state.seconds += step;
     const { transition } = state;
     if (transition) {
-      // A seek goes straight from what is on screen to the chosen election, however many elections
-      // lie between, and playback (if resumed meanwhile) carries on from there once it lands.
       if (!transition.held) {
         map.hold();
         transition.held = true;
@@ -158,24 +211,46 @@ export default function ElectionScene({ settings, timeline, onYearChange, onRead
         state.year = years[transition.to];
       }
       transition.elapsed += step;
-      const progress = Math.min(transition.elapsed / 1.5, 1);
+      const progress = settings.reducedMotion ? 1 : Math.min(transition.elapsed / 1.5, 1);
       map.show(-1, transition.to, ease(progress));
       if (progress === 1) state.transition = null;
       else invalidate();
     } else {
-      if (settings.playing) {
+      if (settings.playing && !request) {
         state.time = (state.time + step / settings.secondsPerElection) % years.length;
-        const year = years[electionAt(state.time)];
-        if (year !== state.year) {
-          state.year = year;
-          onYearChange(year);
+        // Stay at the final election before restarting. Never interpolate 2020 into 1868.
+        const index = Math.min(Math.round(state.time), years.length - 1);
+        if (years[index] !== state.year) {
+          state.year = years[index];
+          onYearChange(state.year);
         }
       }
-      const election = Math.floor(state.time);
-      map.show(election, (election + 1) % years.length, state.time - election);
+      const election = settings.reducedMotion ? Math.min(Math.round(state.time), years.length - 1) : Math.floor(state.time);
+      const next = Math.min(election + 1, years.length - 1);
+      map.show(election, next, settings.reducedMotion ? 0 : state.time - election);
     }
-    map.update(state.seconds, settings);
+    map.update(state.seconds, request ? { ...settings, breath: 0 } : settings);
   }, -0.5);
+
+  function captureFrame(canvas) {
+    const request = capture.current;
+    if (!request?.ready) return;
+    try {
+      // The final render has just finished; copy now, before the browser clears its WebGL buffer.
+      if (gl.getContext().isContextLost()) throw new Error('The map graphics context was lost.');
+      const copy = document.createElement('canvas');
+      copy.width = canvas.width;
+      copy.height = canvas.height;
+      const context = copy.getContext('2d');
+      if (!copy.width || !copy.height || !context) throw new Error('The map image could not be captured.');
+      context.drawImage(canvas, 0, 0);
+      request.finish(null, copy);
+    } catch (error) {
+      request.finish(error);
+    }
+  }
+
+  if (contextError) throw contextError;
 
   return (
     <>
@@ -189,7 +264,6 @@ export default function ElectionScene({ settings, timeline, onYearChange, onRead
         <meshStandardMaterial color={groundColor} map={basemap} roughness={1}
           onBeforeCompile={paintBasemap} customProgramCacheKey={floorProgramKey} />
       </mesh>
-      <Caption timeline={timeline} nominees={elections.nominees} palette={settings.palette} />
       <hemisphereLight color="#dfe6ff" groundColor="#3a3440" intensity={settings.fill} position={[0, 0, 1]} />
       <directionalLight color="#e6ecff" intensity={settings.front} position={[-200, -600, 300]} />
       <directionalLight color="#fff4e6" intensity={settings.key}
@@ -199,9 +273,11 @@ export default function ElectionScene({ settings, timeline, onYearChange, onRead
         shadow-camera-left={-520} shadow-camera-right={520}
         shadow-camera-top={420} shadow-camera-bottom={-420}
         shadow-camera-near={100} shadow-camera-far={1600} />
-      <MapControls makeDefault target={target} enableDamping dampingFactor={0.05}
+      <MapControls ref={controls} makeDefault target={target} enableDamping={!settings.reducedMotion} dampingFactor={0.05}
+        onStart={() => { focus.current = null; }}
         minDistance={150} maxDistance={2000} maxPolarAngle={Math.PI / 2 - 0.15} />
-      <PostProcessing settings={settings} counties={map?.mesh} />
+      <PostProcessing settings={settings} counties={map?.mesh} onRendered={captureFrame}
+        onRenderError={(error) => { if (!capture.current) throw error; capture.current.finish(error); }} />
     </>
   );
 }

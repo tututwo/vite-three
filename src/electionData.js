@@ -19,7 +19,7 @@ export const palettes = {
       ['#fdf8e9', '#f0e7ef', '#dfd3f5', '#c9bff8', '#b3a4ed', '#9a86e0', '#8068d1'],
       ['#fdf8e9', '#fee9cd', '#fed8b0', '#fdc497', '#faad7f', '#f39367', '#e87c51'],
     ].map(interpolateRgbBasis),
-    accents: ['#4b2bbf', '#e0491b'],
+    accents: ['#4b2bbf', '#c83c12'],
   },
   // The original ramps sampled from the reference video, minus their dusky stops for a dark floor.
   'Blue & red': {
@@ -34,7 +34,7 @@ for (const palette of Object.values(palettes)) palette.fills = palette.ramps.map
 export const paletteNames = Object.keys(palettes);
 
 export const defaultSettings = {
-  playing: true,
+  playing: false,
   height: heightModes[0],
   palette: paletteNames[0],
   secondsPerElection: 2,
@@ -46,13 +46,32 @@ export const defaultSettings = {
   colorGamma: 0.5,
 };
 
+// All displayed metrics share the same validity rule and use unscaled raw returns.
+export function countyMetrics(county, index) {
+  const marginAt = (at) => Number.isInteger(at) && at >= 0 && at < years.length
+    && Number.isFinite(county?.diff?.[at]) && Number.isFinite(county?.total?.[at]) && county.total[at] > 0
+    ? 100 * county.diff[at] / county.total[at] : null;
+  const margin = marginAt(index);
+  const previousMargin = marginAt(index - 1);
+  const shift = margin !== null && previousMargin !== null ? margin - previousMargin : null;
+  return { margin, previousMargin, shift, flipped: shift === null ? null : previousMargin * margin < 0,
+    total: margin === null ? null : county.total[index] };
+}
+
+export const marginLabel = (margin) => !Number.isFinite(margin) ? 'No data'
+  : margin === 0 ? 'Tie (0.0%)' : `${margin > 0 ? 'D' : 'R'} +${Math.abs(margin).toFixed(1)}%`;
+export const shiftLabel = (shift) => !Number.isFinite(shift) ? 'No comparison'
+  : shift === 0 ? 'No change (0.0 pp)' : `Toward ${shift > 0 ? 'Democrats' : 'Republicans'} ${Math.abs(shift).toFixed(1)} pp`;
+
 // data.counties[fips] = { diff: Democratic minus Republican votes, total: votes cast }, null = did not vote.
 // Heights are signed (+ Democratic, - Republican) so that a flip has to pass through zero.
 export function buildSeries(data) {
   if (String(data?.years) !== String(years)) throw new Error('elections.json does not cover 1868-2020');
   let maxVoteDiff = 0;
-  for (const { diff } of Object.values(data.counties)) {
-    for (const votes of diff) if (Number.isFinite(votes)) maxVoteDiff = Math.max(maxVoteDiff, Math.abs(votes));
+  for (const county of Object.values(data.counties)) {
+    for (let index = 0; index < years.length; index++) {
+      if (countyMetrics(county, index).margin !== null) maxVoteDiff = Math.max(maxVoteDiff, Math.abs(county.diff[index]));
+    }
   }
 
   const series = {};
@@ -60,16 +79,22 @@ export function buildSeries(data) {
     const county = series[fips] = {
       'margin %': [...flatHeights],
       'margin votes': [...flatHeights],
+      shift: [...flatHeights],
       voted: [...flatHeights],
+      compared: [...flatHeights],
     };
     for (let index = 0; index < years.length; index++) {
       const votes = diff[index];
-      const cast = total[index];
-      if (!Number.isFinite(votes) || !(cast > 0)) continue;
+      const { margin, shift } = countyMetrics({ diff, total }, index);
+      if (margin === null) continue;
       const sign = Math.sign(votes);
-      county['margin %'][index] = sign * Math.min(Math.abs(votes) / cast / 0.9, 1) ** 2;
+      county['margin %'][index] = sign * Math.min(Math.abs(margin) / 90, 1) ** 2;
       county['margin votes'][index] = sign * (maxVoteDiff ? Math.sqrt(Math.abs(votes) / maxVoteDiff) : 0);
       county.voted[index] = 1;
+      if (shift !== null) {
+        county.shift[index] = Math.sign(shift) * Math.min(Math.abs(shift) / 100, 1) ** 2;
+        county.compared[index] = 1;
+      }
     }
   }
   return series;
@@ -82,12 +107,31 @@ export function countFlips(series) {
   for (const county of Object.values(series)) {
     const margins = county['margin %'];
     for (let index = 1; index < years.length; index++) {
-      if (county.voted[index - 1] && county.voted[index]) flips[index].compared++;
+      if (!county.voted[index - 1] || !county.voted[index]) continue;
+      flips[index].compared++;
       // A year without votes (or a tie) is 0 and never counts as a flip.
       if (margins[index - 1] * margins[index] < 0) flips[index][margins[index] > 0 ? 'toDemocratic' : 'toRepublican']++;
     }
   }
   return flips;
+}
+
+// Rank every available result/comparison; the optional filter never changes map coverage.
+export function rankCounties(counties, index, mode = 'result', flippedOnly = false) {
+  if (!Number.isInteger(index) || index < 0 || index >= years.length) return [];
+  const ranked = [];
+  for (const [fips, county] of Object.entries(counties ?? {})) {
+    const metrics = countyMetrics(county, index);
+    const value = mode === 'shift' ? metrics.shift : metrics.margin;
+    if (value === null || (flippedOnly && !metrics.flipped)) continue;
+    ranked.push({ fips, ...metrics, value: Math.abs(value) });
+  }
+  return ranked.sort((a, b) => b.value - a.value || a.fips.localeCompare(b.fips));
+}
+
+export function rankFlippedCounties(counties, index, metric = 'swing') {
+  return rankCounties(counties, index, metric === 'margin' ? 'result' : 'shift', true)
+    .map(({ fips, previousMargin, margin, shift, total, value }) => ({ fips, previousMargin, margin, swing: Math.abs(shift), total, value }));
 }
 
 // The election nearest a fractional timeline position, as an index into `years` (wraps past 2020).
